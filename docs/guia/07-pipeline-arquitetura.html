@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>07 — Pipeline: Arquitetura · Agent Harness Method</title>
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--border:#2e3250;--accent:#6366f1;--accent2:#22d3ee;--accent3:#a78bfa;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--text:#e2e8f0;--text-muted:#94a3b8;--radius:12px}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw}
+    .slides{width:100%;height:100%;position:relative}
+    .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;padding:44px 60px;animation:fadeIn .35s ease}
+    .slide.active{display:flex}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:8px 18px;z-index:100}
+    .nav button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:.84rem;font-weight:600;transition:opacity .2s}
+    .nav button:hover{opacity:.85}.nav button:disabled{opacity:.3;cursor:default}
+    .slide-counter{font-size:.84rem;color:var(--text-muted);min-width:70px;text-align:center}
+    .dots{position:fixed;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .2s,transform .2s}
+    .dot.active{background:var(--accent);transform:scale(1.4)}
+    h1{font-size:2.6rem;font-weight:800;line-height:1.15}
+    h2{font-size:1.85rem;font-weight:700;line-height:1.2}
+    h3{font-size:1.1rem;font-weight:600}
+    p,li{font-size:.95rem;line-height:1.7;color:var(--text-muted)}
+    .big{font-size:1.15rem;color:var(--text)}.muted{color:var(--text-muted);font-size:.88rem}
+    .chip{display:inline-block;padding:3px 11px;border-radius:99px;font-size:.73rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .chip-purple{background:#312e81;color:var(--accent3)}.chip-cyan{background:#0c4a6e;color:var(--accent2)}.chip-green{background:#064e3b;color:var(--green)}.chip-yellow{background:#451a03;color:var(--yellow)}.chip-red{background:#450a0a;color:var(--red)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px}
+    .card-grid{display:grid;gap:14px;width:100%}.card-grid.cols2{grid-template-columns:1fr 1fr}.card-grid.cols3{grid-template-columns:1fr 1fr 1fr}.card-grid.cols4{grid-template-columns:1fr 1fr 1fr 1fr}
+    .flow{display:flex;align-items:stretch;gap:0;width:100%}
+    .flow-step{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 12px;display:flex;flex-direction:column;gap:5px}
+    .flow-step+.flow-step{margin-left:-1px;border-radius:0}.flow-step:first-child{border-radius:var(--radius) 0 0 var(--radius)}.flow-step:last-child{border-radius:0 var(--radius) var(--radius) 0}
+    .flow-arrow{display:flex;align-items:center;color:var(--accent);font-size:1.3rem;padding:0 3px;flex-shrink:0}
+    .step-num{font-size:1.6rem;font-weight:800;color:var(--border);line-height:1}.step-title{font-size:.88rem;font-weight:700;color:var(--text)}.step-desc{font-size:.76rem;color:var(--text-muted);line-height:1.5}
+    .highlight{border-left:4px solid var(--accent);background:var(--surface2);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;width:100%}
+    .highlight.green{border-color:var(--green)}.highlight.yellow{border-color:var(--yellow)}.highlight.cyan{border-color:var(--accent2)}.highlight.red{border-color:var(--red)}
+    pre{background:#0d0f16;border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.79rem;color:#c4c9e0;font-family:'Cascadia Code','Fira Code',monospace;overflow-x:auto;line-height:1.6}
+    .kw{color:#c792ea}.str{color:#c3e88d}.cm{color:#546e7a}.fn{color:#82aaff}
+    .tag{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px}
+    .tag .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .gradient-text{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .w100{width:100%}.row{display:flex;gap:14px;align-items:flex-start;width:100%}.col{display:flex;flex-direction:column;gap:10px}
+    .flex1{flex:1}.center{text-align:center}
+    .mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}.gap8{gap:8px}.gap12{gap:12px}
+    table{border-collapse:collapse;width:100%;font-size:.85rem}
+    th{text-align:left;padding:7px 13px;background:var(--surface2);color:var(--text-muted);font-weight:600;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase}
+    td{padding:9px 13px;border-top:1px solid var(--border);color:var(--text-muted)}
+    td:first-child{color:var(--text);font-weight:500}
+    code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:.80em;font-family:'Cascadia Code',monospace;color:var(--accent2)}
+    .file-nav{position:fixed;top:48px;right:22px;display:flex;flex-direction:column;gap:4px;z-index:99}
+    .file-nav a{font-size:.70rem;color:var(--text-muted);text-decoration:none;padding:3px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--border)}
+    .file-nav a:hover{color:var(--accent2);border-color:var(--accent)}.file-nav a.current{color:var(--accent);border-color:var(--accent)}
+  </style>
+</head>
+<body>
+<div class="dots" id="dots"></div>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html" class="current">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+</div>
+
+<div class="slides">
+
+  <!-- SLIDE 1 — Capa -->
+  <div class="slide active" id="s1">
+    <div class="col" style="align-items:center;gap:22px;text-align:center;max-width:820px">
+      <span class="chip chip-cyan">Agent Harness Method · 07/09</span>
+      <h1 class="gradient-text">Pipeline de Dados<br>no Agent Harness</h1>
+      <p class="big">Medallion + Contratos + Lineagem + Observabilidade — boas práticas desde a primeira camada</p>
+      <div class="row" style="justify-content:center;gap:12px;flex-wrap:wrap">
+        <span class="tag"><span class="dot" style="background:var(--yellow)"></span>Raw → Bronze → Silver → Gold</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2)"></span>Contratos ODCS + Lineagem</span>
+        <span class="tag"><span class="dot" style="background:var(--green)"></span>Quarantine + Alertas + Logs</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — Pipeline inteligente -->
+  <div class="slide" id="s2">
+    <div class="col" style="gap:16px;max-width:900px;width:100%">
+      <span class="chip chip-purple">Visão geral</span>
+      <h2>Pipeline não é só ETL</h2>
+      <p class="muted">Um pipeline maduro tem 4 dimensões que trabalham juntas:</p>
+      <div class="card-grid cols4" style="margin-top:4px">
+        <div class="card" style="border-color:var(--yellow)">
+          <div style="font-size:1.8rem;margin-bottom:8px">🥉</div>
+          <h3 style="color:var(--yellow);margin-bottom:6px">Medallion</h3>
+          <p class="muted" style="font-size:.80rem">Raw → Bronze → Silver → Gold com responsabilidades claras por camada</p>
+        </div>
+        <div class="card" style="border-color:var(--accent2)">
+          <div style="font-size:1.8rem;margin-bottom:8px">🔗</div>
+          <h3 style="color:var(--accent2);margin-bottom:6px">Lineagem</h3>
+          <p class="muted" style="font-size:.80rem">De onde o dado veio + o que aconteceu com ele em cada transformação</p>
+        </div>
+        <div class="card" style="border-color:var(--accent)">
+          <div style="font-size:1.8rem;margin-bottom:8px">📋</div>
+          <h3 style="color:var(--accent);margin-bottom:6px">Contratos</h3>
+          <p class="muted" style="font-size:.80rem">Acordo formal produtor → consumidor em ODCS YAML versionado</p>
+        </div>
+        <div class="card" style="border-color:var(--green)">
+          <div style="font-size:1.8rem;margin-bottom:8px">📊</div>
+          <h3 style="color:var(--green);margin-bottom:6px">Observabilidade</h3>
+          <p class="muted" style="font-size:.80rem">Structured logs + alertas + dashboards — o pipeline que se explica</p>
+        </div>
+      </div>
+      <div class="highlight cyan" style="margin-top:4px">
+        <p><strong style="color:var(--accent2)">Princípio:</strong> Um pipeline sem lineagem é uma caixa preta. Um pipeline sem contrato é uma promessa não documentada. Um pipeline sem observabilidade só falha na produção.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — Medallion 4 camadas -->
+  <div class="slide" id="s3">
+    <div class="col" style="gap:14px;max-width:960px;width:100%">
+      <span class="chip chip-yellow">Medallion</span>
+      <h2>As 4 camadas — responsabilidades e colunas obrigatórias</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Camada</th>
+            <th>Responsabilidade</th>
+            <th>NUNCA fazer</th>
+            <th>Colunas obrigatórias</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="color:var(--red);font-weight:700">Raw</span></td>
+            <td>Cópia exata, imutável do dado da fonte</td>
+            <td style="color:var(--red)">Transformar, deletar, sobrescrever</td>
+            <td><code>_source_file</code>, <code>_ingest_ts</code></td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--yellow);font-weight:700">Bronze</span></td>
+            <td>Tipagem + metadata de lineage</td>
+            <td style="color:var(--red)">Lógica de negócio, agregações</td>
+            <td><code>_ingested_at</code>, <code>_source</code>, <code>_run_id</code>, <code>_batch_id</code></td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--accent2);font-weight:700">Silver</span></td>
+            <td>Limpeza + deduplicação + validação</td>
+            <td style="color:var(--red)">Agregar, calcular KPIs</td>
+            <td><code>_processed_at</code>, <code>_pipeline_version</code></td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--green);font-weight:700">Gold</span></td>
+            <td>Agregações de negócio prontas para consumo</td>
+            <td style="color:var(--red)">Lógica de limpeza, deduplicação</td>
+            <td><code>_updated_at</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="card-grid cols2" style="margin-top:4px">
+        <div class="highlight green">
+          <p><strong style="color:var(--green)">Raw é sagrado:</strong> nunca modifique, nunca delete. É o backup histórico de tudo que chegou.</p>
+        </div>
+        <div class="highlight">
+          <p><strong style="color:var(--accent)">Schema enforcement:</strong> começa no Bronze. Sem tipagem = sem confiança nas camadas acima.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — Boas práticas Bronze -->
+  <div class="slide" id="s4">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-yellow">Bronze</span>
+      <h2>Metadados de lineage no primeiro toque</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <pre><span class="cm"># Bronze — não só tipagem, mas rastreabilidade desde o início</span>
+<span class="fn">bronze_df</span> = <span class="fn">raw_df</span>.<span class="fn">select</span>(
+    <span class="fn">col</span>(<span class="str">"id"</span>).<span class="fn">cast</span>(<span class="str">"string"</span>).<span class="fn">alias</span>(<span class="str">"order_id"</span>),
+    <span class="fn">col</span>(<span class="str">"amount"</span>).<span class="fn">cast</span>(<span class="str">"decimal(10,2)"</span>),
+    <span class="fn">col</span>(<span class="str">"created_at"</span>).<span class="fn">cast</span>(<span class="str">"timestamp"</span>),
+) \
+.<span class="fn">withColumn</span>(<span class="str">"_ingested_at"</span>, <span class="fn">current_timestamp</span>()) \
+.<span class="fn">withColumn</span>(<span class="str">"_source"</span>, <span class="fn">lit</span>(<span class="str">"erp-orders"</span>)) \
+.<span class="fn">withColumn</span>(<span class="str">"_run_id"</span>, <span class="fn">lit</span>(run_id)) \
+.<span class="fn">withColumn</span>(<span class="str">"_batch_id"</span>, <span class="fn">lit</span>(batch_id))</pre>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card" style="border-color:var(--red)">
+            <h3 style="color:var(--red);margin-bottom:8px">Princípio 1 — Raw é sagrado</h3>
+            <p class="muted" style="font-size:.82rem">Nunca modifique a camada Raw depois da ingestão. Ela é a fonte de verdade imutável. Se precisar reprocessar, releia do Raw e recrie o Bronze.</p>
+          </div>
+          <div class="card" style="border-color:var(--accent)">
+            <h3 style="color:var(--accent);margin-bottom:8px">Princípio 2 — Schema enforcement</h3>
+            <p class="muted" style="font-size:.82rem">Defina schema explícito no Bronze. Dado sem schema = dado sem contrato. Use <code>StructType</code> no Spark ou table schema no Unity Catalog. Rejeite dados que não conformam.</p>
+          </div>
+          <div class="card" style="border-color:var(--yellow)">
+            <h3 style="color:var(--yellow);margin-bottom:8px">Colunas obrigatórias</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+              <code>_ingested_at</code><code>_source</code><code>_run_id</code><code>_batch_id</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — Data Lineage -->
+  <div class="slide" id="s5">
+    <div class="col" style="gap:14px;max-width:920px;width:100%">
+      <span class="chip chip-cyan">Lineagem</span>
+      <h2>Saber de onde veio e o que aconteceu</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">Unity Catalog — lineagem automática</h3>
+            <div class="flow" style="flex-direction:column;gap:0;font-size:.76rem">
+              <div style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;color:var(--yellow)">dev_catalog.raw.orders</div>
+              <div style="padding:5px 12px;color:var(--text-muted);border:1px solid var(--border);border-top:none;font-size:.70rem">(BronzeIngestor)</div>
+              <div style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-top:none;color:var(--yellow)">dev_catalog.bronze.orders</div>
+              <div style="padding:5px 12px;color:var(--text-muted);border:1px solid var(--border);border-top:none;font-size:.70rem">(SilverTransformer)</div>
+              <div style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-top:none;color:var(--accent2)">dev_catalog.silver.orders</div>
+              <div style="padding:5px 12px;color:var(--text-muted);border:1px solid var(--border);border-top:none;font-size:.70rem">(GoldAggregator)</div>
+              <div style="padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);color:var(--green)">dev_catalog.gold.orders_summary</div>
+            </div>
+          </div>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">Rastreabilidade: de onde veio este pedido?</h3>
+            <pre><span class="cm">-- "Esse pedido order_id=123 veio de qual arquivo?"</span>
+<span class="kw">SELECT</span>
+    order_id,
+    _source,
+    _ingested_at,
+    _run_id,
+    _batch_id
+<span class="kw">FROM</span> dev_catalog.bronze.orders
+<span class="kw">WHERE</span> order_id = <span class="str">'123'</span>;</pre>
+          </div>
+          <div class="card-grid" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="card" style="padding:10px 12px">
+              <p style="font-size:.78rem;font-weight:600;color:var(--yellow)">Bronze</p>
+              <p class="muted" style="font-size:.74rem"><code>_ingested_at</code> <code>_source</code> <code>_run_id</code> <code>_batch_id</code></p>
+            </div>
+            <div class="card" style="padding:10px 12px">
+              <p style="font-size:.78rem;font-weight:600;color:var(--accent2)">Silver</p>
+              <p class="muted" style="font-size:.74rem"><code>_processed_at</code> <code>_pipeline_version</code></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — Schema Evolution -->
+  <div class="slide" id="s6">
+    <div class="col" style="gap:14px;max-width:940px;width:100%">
+      <span class="chip chip-yellow">Schema Evolution</span>
+      <h2>Schema mudou — o que fazer?</h2>
+      <div class="row gap12">
+        <div class="col" style="flex:1.1;gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">Árvore de decisão</h3>
+            <pre style="font-size:.74rem"><span class="cm">Schema detectado ≠ esperado?</span>
+├── Mudança ADITIVA (nova coluna nullable)?
+│   ├── strategy=<span class="str">merge</span>
+│   │   └── mergeSchema → processa normalmente
+│   └── strategy=<span class="str">quarantine</span>
+│       └── quarantine + notify
+├── Mudança BREAKING (tipo mudou, coluna sumiu)?
+│   └── <span class="fn">quarantine</span> + <span class="fn">notify_owner</span> (sempre)
+└── Violação de CONTRATO DECLARADO?
+    └── <span class="kw">fail</span> (exceção) + log estruturado + ADR</pre>
+          </div>
+        </div>
+        <div class="col flex1" style="gap:8px">
+          <div class="card" style="border-color:var(--green)">
+            <h3 style="color:var(--green);margin-bottom:6px">merge — mudança aditiva</h3>
+            <pre style="font-size:.74rem">df.<span class="fn">write</span>.<span class="fn">option</span>(<span class="str">"mergeSchema"</span>, <span class="str">"true"</span>)
+   .<span class="fn">mode</span>(<span class="str">"append"</span>).<span class="fn">saveAsTable</span>(table)</pre>
+          </div>
+          <div class="card" style="border-color:var(--yellow)">
+            <h3 style="color:var(--yellow);margin-bottom:6px">quarantine — suspeito</h3>
+            <pre style="font-size:.74rem"><span class="fn">send_to_quarantine</span>(df, reason=<span class="str">"schema_mismatch"</span>)
+<span class="fn">notify_owner</span>(config, reason=<span class="str">"schema_mismatch"</span>)</pre>
+          </div>
+          <div class="card" style="border-color:var(--red)">
+            <h3 style="color:var(--red);margin-bottom:6px">fail — violação de contrato</h3>
+            <pre style="font-size:.74rem"><span class="kw">raise</span> <span class="fn">ContractViolationError</span>(
+    <span class="str">f"Campo {field} removido — breaking change"</span>
+)</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — Quarantine Tables -->
+  <div class="slide" id="s7">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-red">Quarantine</span>
+      <h2>Quarantine — preservar o dado, investigar o problema</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">Estrutura da tabela de quarantine</h3>
+            <p class="muted" style="font-size:.78rem;margin-bottom:8px"><code>{catalog}.bronze.quarantine</code></p>
+            <table style="font-size:.76rem">
+              <thead><tr><th>Coluna</th><th>Descrição</th></tr></thead>
+              <tbody>
+                <tr><td><code>_quarantine_reason</code></td><td>schema_mismatch, null_violation...</td></tr>
+                <tr><td><code>_quarantine_ts</code></td><td>Timestamp do envio para quarantine</td></tr>
+                <tr><td><code>_run_id</code></td><td>Rastreabilidade do run</td></tr>
+                <tr><td><code>_contract</code></td><td>Contrato violado (ex: orders-v1)</td></tr>
+                <tr><td><code>_raw_data</code></td><td>JSON original do dado problemático</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <pre style="font-size:.76rem"><span class="fn">send_to_quarantine</span>(
+    df,
+    reason=<span class="str">"schema_mismatch"</span>,
+    run_id=run_id,
+    config=config
+)</pre>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="highlight red">
+            <p><strong style="color:var(--red)">Regra de ouro:</strong> nunca delete dados em quarantine. Eles são evidência do problema. Quando reprocessar, adicione <code>_reprocessed_at</code> — nunca remova o registro original.</p>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:8px">Fluxo de notificação</h3>
+            <div class="flow" style="flex-direction:column;gap:0">
+              <div class="flow-step" style="border-radius:var(--radius) var(--radius) 0 0">
+                <div class="step-title">Dado entra em quarantine</div>
+                <div class="step-desc">send_to_quarantine() chamado</div>
+              </div>
+              <div class="flow-step" style="border-radius:0;border-top:none">
+                <div class="step-title">notify_owner() acionado</div>
+                <div class="step-desc">Mensagem com motivo + run_id</div>
+              </div>
+              <div class="flow-step" style="border-radius:0 0 var(--radius) var(--radius);border-top:none">
+                <div class="step-title">Slack + email enviados</div>
+                <div class="step-desc">Com link para investigação</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8 — Data Contracts ODCS -->
+  <div class="slide" id="s8">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-purple">Contratos</span>
+      <h2>Contrato de dados — acordo formal</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <pre style="font-size:.76rem"><span class="cm"># ODCS — Open Data Contract Standard</span>
+<span class="str">id</span>: <span class="str">"orders-contract-v1"</span>
+<span class="str">version</span>: <span class="str">"1.0.0"</span>
+<span class="str">producer</span>: {<span class="str">team</span>: <span class="str">data-engineering</span>}
+<span class="str">consumer</span>: [{<span class="str">team</span>: <span class="str">analytics</span>}]
+<span class="str">schema</span>:
+  <span class="str">fields</span>:
+    - {<span class="str">name</span>: <span class="str">order_id</span>, <span class="str">type</span>: <span class="str">string</span>,
+       <span class="str">required</span>: <span class="kw">true</span>, <span class="str">unique</span>: <span class="kw">true</span>}
+    - {<span class="str">name</span>: <span class="str">amount</span>, <span class="str">type</span>: <span class="str">"decimal(10,2)"</span>,
+       <span class="str">min</span>: 0.01}
+<span class="str">sla</span>:
+  <span class="str">freshness</span>: <span class="str">"&lt; 24 hours"</span>
+<span class="str">quality</span>:
+  <span class="str">completeness</span>: <span class="str">"&gt; 99%"</span>
+<span class="str">versioning</span>:
+  <span class="str">breaking_changes</span>:
+    - <span class="str">remove_column</span>
+    - <span class="str">rename_column</span>
+    - <span class="str">change_type</span></pre>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">Regras de versionamento</h3>
+            <table style="font-size:.78rem">
+              <thead><tr><th>Mudança</th><th>Estratégia</th></tr></thead>
+              <tbody>
+                <tr><td>v1 → v1.1 (nova coluna nullable)</td><td style="color:var(--green)">mergeSchema</td></tr>
+                <tr><td>v1 → v2 (coluna removida)</td><td style="color:var(--red)">quarantine + ADR + notify</td></tr>
+                <tr><td>v1 → v1.1 (tipo alterado)</td><td style="color:var(--yellow)">quarantine + notify</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="highlight">
+            <p><strong style="color:var(--accent)">O contrato vive junto ao código.</strong> Versione em Git. Valide no pipeline no momento da ingestão. Violação = quarantine imediato.</p>
+          </div>
+          <div class="card" style="border-color:var(--accent2)">
+            <h3 style="color:var(--accent2);margin-bottom:6px">SLA como contrato</h3>
+            <p class="muted" style="font-size:.80rem">freshness: "&lt; 24 hours" não é aspiração. É obrigação monitorada com alerta automático quando violada.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9 — Notificações e alertas -->
+  <div class="slide" id="s9">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-yellow">Alertas</span>
+      <h2>O pipeline fala quando algo está errado</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <table>
+            <thead><tr><th>Evento</th><th>Nível</th><th>Canal</th></tr></thead>
+            <tbody>
+              <tr><td>schema_mismatch</td><td style="color:var(--yellow)">WARNING</td><td>Slack + email</td></tr>
+              <tr><td>high_quarantine_rate</td><td style="color:var(--yellow)">WARNING</td><td>Slack + email</td></tr>
+              <tr><td>contract_violation</td><td style="color:var(--red)">ERROR</td><td>Slack + email</td></tr>
+              <tr><td>pipeline_step_failed</td><td style="color:var(--red)">ERROR</td><td>+ PagerDuty em PRD</td></tr>
+              <tr><td>sla_breach</td><td style="color:var(--yellow)">WARNING</td><td>Slack + email</td></tr>
+            </tbody>
+          </table>
+          <div class="card">
+            <h3 style="margin-bottom:8px">Config por ambiente</h3>
+            <table style="font-size:.76rem">
+              <thead><tr><th>Ambiente</th><th>Notificações</th></tr></thead>
+              <tbody>
+                <tr><td>local</td><td style="color:var(--text-muted)">disabled</td></tr>
+                <tr><td>dev</td><td style="color:var(--yellow)">enabled</td></tr>
+                <tr><td>prd</td><td style="color:var(--red)">enabled + thresholds restritivos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">Template de mensagem Slack</h3>
+            <pre style="font-size:.74rem"><span class="cm"># Mensagem gerada automaticamente</span>
+{
+  <span class="str">"text"</span>: <span class="str">"⚠️ Pipeline Alert"</span>,
+  <span class="str">"blocks"</span>: [{
+    <span class="str">"type"</span>: <span class="str">"section"</span>,
+    <span class="str">"text"</span>: {
+      <span class="str">"type"</span>: <span class="str">"mrkdwn"</span>,
+      <span class="str">"text"</span>: (
+        <span class="str">"*Pipeline:* orders_pipeline\n"</span>
+        <span class="str">"*Nível:* WARNING\n"</span>
+        <span class="str">"*Motivo:* schema_mismatch\n"</span>
+        <span class="str">"*Run ID:* {run_id}\n"</span>
+        <span class="str">"*Registros afetados:* 13"</span>
+      )
+    }
+  }]
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 — Observabilidade -->
+  <div class="slide" id="s10">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-green">Observabilidade</span>
+      <h2>Structured logging — o pipeline que se explica</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <pre><span class="fn">log</span>.<span class="fn">info</span>(<span class="str">"pipeline_step_completed"</span>,
+    pipeline=<span class="str">"orders_pipeline"</span>,
+    layer=<span class="str">"bronze"</span>,
+    run_id=run_id,
+    records_in=<span class="str">1000</span>,
+    records_out=<span class="str">987</span>,
+    records_quarantined=<span class="str">13</span>,
+    duration_ms=<span class="str">1200</span>,
+    source=<span class="str">"s3://bucket/orders/"</span>
+)</pre>
+          <div class="card" style="border-color:var(--accent2)">
+            <h3 style="color:var(--accent2);margin-bottom:8px">Métricas por step</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <code>records_in</code><code>records_out</code><code>records_quarantined</code><code>duration_ms</code><code>null_rate</code>
+            </div>
+          </div>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card" style="border-color:var(--red)">
+            <h3 style="color:var(--red);margin-bottom:8px">Nunca em logs</h3>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:5px">
+              <li><p class="muted" style="font-size:.82rem">CPF, email, nome, telefone</p></li>
+              <li><p class="muted" style="font-size:.82rem">Dados financeiros individuais</p></li>
+              <li><p class="muted" style="font-size:.82rem">Qualquer dado classificado como PII</p></li>
+            </ul>
+          </div>
+          <div class="highlight green">
+            <p><strong style="color:var(--green)">records_in - records_out</strong> = anomalia a investigar. Se a diferença for maior que o esperado, dispare alerta antes de concluir o step.</p>
+          </div>
+          <div class="highlight">
+            <p><strong style="color:var(--accent)">run_id em tudo:</strong> é o fio que conecta logs → quarantine → alertas. Sem run_id, debugar em produção é impossível.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11 — 10 perguntas do grill -->
+  <div class="slide" id="s11">
+    <div class="col" style="gap:14px;max-width:940px;width:100%">
+      <span class="chip chip-purple">Grill obrigatório</span>
+      <h2>10 perguntas obrigatórias antes do PRD de pipeline</h2>
+      <div class="card-grid cols2" style="gap:10px">
+        <div class="col" style="gap:7px">
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--accent)">1. Fontes</strong> — De onde vêm os dados? (sistema, formato, frequência)</p>
+            <p class="muted" style="font-size:.74rem">Define se é batch, streaming ou híbrido</p>
+          </div>
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--accent)">2. Schema</strong> — Estável ou pode mudar sem aviso?</p>
+            <p class="muted" style="font-size:.74rem">Define a strategy de schema evolution</p>
+          </div>
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--accent)">3. Volume</strong> — GB/dia? Registros/hora? Backfill histórico?</p>
+            <p class="muted" style="font-size:.74rem">Define cluster size, particionamento, janela de backfill</p>
+          </div>
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--red)">4. Sensibilidade</strong> — Tem PII? (CPF, email, saúde, finanças?)</p>
+            <p class="muted" style="font-size:.74rem">Determina mascaramento, restrições de log, compliance</p>
+          </div>
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--yellow)">5. SLA</strong> — O que "atrasado" significa para o negócio?</p>
+            <p class="muted" style="font-size:.74rem">Define o contrato de freshness e thresholds de alerta</p>
+          </div>
+        </div>
+        <div class="col" style="gap:7px">
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--green)">6. Consumidores Gold</strong> — BI? ML? API downstream?</p>
+            <p class="muted" style="font-size:.74rem">Define o modelo de dados da camada Gold</p>
+          </div>
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--accent2)">7. Owner</strong> — Quem acorda às 2h se o pipeline quebrar?</p>
+            <p class="muted" style="font-size:.74rem">Define roteamento de alertas e escalation</p>
+          </div>
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--accent3)">8. Ambiente</strong> — Local (Spark+Airflow) ou Cloud (Databricks)?</p>
+            <p class="muted" style="font-size:.74rem">Define config de environments e ferramentas de deploy</p>
+          </div>
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--yellow)">9. Qualidade</strong> — O que é BLOQUEANTE vs LOG+QUARANTINE?</p>
+            <p class="muted" style="font-size:.74rem">Define fail vs quarantine vs merge por tipo de anomalia</p>
+          </div>
+          <div class="card" style="padding:10px 14px">
+            <p style="font-size:.80rem"><strong style="color:var(--accent2)">10. Portabilidade</strong> — Multi-tenant? Multi-ambiente (dev/prd)?</p>
+            <p class="muted" style="font-size:.74rem">Define parametrização de config e isolamento de catalogs</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 11</span>
+  <button id="next" onclick="go(1)">Próximo →</button>
+</div>
+
+<script>
+const total = 11;
+let cur = 1;
+const dotsEl = document.getElementById('dots');
+for (let i = 1; i <= total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => show(i);
+  dotsEl.appendChild(d);
+}
+function show(n) {
+  document.getElementById('s' + cur).classList.remove('active');
+  dotsEl.children[cur - 1].classList.remove('active');
+  cur = n;
+  document.getElementById('s' + cur).classList.add('active');
+  dotsEl.children[cur - 1].classList.add('active');
+  document.getElementById('counter').textContent = cur + ' / ' + total;
+  document.getElementById('prev').disabled = cur === 1;
+  document.getElementById('next').disabled = cur === total;
+}
+function go(d) { if (cur + d >= 1 && cur + d <= total) show(cur + d); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+});
+</script>
+</body>
+</html>

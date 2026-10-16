@@ -1,0 +1,12 @@
+# Perfil de famílias agent-policies no projeto-filho (seed KEEP).
+# Runtime path: .harness/policies/project_profile.yaml
+#
+# core families são always-on no generate; liste aqui apenas extras opt-in
+# (ex.: cloud-cli-extra). Re-install com seed:true NÃO sobrescreve este arquivo.
+#
+# families vazio: omita a chave ou use lista block-style (nunca `families: []` —
+# o MinimalYamlLoader interpreta `[]` como string).
+# Exemplo opt-in:
+# families:
+#   - cloud-cli-extra
+families:

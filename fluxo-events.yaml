@@ -1,0 +1,100 @@
+# fluxo-events.yaml — Fonte única do kernel de telemetria live do fluxo SDD
+#
+# Schema mínimo:
+#   version: int (>= 1)
+#   limits:
+#     max_events_bytes: int (2 MiB = 2097152)
+#     truncate_keep_default: int (ship N=100)
+#     # PROIBIDO (G1-c / AC15): qualquer campo numérico de SLA/latência
+#   sdd_map: mapping fase(0–4) → {slug, agents[]}  (loader mínimo: sem list-of-maps)
+#   dev_loop_map: mapping fase(0–6) → {slug, agents[]}  (Dev Loop live)
+#   event_types: phase_*/agent_*/task_* enter|exit + ship_truncate
+#   paths: events_file / live_html — relativos sob fluxo/
+#
+# Ortogonal a evidence-gate (aceite hard) e agent-policies (Bash deny).
+# Honesty §1.3: telemetria local ≠ fidelidade perfeita; emit omitível.
+
+version: 1
+
+limits:
+  max_events_bytes: 2097152
+  truncate_keep_default: 100
+  # sem SLA / latency_* (G1-c)
+
+sdd_map:
+  0:
+    slug: IDEIA
+    agents:
+      - harness-brainstorm
+  1:
+    slug: REQUISITOS
+    agents:
+      - grill-me
+      - harness-define
+  2:
+    slug: PRD_HARNESS
+    agents:
+      - harness-design
+      - to-prd
+      - harness-architect
+  3:
+    slug: IMPLEMENTAR
+    agents:
+      - to-tasks
+      - harness-build
+      - revisor-codigo
+  4:
+    slug: ENCERRAR
+    agents:
+      - harness-ship
+      - /scorecard
+
+dev_loop_map:
+  0:
+    slug: LOAD
+    agents:
+      - prompt-crafter
+      - dev-loop-executor
+  1:
+    slug: VALIDATE
+    agents:
+      - prompt-crafter
+      - dev-loop-executor
+  2:
+    slug: INIT_PICK
+    agents:
+      - prompt-crafter
+      - dev-loop-executor
+  3:
+    slug: EXECUTE_VERIFY
+    agents:
+      - prompt-crafter
+      - dev-loop-executor
+  4:
+    slug: UPDATE_CHECK
+    agents:
+      - prompt-crafter
+      - dev-loop-executor
+  5:
+    slug: LOOP_LOG
+    agents:
+      - prompt-crafter
+      - dev-loop-executor
+  6:
+    slug: SYNC
+    agents:
+      - prompt-crafter
+      - dev-loop-executor
+
+event_types:
+  - phase_enter
+  - phase_exit
+  - agent_enter
+  - agent_exit
+  - task_enter
+  - task_exit
+  - ship_truncate
+
+paths:
+  events_file: events.jsonl
+  live_html: live.html

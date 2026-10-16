@@ -1,0 +1,14 @@
+# Critérios de aceite das SPECs, com ID estável (ex.: SPEC-003-AC-2).
+# Vazio até cada SPEC ser escrita. Cada critério deve ter ao menos um teste.
+#
+# Esquema de cada item:
+#   - id: SPEC-NNN-AC-N
+#     spec: SPEC-NNN
+#     dado: "..."
+#     quando: "..."
+#     entao: "..."
+#     invariantes: [INV-XX]     # opcional
+#     fixtures: [F-XXX-NN]      # opcional
+#     teste: []                 # caminhos/ids de teste (preenchido na implementação)
+versao: 1
+criterios: []

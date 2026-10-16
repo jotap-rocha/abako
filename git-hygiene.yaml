@@ -1,0 +1,51 @@
+# git-hygiene.yaml — Fonte única do contrato Git Hygiene (Fase 1 · Convenção)
+#
+# Schema mínimo:
+#   version: int
+#   branch.pattern: regex (fullmatch) do nome completo tipo/escopo
+#   branch.types: lista de tipos permitidos (feat|fix|chore)
+#   branch.scope.max_length: int (≤ 40)
+#   branch.scope.pattern: regex (fullmatch) do escopo kebab-case ASCII
+#   branch.scope.forbidden: escopos proibidos (match exato, case-sensitive)
+#   branch.scope.forbidden_patterns: regexes adicionais (ex.: data solta)
+#   branch.limits.person_name: texto — limite humano (NÃO é regex)
+#   pr_title.pattern: regex (fullmatch) do título; grupos: tipo, escopo, resumo
+#   pr_title.summary_max_length: int (≤ 72)
+#
+# Consumidores (hooks, /nova-branch, agents) DEVEM carregar este arquivo.
+# Não duplique as regex em código de validação.
+
+version: 1
+
+branch:
+  # `types` é a lista canônica; branch.pattern / pr_title.pattern devem espelhá-la.
+  # O validador também checa match.group(1) ∈ types (defesa contra drift).
+  pattern: "^(feat|fix|chore)/([a-z0-9]+(?:-[a-z0-9]+)*)$"
+  types:
+    - feat
+    - fix
+    - chore
+  scope:
+    max_length: 40
+    pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    forbidden:
+      - tmp
+      - teste
+      - nova-branch
+    forbidden_patterns:
+      # "Data solta" = o escopo INTEIRO é a data (fullmatch), não substring
+      # embutida (ex.: feat/foo-2026-08-06 NÃO é rejeitado por estas patterns).
+      - "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      - "^[0-9]{8}$"
+  limits:
+    person_name: >
+      Nome de pessoa NÃO é detectável de forma confiável por regex
+      (falsos positivos/negativos inevitáveis). A validação automática
+      cobre apenas termos proibidos listados e padrões de data solta.
+      Controle de nomes próprios permanece humano (acordo no /nova-branch
+      e revisão). Não invente regex impossível para este requisito.
+
+pr_title:
+  # Grupos: (1) tipo (2) escopo (3) resumo — o validador aplica max_length no resumo
+  pattern: "^(feat|fix|chore)\\(([a-z0-9]+(?:-[a-z0-9]+)*)\\): (.+)$"
+  summary_max_length: 72

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>16 — Instalando o Harness · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .pipeline-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .82rem; color: var(--text-muted); background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; width: 100%; }
+    .pipeline-flow .step { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--text); font-size: .8rem; white-space: nowrap; }
+    .pipeline-flow .arrow { color: var(--accent); font-weight: 700; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; }
+    .quote-block { border-left: 4px solid var(--accent3); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 18px 24px; width: 100%; font-size: 1.1rem; font-style: italic; color: var(--text); }
+    .quote-block .author { font-size: .82rem; color: var(--text-muted); font-style: normal; margin-top: 8px; }
+    .step-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .step-item { display: flex; gap: 14px; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; }
+    .step-num { background: var(--accent); color: #fff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .step-content h4 { font-size: .95rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .step-content p { font-size: .88rem; color: var(--text-muted); line-height: 1.5; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .status-novo    { background: #064e3b; color: var(--green); }
+    .status-atualizar { background: #312e81; color: var(--accent3); }
+    .status-manter  { background: #451a03; color: var(--yellow); }
+    .status-skip    { background: #1e293b; color: var(--text-muted); }
+    .status-exists  { background: #0c4a6e; color: var(--accent2); }
+    .alert-card { background: #1c1208; border: 1px solid var(--yellow); border-radius: var(--radius); padding: 16px 20px; width: 100%; display: flex; gap: 12px; align-items: flex-start; }
+    .alert-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .output-list { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+    .output-item { display: flex; gap: 10px; align-items: center; font-size: .88rem; color: var(--text-muted); }
+    .output-item .bullet { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<!-- File Nav -->
+<nav class="file-nav">
+  <a href="#">01 conceitos</a>
+  <a href="#">02 fluxo</a>
+  <a href="#">03 harness</a>
+  <a href="#">04 tracking</a>
+  <a href="#">05 fluxo-guiado</a>
+  <a href="#">06 seguranca</a>
+  <a href="#">07 pipeline-arq</a>
+  <a href="#">08 pipeline-prat</a>
+  <a href="#">09 agentes-sdd</a>
+  <a href="#">10 rag-search</a>
+  <a href="#">11 langgraph</a>
+  <a href="#">12 supabase</a>
+  <a href="#">13 observab.</a>
+  <a href="#">14 multi-tenant</a>
+  <a href="#">15 testing</a>
+  <a href="#" class="current">16 install-harness</a>
+</nav>
+
+<!-- Dots -->
+<div class="dots" id="dots"></div>
+
+<!-- Slides -->
+<div class="slides" id="slides">
+
+  <!-- Slide 1: Capa -->
+  <div class="slide active">
+    <div class="col" style="max-width:760px; align-items:flex-start; gap:24px;">
+      <span class="chip chip-purple">Sprint 5 · Agent Harness</span>
+      <h1 class="gradient-text">Instalando o Harness</h1>
+      <p class="big" style="font-size:1.4rem; color:var(--text-muted);">Do projeto zerado ao harness completo</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+        <span class="tag"><span class="dot" style="background:var(--accent);"></span>install</span>
+        <span class="tag"><span class="dot" style="background:var(--green);"></span>bootstrap</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2);"></span>canonical</span>
+        <span class="tag"><span class="dot" style="background:var(--accent3);"></span>projetos</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow);"></span>filosofia</span>
+      </div>
+      <div class="pipeline-flow mt16">
+        <span class="step">canônico</span>
+        <span class="arrow">→</span>
+        <span class="step">/install-harness</span>
+        <span class="arrow">→</span>
+        <span class="step">projeto alvo</span>
+        <span class="arrow">→</span>
+        <span class="step">customização</span>
+        <span class="arrow">→</span>
+        <span class="step">produção</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: O que é o harness canônico -->
+  <div class="slide">
+    <div class="col w100" style="max-width:900px; gap:20px;">
+      <h2>O que é o harness <span class="gradient-text">canônico</span></h2>
+      <p class="muted">Fonte única de verdade para todos os projetos. O canônico não é copiado — é referenciado e instanciado.</p>
+
+      <div class="pipeline-flow">
+        <span class="step" style="border-color:var(--accent); color:var(--accent3);">agent-harness-canonico/</span>
+        <span class="arrow">→</span>
+        <span class="step">/install-harness</span>
+        <span class="arrow">→</span>
+        <span class="step">projeto-alvo/.claude/</span>
+        <span class="arrow">→</span>
+        <span class="step">instância customizada</span>
+      </div>
+
+      <div class="card-grid cols2 mt8">
+        <div class="card">
+          <h3 style="color:var(--accent3); margin-bottom:12px;">O que o canônico TEM</h3>
+          <div class="col gap8">
+            <div class="output-item"><span class="bullet" style="background:var(--accent3);"></span><span>agents/ — especialistas reutilizáveis</span></div>
+            <div class="output-item"><span class="bullet" style="background:var(--accent3);"></span><span>skills/ — comandos /slash prontos</span></div>
+            <div class="output-item"><span class="bullet" style="background:var(--accent3);"></span><span>kb/ — bases de conhecimento curadas</span></div>
+            <div class="output-item"><span class="bullet" style="background:var(--accent3);"></span><span>rules/ — invariantes e contrato de entrega</span></div>
+            <div class="output-item"><span class="bullet" style="background:var(--accent3);"></span><span>docs/guia/ — 16 guias de referência</span></div>
+            <div class="output-item"><span class="bullet" style="background:var(--accent3);"></span><span>settings.json — hooks e permissões</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--green); margin-bottom:12px;">O que o projeto GANHA</h3>
+          <div class="col gap8">
+            <div class="output-item"><span class="bullet"></span><span>CLAUDE.md com stack real do projeto</span></div>
+            <div class="output-item"><span class="bullet"></span><span>CONTEXT.md com terminologia do domínio</span></div>
+            <div class="output-item"><span class="bullet"></span><span>Hooks adaptados à stack detectada</span></div>
+            <div class="output-item"><span class="bullet"></span><span>Skills filtradas (só as relevantes)</span></div>
+            <div class="output-item"><span class="bullet"></span><span>KB do domínio preenchida pelo time</span></div>
+            <div class="output-item"><span class="bullet"></span><span>harness-manifest.json (memória da install)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quote-block">
+        "Canônico = framework. Projeto = instância."
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Os 3 cenários -->
+  <div class="slide">
+    <div class="col w100" style="max-width:920px; gap:20px;">
+      <h2>Os <span class="gradient-text">3 cenários</span> de instalação</h2>
+      <p class="muted">A skill detecta o estado atual e age de forma diferente em cada cenário.</p>
+
+      <div class="card" style="padding:0; overflow:hidden;">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th><span class="status-badge status-novo">NOVO</span></th>
+              <th><span class="status-badge status-exists" style="background:#0c2040; color:var(--accent2);">SEM_HARNESS</span></th>
+              <th><span class="status-badge status-atualizar">INCOMPLETO</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>O que existe antes</td>
+              <td>Pasta completamente vazia — nenhum <code>.claude/</code></td>
+              <td><code>.claude/</code> parcial ou <code>CLAUDE.md</code> avulso sem manifest</td>
+              <td><code>harness-manifest.json</code> presente mas desatualizado</td>
+            </tr>
+            <tr>
+              <td>O que o install faz</td>
+              <td>Scaffolding completo + cópia integral do canônico</td>
+              <td>Instala o que falta; lê e preserva o que existe</td>
+              <td>Compara manifest vs canônico; atualiza só o não-customizado</td>
+            </tr>
+            <tr>
+              <td>O que fica intocado</td>
+              <td>Nada a preservar — slate em branco</td>
+              <td>Todos os arquivos já existentes (nunca sobrescreve sem ok)</td>
+              <td>Artefatos marcados <code>"customized": true</code> no manifest</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight cyan">
+        <h3 style="color:var(--accent2); margin-bottom:6px;">Regra universal</h3>
+        <p>Em todos os cenários: a skill mostra o Install Plan e aguarda confirmacao explícita antes de escrever qualquer arquivo no disco.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Cenário 1 — NOVO -->
+  <div class="slide">
+    <div class="col w100" style="max-width:880px; gap:18px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <h2>Cenário 1 — <span class="gradient-text">Projeto Zerado</span></h2>
+        <span class="status-badge status-novo" style="padding:5px 14px; font-size:.8rem;">NOVO</span>
+      </div>
+      <p class="muted">Pasta sem nenhum <code>.claude/</code>. A skill faz tudo do zero.</p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Detecta ausência de <code>.claude/</code></h4>
+            <p>Verifica se o diretório existe. Ausência = cenário NOVO confirmado.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Lê <code>pyproject.toml</code> / <code>package.json</code> para detectar stack</h4>
+            <p>FastAPI, Django, Next.js, LangGraph, Supabase — cada stack ativa artefatos diferentes.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Mapeia stack → artefatos relevantes</h4>
+            <p>FastAPI → hooks ruff+mypy+pytest. LangGraph → skills langgraph-*. Supabase → kb/supabase/.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Mostra Install Plan e aguarda confirmação</h4>
+            <p>Lista completa do que será criado. Zero escrita antes do "ok".</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <h4>Copia do canônico + gera projeto-específicos</h4>
+            <p>Artefatos canônicos copiados; CLAUDE.md e CONTEXT.md gerados com stack real.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight green">
+        <h3 style="color:var(--green); margin-bottom:8px;">Output da instalação</h3>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
+          <code>CLAUDE.md</code><code>AGENTS.md</code><code>CONTEXT.md</code><code>HANDOFF.md</code>
+          <code>settings.json</code><code>agents/</code><code>skills/</code><code>kb/</code><code>harness-manifest.json</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Cenário 2 — SEM_HARNESS -->
+  <div class="slide">
+    <div class="col w100" style="max-width:880px; gap:18px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <h2>Cenário 2 — <span class="gradient-text">Existente sem Harness</span></h2>
+        <span class="status-badge status-exists" style="background:#0c2040; color:var(--accent2); padding:5px 14px; font-size:.8rem;">SEM_HARNESS</span>
+      </div>
+      <p class="muted"><code>.claude/</code> pode ter arquivos avulsos — CLAUDE.md escrito à mão, settings parcial, nenhum manifest.</p>
+
+      <div class="card-grid cols2">
+        <div class="card">
+          <h3 style="color:var(--text); margin-bottom:12px;">O que a skill faz</h3>
+          <div class="col gap8">
+            <p>1. Lê todos os arquivos existentes em <code>.claude/</code></p>
+            <p>2. Calcula diff entre o que existe e o que o canônico fornece</p>
+            <p>3. Exibe tabela de 3 colunas antes de qualquer ação</p>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--text); margin-bottom:12px;">As 3 colunas do diff</h3>
+          <div class="col gap8">
+            <div class="output-item"><span class="status-badge status-exists" style="background:#0c2040; color:var(--accent2);">JÁ EXISTE</span><span style="margin-left:8px;">não toca</span></div>
+            <div class="output-item"><span class="status-badge status-novo">NOVO</span><span style="margin-left:8px;">vai instalar do canônico</span></div>
+            <div class="output-item"><span class="status-badge status-skip">SKIP</span><span style="margin-left:8px;">stack não detectada</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0;">
+        <pre>[JÁ EXISTE]  .claude/CLAUDE.md              (preservado — não modificado)
+[JÁ EXISTE]  .claude/settings.json          (preservado — não modificado)
+[NOVO]       .claude/agents/dev/revisor-codigo.md
+[NOVO]       .claude/skills/validar.md
+[NOVO]       .claude/kb/backend/fastapi.md
+[SKIP]       .claude/kb/supabase/            (Supabase não detectado na stack)
+[SKIP]       .claude/skills/langgraph-*.md  (LangGraph não detectado)</pre>
+      </div>
+
+      <div class="alert-card">
+        <span class="alert-icon">!</span>
+        <div>
+          <h4 style="color:var(--yellow); margin-bottom:4px;">Anti-padrao: nunca sobrescrever</h4>
+          <p style="font-size:.88rem;">Arquivo existente = intocável sem confirmação explícita do usuário. Mesmo que o canônico tenha uma versão mais nova.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: Cenário 3 — INCOMPLETO -->
+  <div class="slide">
+    <div class="col w100" style="max-width:880px; gap:18px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <h2>Cenário 3 — <span class="gradient-text">Harness Incompleto</span></h2>
+        <span class="status-badge status-atualizar" style="padding:5px 14px; font-size:.8rem;">INCOMPLETO</span>
+      </div>
+      <p class="muted"><code>harness-manifest.json</code> presente. A skill compara o manifest com o estado atual do canônico.</p>
+
+      <div class="card-grid cols3" style="margin-bottom:4px;">
+        <div class="card">
+          <div class="status-badge status-atualizar" style="margin-bottom:10px;">ATUALIZAR</div>
+          <p style="font-size:.88rem;">Canônico evoluiu desde a última install. Arquivo <strong>não foi customizado</strong> pelo projeto. Seguro atualizar automaticamente.</p>
+        </div>
+        <div class="card">
+          <div class="status-badge status-manter" style="margin-bottom:10px;">MANTER</div>
+          <p style="font-size:.88rem;">Arquivo <strong>customizado pelo projeto</strong> (<code>"customized": true</code> no manifest). Nunca tocar — mesmo que o canônico tenha evoluído.</p>
+        </div>
+        <div class="card">
+          <div class="status-badge status-novo" style="margin-bottom:10px;">NOVO</div>
+          <p style="font-size:.88rem;">Artefato adicionado ao canônico <strong>após a última install</strong>. Não existe no projeto ainda. Será instalado com confirmação.</p>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0;">
+        <pre><span class="cm">// trecho de harness-manifest.json</span>
+{
+  <span class="str">"canonical_path"</span>: <span class="str">"<raiz-do-canonico>"</span>,
+  <span class="str">"installed_at"</span>: <span class="str">"2026-05-10T14:32:00Z"</span>,
+  <span class="str">"artefacts"</span>: [
+    { <span class="str">"path"</span>: <span class="str">".claude/agents/dev/revisor-codigo.md"</span>, <span class="str">"source"</span>: <span class="str">"canonical"</span>, <span class="str">"customized"</span>: <span class="kw">false</span> },
+    { <span class="str">"path"</span>: <span class="str">"CLAUDE.md"</span>,                      <span class="str">"source"</span>: <span class="str">"generated"</span>, <span class="str">"customized"</span>: <span class="kw">true</span>  },
+    { <span class="str">"path"</span>: <span class="str">"CONTEXT.md"</span>,                     <span class="str">"source"</span>: <span class="str">"generated"</span>, <span class="str">"customized"</span>: <span class="kw">true</span>  }
+  ]
+}</pre>
+      </div>
+
+      <div class="highlight">
+        <p><code>"customized": false</code> = canônico pode atualizar. <code>"customized": true</code> = projeto é dono — harness não toca.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: O Install Plan -->
+  <div class="slide">
+    <div class="col w100" style="max-width:880px; gap:20px;">
+      <h2>O <span class="gradient-text">Install Plan</span></h2>
+      <p class="muted">Anatomia do plano exibido antes de qualquer escrita no disco. Revisabilidade antes de execução.</p>
+
+      <div class="card-grid cols2">
+        <div class="col gap12">
+          <div class="card">
+            <h3 style="color:var(--green); margin-bottom:8px;">COPIAR do canônico</h3>
+            <p style="font-size:.88rem;">Artefatos copiados bit a bit do canônico — agents, skills, kb, rules selecionadas pela stack.</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--accent2); margin-bottom:8px;">GERAR (projeto-específico)</h3>
+            <p style="font-size:.88rem;">CLAUDE.md, CONTEXT.md skeleton, harness-manifest.json — gerados com dados reais do projeto (stack, nome, paths).</p>
+          </div>
+        </div>
+        <div class="col gap12">
+          <div class="card">
+            <h3 style="color:var(--text-muted); margin-bottom:8px;">PULAR (stack não detectada)</h3>
+            <p style="font-size:.88rem;">Artefatos de stacks ausentes não são copiados — evita ruído de tecnologias irrelevantes para o projeto.</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--yellow); margin-bottom:8px;">NAO TOCAR (customizado)</h3>
+            <p style="font-size:.88rem;">Arquivos marcados como customizados ou já existentes sem manifest — listados para visibilidade mas intocáveis.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quote-block">
+        "Mostrar o plano antes de agir é a diferença entre uma ferramenta que colabora e uma que surpreende."
+        <div class="author">— princípio de reversibilidade</div>
+      </div>
+
+      <div class="highlight green">
+        <h3 style="color:var(--green); margin-bottom:6px;">Por que confirmar antes de agir</h3>
+        <p>Reversibilidade: o usuário pode ajustar o plano (excluir itens, alterar destinos) antes de qualquer mudança real. Alinha entendimento antes de gerar.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8: O manifest -->
+  <div class="slide">
+    <div class="col w100" style="max-width:880px; gap:20px;">
+      <h2>O <span class="gradient-text">manifest</span></h2>
+      <p class="muted"><code>.claude/harness-manifest.json</code> — memória da instalação. Habilita atualizações seletivas em futuras execuções.</p>
+
+      <div class="card" style="padding:0; margin-bottom:4px;">
+        <pre><span class="cm">// .claude/harness-manifest.json — estrutura completa</span>
+{
+  <span class="str">"version"</span>: <span class="str">"1.0"</span>,
+  <span class="str">"canonical_path"</span>: <span class="str">"<raiz-do-canonico>"</span>,
+  <span class="str">"installed_at"</span>: <span class="str">"2026-06-27T09:00:00Z"</span>,
+  <span class="str">"project_stack"</span>: [<span class="str">"fastapi"</span>, <span class="str">"langgraph"</span>, <span class="str">"postgres"</span>],
+  <span class="str">"artefacts"</span>: [
+    {
+      <span class="str">"path"</span>: <span class="str">".claude/agents/dev/revisor-codigo.md"</span>,
+      <span class="str">"source"</span>: <span class="str">"canonical"</span>,   <span class="cm">// "canonical" | "generated"</span>
+      <span class="str">"canonical_hash"</span>: <span class="str">"a3f9b12c"</span>,
+      <span class="str">"customized"</span>: <span class="kw">false</span>           <span class="cm">// true = projeto editou, nunca tocar</span>
+    },
+    {
+      <span class="str">"path"</span>: <span class="str">"CLAUDE.md"</span>,
+      <span class="str">"source"</span>: <span class="str">"generated"</span>,
+      <span class="str">"customized"</span>: <span class="kw">true</span>
+    }
+  ]
+}</pre>
+      </div>
+
+      <div class="card-grid cols2">
+        <div class="card">
+          <h3 style="color:var(--accent2); margin-bottom:8px;">Quem escreve</h3>
+          <p style="font-size:.88rem;"><strong>/install-harness</strong> — cria na primeira run e atualiza em cada reinstall. Nunca editado manualmente (exceto para marcar <code>customized: true</code>).</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--accent3); margin-bottom:8px;">Quem lê</h3>
+          <p style="font-size:.88rem;"><strong>/install-harness</strong> em futuras atualizações. <strong>/sync-context</strong> para detectar deriva entre projeto e canônico. <strong>revisor-codigo</strong> para verificar integridade.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: Próximos passos -->
+  <div class="slide">
+    <div class="col w100" style="max-width:880px; gap:20px;">
+      <h2>Após a instalação — <span class="gradient-text">próximos passos</span></h2>
+      <p class="muted">A install entrega a estrutura. O conteúdo real vem do diálogo com quem conhece o domínio.</p>
+
+      <div class="pipeline-flow">
+        <span class="step">/install-harness</span>
+        <span class="arrow">→</span>
+        <span class="step">/grill-with-docs</span>
+        <span class="arrow">→</span>
+        <span class="step">/grill-me</span>
+        <span class="arrow">→</span>
+        <span class="step">revisar hooks</span>
+        <span class="arrow">→</span>
+        <span class="step">/validar</span>
+      </div>
+
+      <div class="card-grid cols2 mt8">
+        <div class="step-item">
+          <div class="step-num" style="background:var(--accent2);">1</div>
+          <div class="step-content">
+            <h4>/grill-with-docs</h4>
+            <p>Preenche <code>CONTEXT.md</code> com terminologia real do domínio — lendo docs, código, ADRs do projeto.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num" style="background:var(--accent3);">2</div>
+          <div class="step-content">
+            <h4>/grill-me</h4>
+            <p>Dialoga com o especialista para refinar <code>CLAUDE.md</code> com invariantes reais do negócio.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num" style="background:var(--yellow); color:#000;">3</div>
+          <div class="step-content">
+            <h4>Revisar hooks no settings.json</h4>
+            <p>Confirmar que <code>PostToolUse</code> e gate <code>Stop</code> batem com a stack e os paths reais do projeto.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num" style="background:var(--green); color:#000;">4</div>
+          <div class="step-content">
+            <h4>/validar — gate verde</h4>
+            <p>Ruff + mypy + pytest. O harness só está pronto quando o gate passa na primeira execução.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert-card">
+        <span class="alert-icon">!</span>
+        <div>
+          <h4 style="color:var(--yellow); margin-bottom:4px;">CONTEXT.md vem vazio do install</h4>
+          <p style="font-size:.88rem;">Não invente termos, fluxos ou entidades. O conteúdo correto vem do especialista de domínio via <code>/grill-with-docs</code> + <code>/grill-me</code>. Inventar = ruído que polui toda sessão futura.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10: O ciclo completo -->
+  <div class="slide">
+    <div class="col w100" style="max-width:900px; gap:20px;">
+      <h2>O <span class="gradient-text">ciclo completo</span></h2>
+      <p class="muted">O harness não é instalado uma vez — é um ciclo vivo entre canônico, projeto e produção.</p>
+
+      <div class="pipeline-flow">
+        <span class="step" style="border-color:var(--accent3); color:var(--accent3);">canônico evolui</span>
+        <span class="arrow">→</span>
+        <span class="step">/install-harness propaga</span>
+        <span class="arrow">→</span>
+        <span class="step">projeto customiza</span>
+        <span class="arrow">→</span>
+        <span class="step">agent executa</span>
+        <span class="arrow">→</span>
+        <span class="step">falha real em prod</span>
+        <span class="arrow">→</span>
+        <span class="step" style="border-color:var(--accent3); color:var(--accent3);">vira regra/skill/KB no canônico</span>
+      </div>
+
+      <div class="card" style="padding:0; overflow:hidden; margin-top:4px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Camada</th>
+              <th>Responsável</th>
+              <th>O que mantém</th>
+              <th>O que nunca faz</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Canônico</td>
+              <td>Time de plataforma</td>
+              <td>Framework, skills, KB genéricos, guias</td>
+              <td>Conter terminologia de domínio específico</td>
+            </tr>
+            <tr>
+              <td>Projeto</td>
+              <td>Time de produto</td>
+              <td>CLAUDE.md, CONTEXT.md, invariantes do negócio</td>
+              <td>Reescrever artefatos canônicos à mão</td>
+            </tr>
+            <tr>
+              <td>Agent</td>
+              <td>Claude (runtime)</td>
+              <td>Execução, traces, HANDOFF.md entre sessões</td>
+              <td>Alterar manifest ou customizar sem instrução</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="quote-block">
+        "O harness aperta um dente a cada erro — a falha de hoje é a regra de amanhã."
+        <div class="author">— princípio de melhoria contínua do canônico</div>
+      </div>
+
+      <div class="card-grid cols3" style="margin-top:4px;">
+        <div class="highlight green" style="border-radius:var(--radius);">
+          <h3 style="color:var(--green); margin-bottom:4px; font-size:.95rem;">Canônico</h3>
+          <p style="font-size:.82rem;">framework</p>
+        </div>
+        <div class="highlight" style="border-radius:var(--radius);">
+          <h3 style="color:var(--accent); margin-bottom:4px; font-size:.95rem;">Projeto</h3>
+          <p style="font-size:.82rem;">domínio</p>
+        </div>
+        <div class="highlight cyan" style="border-radius:var(--radius);">
+          <h3 style="color:var(--accent2); margin-bottom:4px; font-size:.95rem;">Agent</h3>
+          <p style="font-size:.82rem;">execução</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <button id="prevBtn" onclick="changeSlide(-1)" disabled>← Prev</button>
+  <span class="slide-counter" id="counter">1 / 10</span>
+  <button id="nextBtn" onclick="changeSlide(1)">Next →</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsContainer = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  let current = 0;
+  const total = slides.length;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsContainer.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsContainer.children[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, total - 1));
+    slides[current].classList.add('active');
+    dotsContainer.children[current].classList.add('active');
+    counter.textContent = (current + 1) + ' / ' + total;
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+
+  function changeSlide(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+  });
+</script>
+</body>
+</html>

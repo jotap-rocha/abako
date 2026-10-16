@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# commit-msg — aviso Conventional Commits (NÃO bloqueante).
+set -euo pipefail
+
+MSG_FILE="${1:-}"
+if [[ -z "$MSG_FILE" || ! -f "$MSG_FILE" ]]; then
+  exit 0
+fi
+
+# Primeira linha não-comentário
+first=$(grep -vE '^#' "$MSG_FILE" | sed '/^[[:space:]]*$/d' | head -n 1 || true)
+if [[ -z "$first" ]]; then
+  exit 0
+fi
+
+# Conventional Commits leve: tipo(escopo opcional)!: resumo  OU  tipo: resumo
+if printf '%s\n' "$first" | grep -Eq '^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)(\([a-z0-9][a-z0-9./_-]*\))?\!?: .+'; then
+  exit 0
+fi
+
+cat >&2 <<EOF
+[git-hygiene] aviso (commit-msg): mensagem não segue Conventional Commits.
+
+  Recebido: ${first}
+  Sugestão: feat(escopo): resumo curto
+            fix(escopo): resumo curto
+            chore(escopo): resumo curto
+
+Commit PERMITIDO (aviso apenas). O ponto de controle formal é o título do PR
+(tipo(escopo): resumo) — ver git-hygiene.yaml e /git-ajuda.
+
+EOF
+exit 0

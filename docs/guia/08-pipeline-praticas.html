@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>08 — Pipeline: Práticas · Agent Harness Method</title>
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--border:#2e3250;--accent:#6366f1;--accent2:#22d3ee;--accent3:#a78bfa;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--text:#e2e8f0;--text-muted:#94a3b8;--radius:12px}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw}
+    .slides{width:100%;height:100%;position:relative}
+    .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;padding:44px 60px;animation:fadeIn .35s ease}
+    .slide.active{display:flex}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:8px 18px;z-index:100}
+    .nav button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:.84rem;font-weight:600;transition:opacity .2s}
+    .nav button:hover{opacity:.85}.nav button:disabled{opacity:.3;cursor:default}
+    .slide-counter{font-size:.84rem;color:var(--text-muted);min-width:70px;text-align:center}
+    .dots{position:fixed;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .2s,transform .2s}
+    .dot.active{background:var(--accent);transform:scale(1.4)}
+    h1{font-size:2.6rem;font-weight:800;line-height:1.15}
+    h2{font-size:1.85rem;font-weight:700;line-height:1.2}
+    h3{font-size:1.1rem;font-weight:600}
+    p,li{font-size:.95rem;line-height:1.7;color:var(--text-muted)}
+    .big{font-size:1.15rem;color:var(--text)}.muted{color:var(--text-muted);font-size:.88rem}
+    .chip{display:inline-block;padding:3px 11px;border-radius:99px;font-size:.73rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .chip-purple{background:#312e81;color:var(--accent3)}.chip-cyan{background:#0c4a6e;color:var(--accent2)}.chip-green{background:#064e3b;color:var(--green)}.chip-yellow{background:#451a03;color:var(--yellow)}.chip-red{background:#450a0a;color:var(--red)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px}
+    .card-grid{display:grid;gap:14px;width:100%}.card-grid.cols2{grid-template-columns:1fr 1fr}.card-grid.cols3{grid-template-columns:1fr 1fr 1fr}.card-grid.cols4{grid-template-columns:1fr 1fr 1fr 1fr}
+    .flow{display:flex;align-items:stretch;gap:0;width:100%}
+    .flow-step{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 12px;display:flex;flex-direction:column;gap:5px}
+    .flow-step+.flow-step{margin-left:-1px;border-radius:0}.flow-step:first-child{border-radius:var(--radius) 0 0 var(--radius)}.flow-step:last-child{border-radius:0 var(--radius) var(--radius) 0}
+    .flow-arrow{display:flex;align-items:center;color:var(--accent);font-size:1.3rem;padding:0 3px;flex-shrink:0}
+    .step-num{font-size:1.6rem;font-weight:800;color:var(--border);line-height:1}.step-title{font-size:.88rem;font-weight:700;color:var(--text)}.step-desc{font-size:.76rem;color:var(--text-muted);line-height:1.5}
+    .highlight{border-left:4px solid var(--accent);background:var(--surface2);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;width:100%}
+    .highlight.green{border-color:var(--green)}.highlight.yellow{border-color:var(--yellow)}.highlight.cyan{border-color:var(--accent2)}.highlight.red{border-color:var(--red)}
+    pre{background:#0d0f16;border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.79rem;color:#c4c9e0;font-family:'Cascadia Code','Fira Code',monospace;overflow-x:auto;line-height:1.6}
+    .kw{color:#c792ea}.str{color:#c3e88d}.cm{color:#546e7a}.fn{color:#82aaff}
+    .tag{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px}
+    .tag .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .gradient-text{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .w100{width:100%}.row{display:flex;gap:14px;align-items:flex-start;width:100%}.col{display:flex;flex-direction:column;gap:10px}
+    .flex1{flex:1}.center{text-align:center}
+    .mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}.gap8{gap:8px}.gap12{gap:12px}
+    table{border-collapse:collapse;width:100%;font-size:.85rem}
+    th{text-align:left;padding:7px 13px;background:var(--surface2);color:var(--text-muted);font-weight:600;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase}
+    td{padding:9px 13px;border-top:1px solid var(--border);color:var(--text-muted)}
+    td:first-child{color:var(--text);font-weight:500}
+    code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:.80em;font-family:'Cascadia Code',monospace;color:var(--accent2)}
+    .file-nav{position:fixed;top:48px;right:22px;display:flex;flex-direction:column;gap:4px;z-index:99}
+    .file-nav a{font-size:.70rem;color:var(--text-muted);text-decoration:none;padding:3px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--border)}
+    .file-nav a:hover{color:var(--accent2);border-color:var(--accent)}.file-nav a.current{color:var(--accent);border-color:var(--accent)}
+  </style>
+</head>
+<body>
+<div class="dots" id="dots"></div>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html" class="current">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+</div>
+
+<div class="slides">
+
+  <!-- SLIDE 1 — Capa -->
+  <div class="slide active" id="s1">
+    <div class="col" style="align-items:center;gap:22px;text-align:center;max-width:820px">
+      <span class="chip chip-green">Agent Harness Method · 08/09</span>
+      <h1 class="gradient-text">Implementando Pipelines:<br>SOLID, Config e Deploy</h1>
+      <p class="big">Código que porta, muda de ambiente e vai a produção com zero surpresa.</p>
+      <div class="row" style="justify-content:center;gap:12px;flex-wrap:wrap">
+        <span class="tag"><span class="dot" style="background:var(--accent)"></span>SOLID aplicado a pipelines</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2)"></span>PipelineConfig — 1 env var troca tudo</span>
+        <span class="tag"><span class="dot" style="background:var(--green)"></span>DABs + Airflow + Unity Catalog</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — SOLID para pipelines -->
+  <div class="slide" id="s2">
+    <div class="col" style="gap:14px;max-width:940px;width:100%">
+      <span class="chip chip-purple">SOLID</span>
+      <h2>SOLID aplicado — cada princípio com código</h2>
+      <div class="card-grid" style="grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px">
+        <div class="card" style="border-color:var(--accent);padding:12px 14px">
+          <h3 style="color:var(--accent);font-size:1.4rem;margin-bottom:6px">S</h3>
+          <p style="font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:6px">Single Responsibility</p>
+          <pre style="font-size:.70rem;padding:8px 10px"><span class="fn">BronzeIngestor</span>
+<span class="cm">  # só ingere</span>
+
+<span class="fn">SilverTransformer</span>
+<span class="cm">  # só transforma</span>
+
+<span class="fn">GoldAggregator</span>
+<span class="cm">  # só agrega</span></pre>
+        </div>
+        <div class="card" style="border-color:var(--accent2);padding:12px 14px">
+          <h3 style="color:var(--accent2);font-size:1.4rem;margin-bottom:6px">O</h3>
+          <p style="font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:6px">Open/Closed</p>
+          <pre style="font-size:.70rem;padding:8px 10px"><span class="kw">class</span> <span class="fn">BaseTransform</span>(<span class="fn">ABC</span>):
+  <span class="kw">@abstractmethod</span>
+  <span class="kw">def</span> <span class="fn">transform</span>(
+    <span class="kw">self</span>, df
+  ) -> <span class="fn">DataFrame</span>: ...</pre>
+        </div>
+        <div class="card" style="border-color:var(--green);padding:12px 14px">
+          <h3 style="color:var(--green);font-size:1.4rem;margin-bottom:6px">L</h3>
+          <p style="font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:6px">Liskov Substitution</p>
+          <pre style="font-size:.70rem;padding:8px 10px"><span class="kw">def</span> <span class="fn">run_silver_layer</span>(
+  transform: <span class="fn">BaseTransform</span>,
+  df: <span class="fn">DataFrame</span>
+):
+  <span class="cm"># aceita qualquer</span>
+  <span class="cm"># subclasse</span>
+  <span class="kw">return</span> transform.<span class="fn">transform</span>(df)</pre>
+        </div>
+        <div class="card" style="border-color:var(--yellow);padding:12px 14px">
+          <h3 style="color:var(--yellow);font-size:1.4rem;margin-bottom:6px">I</h3>
+          <p style="font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:6px">Interface Segregation</p>
+          <pre style="font-size:.70rem;padding:8px 10px"><span class="kw">class</span> <span class="fn">Readable</span>(<span class="fn">Protocol</span>):
+  <span class="kw">def</span> <span class="fn">read</span>(<span class="kw">self</span>): ...
+
+<span class="kw">class</span> <span class="fn">Writable</span>(<span class="fn">Protocol</span>):
+  <span class="kw">def</span> <span class="fn">write</span>(<span class="kw">self</span>, df): ...</pre>
+        </div>
+        <div class="card" style="border-color:var(--accent3);padding:12px 14px">
+          <h3 style="color:var(--accent3);font-size:1.4rem;margin-bottom:6px">D</h3>
+          <p style="font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:6px">Dependency Inversion</p>
+          <pre style="font-size:.70rem;padding:8px 10px"><span class="fn">Pipeline</span>(
+  reader,
+  transform,
+  writer,
+  config
+)
+<span class="cm"># depende de</span>
+<span class="cm"># abstrações</span></pre>
+        </div>
+      </div>
+      <div class="highlight cyan">
+        <p><strong style="color:var(--accent2)">Benefício central:</strong> Com SOLID, trocar o leitor (S3 → GCS), a camada (Bronze → Silver) ou o ambiente (local → Databricks) não exige reescrever lógica de negócio. Cada peça tem uma razão para mudar.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — Configuração centralizada -->
+  <div class="slide" id="s3">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-cyan">Config</span>
+      <h2>Zero hardcode — 1 variável de ambiente troca tudo</h2>
+      <div class="card" style="border-color:var(--accent2);margin-bottom:4px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <code>PIPELINE_ENV=local</code>
+            <span style="color:var(--text-muted);font-size:.82rem">→</span>
+            <code>config/environments/local.yaml</code>
+            <span class="muted" style="font-size:.76rem">(Spark local, sem notificações)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <code>PIPELINE_ENV=dev</code>
+            <span style="color:var(--text-muted);font-size:.82rem">→</span>
+            <code>config/environments/dev.yaml</code>
+            <span class="muted" style="font-size:.76rem">(Databricks DEV, notif ligadas)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <code>PIPELINE_ENV=prd</code>
+            <span style="color:var(--text-muted);font-size:.82rem">→</span>
+            <code>config/environments/prd.yaml</code>
+            <span class="muted" style="font-size:.76rem">(Databricks PRD, threshold restrito)</span>
+          </div>
+        </div>
+      </div>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <pre><span class="cm"># Uso no código — sempre igual</span>
+config = <span class="fn">PipelineConfig</span>.<span class="fn">from_env</span>()
+
+<span class="cm"># Resolve tabela pelo ambiente</span>
+table = config.<span class="fn">bronze_table</span>(<span class="str">"orders"</span>)
+<span class="cm"># dev  → dev_catalog.bronze.orders</span>
+<span class="cm"># prd  → prd_catalog.bronze.orders</span>
+<span class="cm"># local → orders</span>
+
+path = config.<span class="fn">raw_path</span>(<span class="str">"orders/"</span>)
+<span class="cm"># dev  → /Volumes/dev_catalog/.../</span>
+<span class="cm"># local → data/raw/orders/</span></pre>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">O que PipelineConfig resolve</h3>
+            <table style="font-size:.78rem">
+              <thead><tr><th>Parâmetro</th><th>local</th><th>prd</th></tr></thead>
+              <tbody>
+                <tr><td>spark_master</td><td><code>local[*]</code></td><td>cluster Databricks</td></tr>
+                <tr><td>catalog</td><td>— (path)</td><td><code>prd_catalog</code></td></tr>
+                <tr><td>notifications</td><td>disabled</td><td>enabled</td></tr>
+                <tr><td>quarantine_threshold</td><td>5%</td><td>1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="highlight green">
+            <p><strong style="color:var(--green)">Zero condicional no pipeline:</strong> nunca <code>if env == 'local'</code> no código de transformação. Toda variação fica no config.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — Portabilidade real -->
+  <div class="slide" id="s4">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-green">Portabilidade</span>
+      <h2>O mesmo pipeline, ambientes diferentes</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <div class="card" style="border-color:var(--yellow)">
+            <h3 style="color:var(--yellow);margin-bottom:8px">local.yaml — desenvolvimento</h3>
+            <pre style="font-size:.76rem">config = <span class="fn">PipelineConfig</span>.<span class="fn">from_env</span>()
+<span class="cm"># PIPELINE_ENV=local</span>
+
+path = config.<span class="fn">raw_path</span>(<span class="str">"orders/"</span>)
+<span class="cm"># → "data/raw/orders/"</span>
+
+table = config.<span class="fn">bronze_table</span>(<span class="str">"orders"</span>)
+<span class="cm"># → "orders"  (sem catalog)</span></pre>
+          </div>
+          <div class="card" style="border-color:var(--accent2)">
+            <h3 style="color:var(--accent2);margin-bottom:8px">dev.yaml — Unity Catalog</h3>
+            <pre style="font-size:.76rem">config = <span class="fn">PipelineConfig</span>.<span class="fn">from_env</span>()
+<span class="cm"># PIPELINE_ENV=dev</span>
+
+path = config.<span class="fn">raw_path</span>(<span class="str">"orders/"</span>)
+<span class="cm"># → "/Volumes/dev_catalog/raw/..."</span>
+
+table = config.<span class="fn">bronze_table</span>(<span class="str">"orders"</span>)
+<span class="cm"># → "dev_catalog.bronze.orders"</span></pre>
+          </div>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="highlight">
+            <p><strong style="color:var(--accent)">Mesmo código, saída diferente.</strong> O pipeline não sabe em que ambiente roda — só a config sabe. Isso garante que o comportamento em dev é idêntico ao de prd.</p>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:8px">Estrutura de config</h3>
+            <pre style="font-size:.76rem">config/
+├── environments/
+│   ├── local.yaml
+│   ├── dev.yaml
+│   └── prd.yaml
+└── pipeline_config.py
+    <span class="cm"># PipelineConfig dataclass</span>
+    <span class="cm"># from_env() classmethod</span>
+    <span class="cm"># bronze_table(), raw_path()...</span></pre>
+          </div>
+          <div class="card" style="border-color:var(--red)">
+            <h3 style="color:var(--red);margin-bottom:6px">Nunca hardcode</h3>
+            <p class="muted" style="font-size:.80rem">Qualquer string de path, catalog, cluster, threshold ou URL que muda por ambiente deve estar no YAML — nunca no código Python.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — PySpark local -->
+  <div class="slide" id="s5">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-yellow">Local dev</span>
+      <h2>Desenvolvimento local com PySpark</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">SparkSession local</h3>
+            <pre><span class="fn">spark</span> = <span class="fn">SparkSession</span>.<span class="fn">builder</span> \
+    .<span class="fn">master</span>(config.spark_master)
+    <span class="cm"># "local[*]"</span>
+    .<span class="fn">appName</span>(config.spark_app_name) \
+    .<span class="fn">config</span>(
+        <span class="str">"spark.sql.extensions"</span>,
+        <span class="str">"io.delta.sql.DeltaSparkSessionExtension"</span>
+    ) \
+    .<span class="fn">getOrCreate</span>()</pre>
+          </div>
+          <div class="highlight yellow">
+            <p><strong style="color:var(--yellow)">Limitação local:</strong> sem Unity Catalog. Use path-based writes. Use <code>config.is_local()</code> para branching quando absolutamente necessário.</p>
+          </div>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">Estrutura de projeto local</h3>
+            <pre style="font-size:.76rem">src/pipeline/
+├── orders/
+│   ├── bronze_ingestor.py
+│   ├── silver_transformer.py
+│   └── run.py
+└── shared/
+    ├── base_transform.py
+    ├── quarantine.py
+    ├── notifications.py
+    └── config/
+        └── pipeline_config.py
+
+config/environments/
+├── local.yaml
+├── dev.yaml
+└── prd.yaml
+
+tests/
+├── test_bronze_ingestor.py
+└── test_silver_transformer.py</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — Databricks Unity Catalog -->
+  <div class="slide" id="s6">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-cyan">Unity Catalog</span>
+      <h2>Unity Catalog — o catálogo que governa tudo</h2>
+      <div class="card" style="border-color:var(--accent2);margin-bottom:4px">
+        <p style="font-size:.90rem;font-weight:600;color:var(--text)">Namespace 3 níveis: <code>{catalog}.{schema}.{table}</code> = <code>dev_catalog.bronze.orders</code></p>
+      </div>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <table>
+            <thead><tr><th></th><th>DEV Workspace</th><th>PRD Workspace</th></tr></thead>
+            <tbody>
+              <tr><td>Catalog</td><td><code>dev_catalog</code></td><td><code>prd_catalog</code></td></tr>
+              <tr><td>Policies</td><td style="color:var(--yellow)">Mais permissivo</td><td style="color:var(--red)">Restritivo</td></tr>
+              <tr><td>Lineage</td><td style="color:var(--green)">Automático UC</td><td style="color:var(--green)">Automático UC</td></tr>
+              <tr><td>Access</td><td>Devs + CI/CD</td><td>Apenas CI/CD</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="highlight red">
+            <p><strong style="color:var(--red)">Regra inviolável:</strong> NUNCA execute código diretamente no workspace de PRD. Todo deploy via CI/CD (DABs). Acesso humano direto ao PRD = risco de incidente.</p>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:8px">Benefícios do Unity Catalog</h3>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+              <li><p class="muted" style="font-size:.80rem">Lineagem automática entre tabelas e jobs</p></li>
+              <li><p class="muted" style="font-size:.80rem">Column-level access control nativo</p></li>
+              <li><p class="muted" style="font-size:.80rem">Data masking por coluna (PII)</p></li>
+              <li><p class="muted" style="font-size:.80rem">Auditoria completa de acesso</p></li>
+              <li><p class="muted" style="font-size:.80rem">Tags para governança e busca</p></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — Databricks Extension -->
+  <div class="slide" id="s7">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-purple">Dev experience</span>
+      <h2>VS Code Extension — desenvolvimento local, execução remota</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <div class="flow" style="flex-direction:column;gap:0">
+            <div class="flow-step" style="border-radius:var(--radius) var(--radius) 0 0">
+              <div class="step-num">1</div>
+              <div class="step-title">Instale a extensão "Databricks"</div>
+              <div class="step-desc">VS Code Marketplace — extensão oficial</div>
+            </div>
+            <div class="flow-step" style="border-radius:0;border-top:none">
+              <div class="step-num">2</div>
+              <div class="step-title">Configure o workspace</div>
+              <div class="step-desc">host URL + autenticação (PAT ou OAuth)</div>
+            </div>
+            <div class="flow-step" style="border-radius:0;border-top:none">
+              <div class="step-num">3</div>
+              <div class="step-title">Selecione o cluster de DEV</div>
+              <div class="step-desc">Ou crie um cluster interativo</div>
+            </div>
+            <div class="flow-step" style="border-radius:0;border-top:none">
+              <div class="step-num">4</div>
+              <div class="step-title">Crie .databricks/.databricks.yml</div>
+              <div class="step-desc">host + cluster_id</div>
+            </div>
+            <div class="flow-step" style="border-radius:0;border-top:none">
+              <div class="step-num">5</div>
+              <div class="step-title">Sync automático</div>
+              <div class="step-desc">Salvar = sync para /Repos/{user}/{project}/</div>
+            </div>
+            <div class="flow-step" style="border-radius:0 0 var(--radius) var(--radius);border-top:none">
+              <div class="step-num">6</div>
+              <div class="step-title">Develop local → run on cluster → debug</div>
+              <div class="step-desc">Sem friction entre local e remoto</div>
+            </div>
+          </div>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">Configuração .databricks.yml</h3>
+            <pre><span class="str">workspace</span>:
+  <span class="str">host</span>: <span class="str">https://adb-xxx.azuredatabricks.net</span>
+<span class="str">cluster_id</span>: <span class="str">0101-xxxxxxxx</span></pre>
+          </div>
+          <div class="highlight red">
+            <p><strong style="color:var(--red)">Nunca sincronize manualmente para PRD.</strong> A extensão só deve apontar para workspace de DEV. Para PRD use sempre DABs via CI/CD.</p>
+          </div>
+          <div class="card" style="border-color:var(--green)">
+            <h3 style="color:var(--green);margin-bottom:6px">Fluxo recomendado</h3>
+            <p class="muted" style="font-size:.80rem">Local edição → auto-sync DEV workspace → teste no cluster → pipeline verde → PR → CI/CD → deploy PRD via DABs</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8 — DABs -->
+  <div class="slide" id="s8">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-cyan">CI/CD</span>
+      <h2>Databricks Asset Bundles — infra como código</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <pre style="font-size:.74rem"><span class="str">bundle</span>:
+  <span class="str">name</span>: <span class="str">orders-pipeline</span>
+
+<span class="str">targets</span>:
+  <span class="str">dev</span>:
+    <span class="str">workspace</span>:
+      <span class="str">host</span>: <span class="str">${var.dev_workspace_url}</span>
+    <span class="str">variables</span>:
+      <span class="str">catalog</span>: <span class="str">dev_catalog</span>
+  <span class="str">prd</span>:
+    <span class="str">workspace</span>:
+      <span class="str">host</span>: <span class="str">${var.prd_workspace_url}</span>
+    <span class="str">variables</span>:
+      <span class="str">catalog</span>: <span class="str">prd_catalog</span>
+
+<span class="str">resources</span>:
+  <span class="str">jobs</span>:
+    <span class="str">orders_pipeline</span>:
+      <span class="str">name</span>: <span class="str">orders_pipeline_${bundle.target}</span>
+      <span class="str">tasks</span>:
+        - <span class="str">task_key</span>: <span class="str">bronze</span>
+          <span class="str">python_wheel_task</span>:
+            <span class="str">package_name</span>: <span class="str">orders_pipeline</span>
+            <span class="str">entry_point</span>: <span class="str">run_bronze</span></pre>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card">
+            <h3 style="margin-bottom:8px">Comandos de deploy</h3>
+            <pre style="font-size:.76rem"><span class="cm"># Validar antes de deployar</span>
+databricks bundle validate
+
+<span class="cm"># Deploy para DEV</span>
+databricks bundle deploy <span class="kw">--target</span> dev
+
+<span class="cm"># Deploy para PRD (apenas CI/CD)</span>
+databricks bundle deploy <span class="kw">--target</span> prd
+
+<span class="cm"># Rodar job imediatamente</span>
+databricks bundle run <span class="kw">--target</span> dev \
+  orders_pipeline</pre>
+          </div>
+          <div class="highlight green">
+            <p><strong style="color:var(--green)">CI/CD:</strong> GitHub Actions faz o deploy no merge para main. Nenhum humano precisa rodar o deploy manualmente em PRD.</p>
+          </div>
+          <div class="card" style="border-color:var(--accent)">
+            <h3 style="color:var(--accent);margin-bottom:6px">O que o bundle define</h3>
+            <p class="muted" style="font-size:.80rem">Jobs, clusters, notebooks, DLT pipelines, permissões, schemas, secrets — tudo versionado em YAML.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9 — Airflow -->
+  <div class="slide" id="s9">
+    <div class="col" style="gap:14px;max-width:900px;width:100%">
+      <span class="chip chip-yellow">On-premises</span>
+      <h2>Airflow — obrigatório em on-premises</h2>
+      <div class="row gap12">
+        <div class="col flex1" style="gap:10px">
+          <div class="highlight red" style="margin-bottom:4px">
+            <p><strong style="color:var(--red)">Regra:</strong> em ambientes on-premises, <strong>Airflow é obrigatório</strong> para scheduling. Nenhum cron job manual. Sem Airflow = sem governança de execução.</p>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:8px">Medallion DAG</h3>
+            <pre style="font-size:.74rem"><span class="kw">with</span> <span class="fn">DAG</span>(
+    <span class="str">"orders_pipeline"</span>,
+    schedule=<span class="str">"@daily"</span>,
+    default_args={<span class="str">"retries"</span>: 2}
+) <span class="kw">as</span> dag:
+
+    bronze = <span class="fn">PythonOperator</span>(
+        task_id=<span class="str">"bronze"</span>,
+        python_callable=<span class="fn">run_bronze</span>,
+        op_kwargs={
+          <span class="str">"config"</span>: <span class="fn">PipelineConfig</span>.<span class="fn">from_env</span>()
+        }
+    )
+    silver = <span class="fn">PythonOperator</span>(
+        task_id=<span class="str">"silver"</span>, ...)
+    gold = <span class="fn">PythonOperator</span>(
+        task_id=<span class="str">"gold"</span>, ...)
+
+    bronze >> silver >> gold</pre>
+          </div>
+        </div>
+        <div class="col flex1" style="gap:10px">
+          <div class="card" style="border-color:var(--accent2)">
+            <h3 style="color:var(--accent2);margin-bottom:8px">PipelineConfig via op_kwargs</h3>
+            <p class="muted" style="font-size:.82rem">Injete <code>PipelineConfig.from_env()</code> via <code>op_kwargs</code> — nunca como variável global do DAG. Isso permite que workers Airflow rodem com diferentes <code>PIPELINE_ENV</code> sem interferência.</p>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:8px">Boas práticas no DAG</h3>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:7px">
+              <li><p class="muted" style="font-size:.80rem">retries: 2 por task (mínimo em produção)</p></li>
+              <li><p class="muted" style="font-size:.80rem">retry_delay: 5 minutos entre tentativas</p></li>
+              <li><p class="muted" style="font-size:.80rem">on_failure_callback: notificação no Slack</p></li>
+              <li><p class="muted" style="font-size:.80rem">execution_timeout: defina sempre — evita tasks zumbi</p></li>
+              <li><p class="muted" style="font-size:.80rem">catchup=False: não reprocessar histórico por padrão</p></li>
+            </ul>
+          </div>
+          <div class="highlight">
+            <p><strong style="color:var(--accent)">dag_id único e descritivo:</strong> use <code>{fonte}_{pipeline}_{frequência}</code>. Ex: <code>erp_orders_daily</code></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 — Harness de pipeline -->
+  <div class="slide" id="s10">
+    <div class="col" style="gap:14px;max-width:940px;width:100%">
+      <span class="chip chip-purple">Harness</span>
+      <h2>O ecossistema harness para projetos de pipeline</h2>
+      <p class="muted">O que <code>/harness-architect</code> gera automaticamente para um projeto de pipeline:</p>
+      <div class="card-grid cols2" style="gap:12px;margin-top:4px">
+        <div class="card" style="border-color:var(--accent)">
+          <h3 style="color:var(--accent);margin-bottom:10px">Agentes gerados</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px">
+            <li>
+              <p style="font-size:.82rem;font-weight:600;color:var(--text)">pipeline-architect</p>
+              <p class="muted" style="font-size:.76rem">Design Medallion, decisões de camada, particionamento</p>
+            </li>
+            <li>
+              <p style="font-size:.82rem;font-weight:600;color:var(--text)">schema-guardian</p>
+              <p class="muted" style="font-size:.76rem">Decisões de schema evolution — merge vs quarantine vs fail</p>
+            </li>
+          </ul>
+        </div>
+        <div class="card" style="border-color:var(--yellow)">
+          <h3 style="color:var(--yellow);margin-bottom:10px">Rules geradas</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:7px">
+            <li><p class="muted" style="font-size:.78rem"><code>rules/pipeline.md</code> — invariantes Medallion, SOLID, raw imutável</p></li>
+            <li><p class="muted" style="font-size:.78rem"><code>rules/schema-evolution.md</code> — quarantine first, ADR obrigatório</p></li>
+            <li><p class="muted" style="font-size:.78rem"><code>rules/observability.md</code> — structured log obrigatório, PII nunca em logs</p></li>
+          </ul>
+        </div>
+        <div class="card" style="border-color:var(--accent2)">
+          <h3 style="color:var(--accent2);margin-bottom:10px">KBs gerados</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <code>medallion</code><code>contracts</code><code>lineage</code><code>quarantine</code><code>observability</code><code>SOLID</code><code>config</code><code>notification</code><code>quality</code>
+          </div>
+        </div>
+        <div class="card" style="border-color:var(--green)">
+          <h3 style="color:var(--green);margin-bottom:10px">Skills + Config</h3>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+            <li><p class="muted" style="font-size:.78rem"><code>create-pipeline</code> — cria pipeline SOLID+Medallion do zero</p></li>
+            <li><p class="muted" style="font-size:.78rem"><code>schema-evolution-check</code> — detecta schema mismatch</p></li>
+            <li><p class="muted" style="font-size:.78rem"><code>config/environments/{local,dev,prd}.yaml</code></p></li>
+            <li><p class="muted" style="font-size:.78rem"><code>config/pipeline_config.py</code> com PipelineConfig</p></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11 — Checklist -->
+  <div class="slide" id="s11">
+    <div class="col" style="gap:14px;max-width:940px;width:100%">
+      <span class="chip chip-green">Checklist</span>
+      <h2>Antes de ir a produção — 12 itens</h2>
+      <div class="card-grid cols2" style="gap:10px">
+        <div class="col" style="gap:7px">
+          <div class="card" style="padding:10px 14px;border-color:var(--green)">
+            <p style="font-size:.82rem"><span style="color:var(--green)">✅</span> Configuração externalizada (zero hardcode no código Python)</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--green)">
+            <p style="font-size:.82rem"><span style="color:var(--green)">✅</span> Lineage columns em todas as camadas (Bronze, Silver, Gold)</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--green)">
+            <p style="font-size:.82rem"><span style="color:var(--green)">✅</span> Raw imutável — nunca sobrescrito nem deletado</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--green)">
+            <p style="font-size:.82rem"><span style="color:var(--green)">✅</span> Quarantine table criada e testada com dados reais</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--green)">
+            <p style="font-size:.82rem"><span style="color:var(--green)">✅</span> Contract YAML versionado e validado no pipeline</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--green)">
+            <p style="font-size:.82rem"><span style="color:var(--green)">✅</span> Schema evolution strategy configurada por ambiente</p>
+          </div>
+        </div>
+        <div class="col" style="gap:7px">
+          <div class="card" style="padding:10px 14px;border-color:var(--accent2)">
+            <p style="font-size:.82rem"><span style="color:var(--accent2)">✅</span> Structured logging com todos os campos obrigatórios</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--accent2)">
+            <p style="font-size:.82rem"><span style="color:var(--accent2)">✅</span> Nenhum PII em logs — auditado e confirmado</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--accent2)">
+            <p style="font-size:.82rem"><span style="color:var(--accent2)">✅</span> Alertas de quarantine rate configurados e testados</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--yellow)">
+            <p style="font-size:.82rem"><span style="color:var(--yellow)">✅</span> Airflow DAG (on-prem) ou Databricks Job (cloud) configurado</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--yellow)">
+            <p style="font-size:.82rem"><span style="color:var(--yellow)">✅</span> DABs bundle.yml com targets dev e prd separados</p>
+          </div>
+          <div class="card" style="padding:10px 14px;border-color:var(--yellow)">
+            <p style="font-size:.82rem"><span style="color:var(--yellow)">✅</span> Testes unitários para cada transformer (pytest + local Spark)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 11</span>
+  <button id="next" onclick="go(1)">Próximo →</button>
+</div>
+
+<script>
+const total = 11;
+let cur = 1;
+const dotsEl = document.getElementById('dots');
+for (let i = 1; i <= total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => show(i);
+  dotsEl.appendChild(d);
+}
+function show(n) {
+  document.getElementById('s' + cur).classList.remove('active');
+  dotsEl.children[cur - 1].classList.remove('active');
+  cur = n;
+  document.getElementById('s' + cur).classList.add('active');
+  dotsEl.children[cur - 1].classList.add('active');
+  document.getElementById('counter').textContent = cur + ' / ' + total;
+  document.getElementById('prev').disabled = cur === 1;
+  document.getElementById('next').disabled = cur === total;
+}
+function go(d) { if (cur + d >= 1 && cur + d <= total) show(cur + d); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+});
+</script>
+</body>
+</html>

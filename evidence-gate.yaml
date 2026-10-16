@@ -1,0 +1,47 @@
+# evidence-gate.yaml — Fonte única do kernel de evidências de aceite (por task)
+#
+# Schema mínimo:
+#   version: int (>= 1)
+#   limits:
+#     max_log_bytes: int (2 MiB = 2097152)
+#     collect_time_factor: int (alvo ≤ N× comando; NÃO é hard kill)
+#     fail_on_exceed: bool (true = collect falha se log > cap; sem truncate)
+#     hard_timeout_seconds: AUSENTE ou null (G1 — proibido valor positivo)
+#   manifest:
+#     required_fields: [task_id, criteria, ...]
+#     criterion_required: [id, command, ...]
+#   check:
+#     require_exit_zero / require_log_exists / require_test_path_or_waiver /
+#     require_evidencias_ref: bool
+#   paths:
+#     tasks_dir / logs_dir / audit_file — nomes relativos sob evidencias/
+#
+# Ortogonal a agent-policies (Bash deny) e a /validar (suite global).
+# Honesty §1.3: gate local ≠ impossibilidade de manifesto forjado.
+
+version: 1
+
+limits:
+  max_log_bytes: 2097152
+  collect_time_factor: 2
+  fail_on_exceed: true
+  # hard_timeout_seconds: omitido de propósito (G1)
+
+manifest:
+  required_fields:
+    - task_id
+    - criteria
+  criterion_required:
+    - id
+    - command
+
+check:
+  require_exit_zero: true
+  require_log_exists: true
+  require_test_path_or_waiver: true
+  require_evidencias_ref: true
+
+paths:
+  tasks_dir: tasks
+  logs_dir: logs
+  audit_file: audit.jsonl

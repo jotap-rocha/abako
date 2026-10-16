@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>06 — Segurança da Informação · Agent Harness Method</title>
+  <style>
+    :root { --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--border:#2e3250;--accent:#6366f1;--accent2:#22d3ee;--accent3:#a78bfa;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--text:#e2e8f0;--text-muted:#94a3b8;--radius:12px; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw}
+    .slides{width:100%;height:100%;position:relative}
+    .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;padding:48px 64px;animation:fadeIn .35s ease}
+    .slide.active{display:flex}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .nav{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:10px 20px;z-index:100}
+    .nav button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:.85rem;font-weight:600;transition:opacity .2s}
+    .nav button:hover{opacity:.85}.nav button:disabled{opacity:.3;cursor:default}
+    .slide-counter{font-size:.85rem;color:var(--text-muted);min-width:70px;text-align:center}
+    .dots{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .2s,transform .2s}
+    .dot.active{background:var(--accent);transform:scale(1.4)}
+    h1{font-size:2.8rem;font-weight:800;line-height:1.15}
+    h2{font-size:2rem;font-weight:700;line-height:1.2}
+    h3{font-size:1.15rem;font-weight:600}
+    p,li{font-size:1rem;line-height:1.7;color:var(--text-muted)}
+    .big{font-size:1.2rem;color:var(--text)}.muted{color:var(--text-muted);font-size:.9rem}
+    .chip{display:inline-block;padding:4px 12px;border-radius:99px;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .chip-purple{background:#312e81;color:var(--accent3)}.chip-cyan{background:#0c4a6e;color:var(--accent2)}.chip-green{background:#064e3b;color:var(--green)}.chip-yellow{background:#451a03;color:var(--yellow)}.chip-red{background:#450a0a;color:var(--red)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px}
+    .card-grid{display:grid;gap:16px;width:100%}.card-grid.cols2{grid-template-columns:1fr 1fr}.card-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+    .flow{display:flex;align-items:stretch;gap:0;width:100%;margin-top:8px}
+    .flow-step{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 14px;position:relative;display:flex;flex-direction:column;gap:6px}
+    .flow-step+.flow-step{margin-left:-1px;border-radius:0}.flow-step:first-child{border-radius:var(--radius) 0 0 var(--radius)}.flow-step:last-child{border-radius:0 var(--radius) var(--radius) 0}
+    .flow-arrow{display:flex;align-items:center;color:var(--accent);font-size:1.4rem;padding:0 4px;flex-shrink:0}
+    .step-num{font-size:1.8rem;font-weight:800;color:var(--border);line-height:1}.step-title{font-size:.9rem;font-weight:700;color:var(--text)}.step-desc{font-size:.78rem;color:var(--text-muted);line-height:1.5}
+    .highlight{border-left:4px solid var(--accent);background:var(--surface2);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;width:100%}
+    .highlight.green{border-color:var(--green)}.highlight.yellow{border-color:var(--yellow)}.highlight.cyan{border-color:var(--accent2)}.highlight.red{border-color:var(--red)}
+    pre{background:#0d0f16;border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-size:.82rem;color:#c4c9e0;font-family:'Cascadia Code','Fira Code',monospace;overflow-x:auto;line-height:1.6}
+    .kw{color:#c792ea}.str{color:#c3e88d}.cm{color:#546e7a}.fn{color:#82aaff}
+    .tag{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 10px}
+    .tag .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .gradient-text{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .w100{width:100%}.row{display:flex;gap:16px;align-items:flex-start;width:100%}.col{display:flex;flex-direction:column;gap:12px}
+    .flex1{flex:1}.center{text-align:center}
+    .mt4{margin-top:4px}.mt8{margin-top:8px}.mt16{margin-top:16px}.mt24{margin-top:24px}.gap8{gap:8px}.gap16{gap:16px}
+    table{border-collapse:collapse;width:100%;font-size:.88rem}
+    th{text-align:left;padding:8px 14px;background:var(--surface2);color:var(--text-muted);font-weight:600;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase}
+    td{padding:10px 14px;border-top:1px solid var(--border);color:var(--text-muted)}
+    td:first-child{color:var(--text);font-weight:500}
+    code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:.82em;font-family:'Cascadia Code',monospace;color:var(--accent2)}
+    .file-nav{position:fixed;top:52px;right:24px;display:flex;flex-direction:column;gap:4px;z-index:99}
+    .file-nav a{font-size:.72rem;color:var(--text-muted);text-decoration:none;padding:3px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--border)}
+    .file-nav a:hover{color:var(--accent2);border-color:var(--accent)}.file-nav a.current{color:var(--accent);border-color:var(--accent)}
+    .incident{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px}
+    .incident-icon{font-size:1.3rem;flex-shrink:0;margin-top:2px}
+    .incident-text{font-size:.83rem;color:var(--text-muted);line-height:1.5}
+    .checklist-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+    .checklist-item:last-child{border-bottom:none}
+    .check-badge{min-width:22px;height:22px;border-radius:4px;background:#064e3b;border:1px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;margin-top:2px;color:var(--green)}
+    .check-text{font-size:.83rem;color:var(--text-muted);line-height:1.5}
+    .level-card{border-radius:10px;padding:12px 16px;border:1px solid var(--border);background:var(--surface)}
+    .level-badge{font-size:.7rem;font-weight:800;padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.06em}
+  </style>
+</head>
+<body>
+
+<div id="dots" class="dots"></div>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html" class="current">06 Seguranca</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+</div>
+
+<div class="slides">
+
+  <!-- SLIDE 1 — CAPA -->
+  <div class="slide active" id="s1">
+    <div class="col" style="max-width:760px;gap:20px;align-items:center;text-align:center">
+      <span class="chip chip-red">Agent Harness Method &middot; 06/09</span>
+      <h1 class="gradient-text">Seguranca da Informacao<br>desde o clone zero</h1>
+      <p class="big">LLM como agente tem acesso a ferramentas reais.<br>Sem guardrails, o risco e real.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <span class="tag"><span class="dot" style="background:var(--red)"></span>Deny list no settings.json</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow)"></span>LGPD desde a fase 0</span>
+        <span class="tag"><span class="dot" style="background:var(--green)"></span>SI Assessment no /novo-projeto</span>
+        <span class="tag"><span class="dot" style="background:var(--accent)"></span>Dupla camada client + database</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — POR QUE SI DESDE O DIA 1 -->
+  <div class="slide" id="s2">
+    <div class="col" style="max-width:840px;gap:16px;width:100%">
+      <span class="chip chip-red">Por que desde o dia 1</span>
+      <h2>O risco real de um agente sem guardrails</h2>
+      <div class="col gap8">
+        <div class="incident">
+          <span class="incident-icon">&#128293;</span>
+          <span class="incident-text"><strong style="color:var(--red)">LLM escreve <code>DROP TABLE clientes</code></strong> ao refatorar queries — "simplifiquei a estrutura do banco"</span>
+        </div>
+        <div class="incident">
+          <span class="incident-icon">&#128293;</span>
+          <span class="incident-text"><strong style="color:var(--red)"><code>docker compose down -v</code></strong> ao "limpar o ambiente" — apaga 5 anos de dados + indices do Qdrant</span>
+        </div>
+        <div class="incident">
+          <span class="incident-icon">&#128293;</span>
+          <span class="incident-text"><strong style="color:var(--red)"><code>rm -rf seed/data/</code></strong> ao "remover arquivos temporarios" — perde datasets de producao irrecuperaveis</span>
+        </div>
+        <div class="incident">
+          <span class="incident-icon">&#128293;</span>
+          <span class="incident-text"><strong style="color:var(--red)">PII de usuario aparece em log de debug</strong> que vai para o Datadog — violacao LGPD detectada semanas depois</span>
+        </div>
+        <div class="incident">
+          <span class="incident-icon">&#128293;</span>
+          <span class="incident-text"><strong style="color:var(--red)">Secret de producao hardcoded</strong> no codigo que vai para o GitHub — rotacao de emergencia, post-mortem, cliente impactado</span>
+        </div>
+      </div>
+      <div class="highlight red" style="margin-top:4px">
+        <p style="font-size:.9rem;color:var(--text)"><strong>Nao e paranoia. Esses acidentes acontecem.</strong> <span style="color:var(--text-muted)">O harness previne com deny list, rules e SI assessment obrigatorio desde o /novo-projeto.</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — 4 VETORES DE RISCO -->
+  <div class="slide" id="s3">
+    <div class="col" style="max-width:860px;gap:18px;width:100%">
+      <span class="chip chip-red">Vetores de risco</span>
+      <h2>4 vetores de risco do LLM como agente</h2>
+      <div class="card-grid cols2">
+        <div class="card col gap8" style="border-color:var(--red)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:1.8rem">&#128465;</span>
+            <h3 style="color:var(--red)">1 — Destruicao de dados</h3>
+          </div>
+          <p style="font-size:.83rem"><code>DROP TABLE</code>, <code>DELETE</code> sem <code>WHERE</code>, <code>docker volume rm</code>, <code>rm -rf</code> em dados importantes. O agente pode destruir anos de dados em segundos — sem intenção maliciosa, apenas seguindo instrucoes vagas.</p>
+        </div>
+        <div class="card col gap8" style="border-color:var(--yellow)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:1.8rem">&#128065;</span>
+            <h3 style="color:var(--yellow)">2 — Exposicao de PII</h3>
+          </div>
+          <p style="font-size:.83rem">CPF, email, nome, dados financeiros em logs, outputs brutos, URLs de debug. PII que aparece em qualquer canal externo (Datadog, Langfuse, GitHub Issues) e violacao LGPD imediata.</p>
+        </div>
+        <div class="card col gap8" style="border-color:var(--accent)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:1.8rem">&#9995;</span>
+            <h3 style="color:var(--accent3)">3 — Escrita nao-autorizada em producao</h3>
+          </div>
+          <p style="font-size:.83rem"><code>UPDATE</code> em banco de producao sem aprovacao humana. O agente pode "corrigir dados" diretamente — sem revisao, sem rollback, sem audit trail adequado.</p>
+        </div>
+        <div class="card col gap8" style="border-color:var(--accent2)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:1.8rem">&#128257;</span>
+            <h3 style="color:var(--accent2)">4 — Vazamento cross-tenant</h3>
+          </div>
+          <p style="font-size:.83rem">Em sistemas multi-empresa, dados do cliente A acessiveis ao cliente B. Sem RLS e filtro por <code>company_id</code> no JWT, uma query errada expoe dados de todos os tenants.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — LGPD NA PRATICA -->
+  <div class="slide" id="s4">
+    <div class="col" style="max-width:860px;gap:16px;width:100%">
+      <span class="chip chip-yellow">LGPD</span>
+      <h2>O que e dado pessoal e como o agente trata</h2>
+      <div class="row" style="align-items:flex-start">
+        <div class="col flex1 gap8">
+          <div class="card col gap8">
+            <h3 style="color:var(--yellow)">Dados pessoais (LGPD Art. 5)</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+              <span class="chip chip-yellow" style="font-size:.7rem">CPF</span>
+              <span class="chip chip-yellow" style="font-size:.7rem">Email</span>
+              <span class="chip chip-yellow" style="font-size:.7rem">Nome completo</span>
+              <span class="chip chip-yellow" style="font-size:.7rem">Localizacao</span>
+              <span class="chip chip-yellow" style="font-size:.7rem">Biometria</span>
+              <span class="chip chip-yellow" style="font-size:.7rem">Dados de saude</span>
+              <span class="chip chip-yellow" style="font-size:.7rem">Dados financeiros</span>
+              <span class="chip chip-yellow" style="font-size:.7rem">IP + device</span>
+            </div>
+          </div>
+          <div class="card col gap8">
+            <h3 style="color:var(--accent3)">Principios LGPD relevantes</h3>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px">
+              <li style="font-size:.82rem;color:var(--text-muted)"><strong style="color:var(--text)">Finalidade:</strong> propósito declarado no CLAUDE.md antes de qualquer dado pessoal</li>
+              <li style="font-size:.82rem;color:var(--text-muted)"><strong style="color:var(--text)">Minimizacao:</strong> agente acessa so o necessario para a tarefa</li>
+              <li style="font-size:.82rem;color:var(--text-muted)"><strong style="color:var(--text)">Transparencia:</strong> audit log de toda operacao que toca PII</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col flex1 gap8">
+          <div class="highlight red">
+            <h3 style="color:var(--red);margin-bottom:6px">O agente NUNCA faz com PII</h3>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:5px">
+              <li style="font-size:.82rem;color:var(--text-muted)">&#10007; Logar sem mascaramento</li>
+              <li style="font-size:.82rem;color:var(--text-muted)">&#10007; Exibir em output bruto</li>
+              <li style="font-size:.82rem;color:var(--text-muted)">&#10007; Expor em URL query string</li>
+              <li style="font-size:.82rem;color:var(--text-muted)">&#10007; Passar para LLM externo sem consentimento</li>
+              <li style="font-size:.82rem;color:var(--text-muted)">&#10007; Incluir em mensagem de erro devolvida ao frontend</li>
+            </ul>
+          </div>
+          <div class="highlight green">
+            <h3 style="color:var(--green);margin-bottom:6px">Exemplo SisFraude</h3>
+            <pre style="margin-top:4px;font-size:.78rem"><span class="fn">maskCPF</span>(<span class="str">"123.456.789-00"</span>)
+<span class="cm">→ "***.456.***-**"</span>
+
+<span class="cm"># Raw no banco, mascarado na UI</span>
+<span class="cm"># Nunca o CPF bruto sai da camada de dados</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — DENY LIST NO SETTINGS.JSON -->
+  <div class="slide" id="s5">
+    <div class="col" style="max-width:860px;gap:16px;width:100%">
+      <span class="chip chip-red">Guardrail</span>
+      <h2>Deny list — o que o agente nunca executa</h2>
+      <div class="row" style="align-items:flex-start">
+        <div class="flex1">
+          <pre><span class="str">"deny"</span>: [
+  <span class="str">"Bash(rm -rf:*)"</span>,
+  <span class="str">"Bash(docker compose down -v:*)"</span>,
+  <span class="str">"Bash(docker compose down --volumes:*)"</span>,
+  <span class="str">"Bash(docker volume rm:*)"</span>,
+  <span class="str">"Bash(docker volume prune:*)"</span>,
+  <span class="str">"Bash(dropdb:*)"</span>,
+  <span class="str">"Bash(mysqladmin drop:*)"</span>,
+  <span class="str">"Bash(databricks workspace delete:*)"</span>,
+  <span class="str">"Bash(git push --force:*)"</span>,
+  <span class="str">"Bash(git reset --hard:*)"</span>
+]</pre>
+        </div>
+        <div class="col flex1 gap8">
+          <div class="highlight red">
+            <h3 style="color:var(--red);margin-bottom:6px">Como funciona</h3>
+            <p style="font-size:.83rem">O agente tenta executar o comando e recebe um erro de permissao. Nao consegue prosseguir. O usuario deve explicitamente aprovar ou usar uma abordagem diferente.</p>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow);margin-bottom:6px">Por que esses especificamente</h3>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:5px">
+              <li style="font-size:.82rem;color:var(--text-muted)"><strong style="color:var(--text)">rm -rf:</strong> risco de apagar dados de seed/Qdrant/MinIO</li>
+              <li style="font-size:.82rem;color:var(--text-muted)"><strong style="color:var(--text)">docker volumes:</strong> apaga dados persistentes (5 anos de dados)</li>
+              <li style="font-size:.82rem;color:var(--text-muted)"><strong style="color:var(--text)">dropdb:</strong> destruicao irreversivel do banco</li>
+              <li style="font-size:.82rem;color:var(--text-muted)"><strong style="color:var(--text)">git push --force:</strong> reescreve historico no remoto</li>
+              <li style="font-size:.82rem;color:var(--text-muted)"><strong style="color:var(--text)">git reset --hard:</strong> descarta commits locais sem aviso</li>
+            </ul>
+          </div>
+          <div class="highlight green">
+            <p style="font-size:.83rem;color:var(--text)">O deny list esta em <code>.claude/settings.json</code> no canonico e e herdado por todos os projetos criados a partir dele.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — RULES/SEGURANCA.MD -->
+  <div class="slide" id="s6">
+    <div class="col" style="max-width:860px;gap:16px;width:100%">
+      <span class="chip chip-purple">Rule global</span>
+      <h2>rules/seguranca.md — carrega SEMPRE</h2>
+      <div class="row" style="align-items:flex-start">
+        <div class="col flex1 gap8">
+          <div class="card col gap8" style="border-color:var(--red)">
+            <h3 style="color:var(--red)">Banco de producao = somente leitura</h3>
+            <p style="font-size:.82rem">Role RO para o agente. Nenhum <code>INSERT</code> / <code>UPDATE</code> / <code>DELETE</code> sem aprovacao humana explicita e ADR registrado.</p>
+          </div>
+          <div class="card col gap8" style="border-color:var(--yellow)">
+            <h3 style="color:var(--yellow)">PII: nunca logar, nunca exibir sem mascaramento</h3>
+            <p style="font-size:.82rem">Qualquer campo que possa identificar uma pessoa passa por mascaramento antes de logar, exibir, ou retornar em response.</p>
+          </div>
+          <div class="card col gap8" style="border-color:var(--accent)">
+            <h3 style="color:var(--accent3)">Secrets: nunca hardcoded</h3>
+            <p style="font-size:.82rem">Sempre via <code>.env</code>. O agente recusa inlinear qualquer valor que pareca senha, token, key ou connection string no codigo.</p>
+          </div>
+          <div class="card col gap8" style="border-color:var(--green)">
+            <h3 style="color:var(--green)">LGPD: propósito declarado no CLAUDE.md</h3>
+            <p style="font-size:.82rem">Antes de qualquer operacao com dado pessoal, o propósito deve estar no CLAUDE.md. Sem declaracao de finalidade, o agente recusa prosseguir.</p>
+          </div>
+        </div>
+        <div class="col flex1 gap8">
+          <div class="highlight red">
+            <h3 style="color:var(--red);margin-bottom:6px">Sem <code>paths:</code> — carrega sempre</h3>
+            <p style="font-size:.83rem">Ao contrario das rules de stack (backend.md, pipeline.md), a <code>seguranca.md</code> nao tem restricao de path. E carregada em <strong style="color:var(--text)">toda sessao</strong>, independente do arquivo aberto.</p>
+          </div>
+          <div class="highlight">
+            <h3 style="color:var(--accent3);margin-bottom:6px">Antes de qualquer SQL de escrita</h3>
+            <p style="font-size:.83rem">A rule exige: confirmar com o usuario, criar ADR em <code>docs/adr/</code>, e gravar no audit log. Sem esses tres passos, o agente bloqueia a operacao.</p>
+          </div>
+          <div class="card" style="background:var(--surface2);border-color:var(--red);margin-top:4px">
+            <p style="font-size:.9rem;color:var(--red);font-weight:700;text-align:center">"Esta rule nao tem excecao."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 — SI NO /NOVO-PROJETO -->
+  <div class="slide" id="s7">
+    <div class="col" style="max-width:880px;gap:16px;width:100%">
+      <span class="chip chip-yellow">Portao de entrada</span>
+      <h2>SI como portao de entrada, nao afterthought</h2>
+      <div class="row" style="align-items:flex-start">
+        <div class="flex1">
+          <div class="highlight yellow" style="margin-bottom:12px">
+            <h3 style="color:var(--yellow);margin-bottom:8px">Pergunta obrigatoria no /novo-projeto</h3>
+            <pre style="margin:0;font-size:.8rem"><span class="cm">"Esse projeto lida com dados sensiveis?</span>
+<span class="str">  a)</span> Nao — apenas dados abertos ou sinteticos
+<span class="str">  b)</span> Sim — dados de usuarios mas nao PII direto
+<span class="str">  c)</span> Sim — PII (CPF, email, dados financeiros/medicos)
+<span class="str">  d)</span> Sim — banco de producao com risco de escrita<span class="cm">"</span></pre>
+          </div>
+        </div>
+        <div class="col flex1 gap8">
+          <div class="level-card" style="border-color:var(--green)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span class="level-badge" style="background:#064e3b;color:var(--green)">Nivel a</span>
+              <span style="font-size:.82rem;color:var(--text-muted)">Dados abertos ou sinteticos</span>
+            </div>
+            <p style="font-size:.78rem;color:var(--text-muted)">SI rules padrao ja presentes no canonico. Sem configuracao extra.</p>
+          </div>
+          <div class="level-card" style="border-color:var(--accent2)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span class="level-badge" style="background:#0c4a6e;color:var(--accent2)">Nivel b</span>
+              <span style="font-size:.82rem;color:var(--text-muted)">Dados de usuarios sem PII</span>
+            </div>
+            <p style="font-size:.78rem;color:var(--text-muted)">Adiciona deny list de banco na allowlist. Exemplo: workshop (dados de sessao sinteticos).</p>
+          </div>
+          <div class="level-card" style="border-color:var(--yellow)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span class="level-badge" style="background:#451a03;color:var(--yellow)">Nivel c</span>
+              <span style="font-size:.82rem;color:var(--text-muted)">PII (CPF, email, financeiro)</span>
+            </div>
+            <p style="font-size:.78rem;color:var(--text-muted)">Adiciona rule de PII masking + <code>[AVISO_LGPD]</code> no CLAUDE.md com propósito declarado.</p>
+          </div>
+          <div class="level-card" style="border-color:var(--red)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span class="level-badge" style="background:#450a0a;color:var(--red)">Nivel d</span>
+              <span style="font-size:.82rem;color:var(--text-muted)">Banco de producao com escrita</span>
+            </div>
+            <p style="font-size:.78rem;color:var(--text-muted)">Deny list extendida + ADR obrigatorio antes de qualquer operacao de escrita.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8 — DUPLA CAMADA -->
+  <div class="slide" id="s8">
+    <div class="col" style="max-width:880px;gap:16px;width:100%">
+      <span class="chip chip-cyan">Dupla camada</span>
+      <h2>Client-side + database-side</h2>
+      <div class="row" style="align-items:flex-start">
+        <div class="card flex1 col gap8">
+          <h3 style="color:var(--accent);font-size:.85rem;text-transform:uppercase;letter-spacing:.05em">Client-side (harness)</h3>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px">
+            <li style="font-size:.83rem;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start">
+              <span style="color:var(--accent);flex-shrink:0">&#10003;</span>
+              Allowlist de comandos SQL no <code>settings.json</code> (apenas SELECT)
+            </li>
+            <li style="font-size:.83rem;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start">
+              <span style="color:var(--accent);flex-shrink:0">&#10003;</span>
+              Deny list de operacoes destrutivas (rm, docker volumes, dropdb)
+            </li>
+            <li style="font-size:.83rem;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start">
+              <span style="color:var(--accent);flex-shrink:0">&#10003;</span>
+              Rule: confirmar com usuario antes de qualquer escrita
+            </li>
+            <li style="font-size:.83rem;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start">
+              <span style="color:var(--accent);flex-shrink:0">&#10003;</span>
+              Hook <code>PostToolUse</code>: ruff check em todo arquivo Python modificado
+            </li>
+          </ul>
+        </div>
+        <div style="display:flex;align-items:center;padding:0 4px;color:var(--border);font-size:1.5rem">+</div>
+        <div class="card flex1 col gap8" style="border-color:var(--accent2);background:var(--surface2)">
+          <h3 style="color:var(--accent2);font-size:.85rem;text-transform:uppercase;letter-spacing:.05em">Database-side (infra)</h3>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px">
+            <li style="font-size:.83rem;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start">
+              <span style="color:var(--accent2);flex-shrink:0">&#10003;</span>
+              Role somente leitura para o agente (<code>agente_ro</code>)
+            </li>
+            <li style="font-size:.83rem;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start">
+              <span style="color:var(--accent2);flex-shrink:0">&#10003;</span>
+              <code>SET TRANSACTION READ ONLY</code> injetado em todo SQL
+            </li>
+            <li style="font-size:.83rem;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start">
+              <span style="color:var(--accent2);flex-shrink:0">&#10003;</span>
+              <code>statement_timeout = 5s</code> — mata queries longas
+            </li>
+            <li style="font-size:.83rem;color:var(--text-muted);display:flex;gap:8px;align-items:flex-start">
+              <span style="color:var(--accent2);flex-shrink:0">&#10003;</span>
+              RLS (Row Level Security) em multi-tenant — filtra por <code>company_id</code> do JWT
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="highlight cyan">
+        <h3 style="color:var(--accent2);margin-bottom:6px">Exemplo real do workshop</h3>
+        <p style="font-size:.83rem">A tool <code>run_sql</code> injeta ambas as camadas antes de executar: client-side valida que e SELECT, database-side forca READ ONLY + timeout. O LLM nunca executa SQL diretamente.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9 — WORKSHOP VS SISFRAUDE -->
+  <div class="slide" id="s9">
+    <div class="col" style="max-width:920px;gap:16px;width:100%">
+      <span class="chip chip-purple">Exemplos reais</span>
+      <h2>Workshop vs SisFraude — lado a lado</h2>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:22%">Dimensao</th>
+              <th>Workshop (agente de vendas)</th>
+              <th>SisFraude (fraud detection)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>SI Assessment</td>
+              <td><span class="chip chip-cyan" style="font-size:.7rem">Nivel b</span> dados de sessao, nao PII</td>
+              <td><span class="chip chip-red" style="font-size:.7rem">Nivel c+d</span> CPF, dados financeiros, banco PRD</td>
+            </tr>
+            <tr>
+              <td>Invariante principal</td>
+              <td><code>negocio</code> somente leitura + LIMIT + timeout</td>
+              <td>RLS por <code>company_id</code> (JWT) + CPF masking</td>
+            </tr>
+            <tr>
+              <td>Deny critico</td>
+              <td>docker volumes (5 anos de dados Qdrant)</td>
+              <td>DELETE restrito a <code>manager</code>/<code>admin</code> apenas</td>
+            </tr>
+            <tr>
+              <td>PII handling</td>
+              <td style="color:var(--text-muted);font-style:italic">N/A (dados sinteticos)</td>
+              <td><code>maskCPF()</code> + <code>maskEmail()</code> em toda exibicao</td>
+            </tr>
+            <tr>
+              <td>Audit log</td>
+              <td><code>metrics/entregas.jsonl</code> (runs do agente)</td>
+              <td><code>history_events</code> (imutavel, INSERT-only, nunca UPDATE)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="row" style="gap:12px">
+        <div class="highlight cyan flex1">
+          <p style="font-size:.83rem">Workshop usa o <strong style="color:var(--text)">minimo de SI</strong> necessario porque os dados sao sinteticos — mas a deny list e as rules continuam ativas para proteger os volumes do Qdrant.</p>
+        </div>
+        <div class="highlight red flex1">
+          <p style="font-size:.83rem">SisFraude usa o <strong style="color:var(--text)">nivel maximo</strong>: RLS, mascaramento, audit log imutavel, e ADR obrigatorio para qualquer escrita em producao.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 — CHECKLIST DE SI -->
+  <div class="slide" id="s10">
+    <div class="col" style="max-width:860px;gap:14px;width:100%">
+      <span class="chip chip-green">Checklist final</span>
+      <h2>10 itens antes de shippar qualquer projeto</h2>
+      <div class="card" style="padding:16px 20px">
+        <div class="checklist-item">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">Deny list configurada</strong> no <code>settings.json</code> (<code>rm -rf</code>, volumes, dropdb)</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">rules/seguranca.md</strong> presente e sem <code>paths:</code> (carrega sempre, toda sessao)</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">PII masking implementado</strong> se projeto tem dados pessoais (CPF, email, financeiro)</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">Role somente leitura</strong> no banco para o agente (<code>agente_ro</code>, sem INSERT/UPDATE/DELETE)</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">Nenhum secret hardcoded</strong> no codigo (<code>grep -r "password=" src/</code> deve voltar vazio)</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">LGPD declarado no CLAUDE.md</strong> (propósito + se lida com dados pessoais + consentimento)</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">Audit log presente</strong> se o produto faz escrita (INSERT-only, nunca UPDATE — imutavel)</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">Nenhum PII em logs</strong> (grep structlog/logging para campos <code>cpf</code>, <code>email</code>, <code>nome</code>)</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">ADR criado</strong> para qualquer operacao de escrita em producao (<code>docs/adr/</code>)</div>
+        </div>
+        <div class="checklist-item" style="border-bottom:none">
+          <div class="check-badge">&#10003;</div>
+          <div class="check-text"><strong style="color:var(--text)">SI Assessment registrado</strong> em <code>.claude/projetos/{slug}/00-ideia.md</code> com nivel (a/b/c/d)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<nav class="nav">
+  <button id="prev" onclick="go(-1)" disabled>&#8592; Anterior</button>
+  <span id="counter" class="slide-counter">1 / 10</span>
+  <button id="next" onclick="go(1)">Proximo &#8594;</button>
+</nav>
+
+<script>
+const total = 10;
+let cur = 1;
+const dotsEl = document.getElementById('dots');
+for (let i = 1; i <= total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => show(i);
+  dotsEl.appendChild(d);
+}
+function show(n) {
+  document.getElementById('s' + cur).classList.remove('active');
+  dotsEl.children[cur - 1].classList.remove('active');
+  cur = n;
+  document.getElementById('s' + cur).classList.add('active');
+  dotsEl.children[cur - 1].classList.add('active');
+  document.getElementById('counter').textContent = cur + ' / ' + total;
+  document.getElementById('prev').disabled = cur === 1;
+  document.getElementById('next').disabled = cur === total;
+}
+function go(d) { if (cur + d >= 1 && cur + d <= total) show(cur + d); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+});
+</script>
+
+</body>
+</html>

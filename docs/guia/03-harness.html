@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>03 — Anatomia do Harness · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .flow { display: flex; align-items: stretch; gap: 0; width: 100%; margin-top: 8px; }
+    .flow-step { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 14px; position: relative; display: flex; flex-direction: column; gap: 6px; }
+    .flow-step + .flow-step { margin-left: -1px; border-radius: 0; }
+    .flow-step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .flow-step:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
+    .flow-arrow { display: flex; align-items: center; color: var(--accent); font-size: 1.4rem; padding: 0 4px; flex-shrink: 0; }
+    .step-num { font-size: 1.8rem; font-weight: 800; color: var(--border); line-height: 1; }
+    .step-title { font-size: .9rem; font-weight: 700; color: var(--text); }
+    .step-desc  { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .tree-line { font-family: 'Cascadia Code', monospace; font-size: .82rem; color: var(--text-muted); line-height: 1.8; }
+    .tree-line .dir { color: var(--accent2); font-weight: 700; }
+    .tree-line .file { color: var(--text); }
+    .tree-line .comment { color: var(--text-muted); }
+    .verdict-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 6px; padding: 3px 10px; font-size: .75rem; font-weight: 700; }
+    .v-ok { background: #064e3b; color: var(--green); border: 1px solid var(--green); }
+    .v-warn { background: #451a03; color: var(--yellow); border: 1px solid var(--yellow); }
+    .v-block { background: #450a0a; color: var(--red); border: 1px solid var(--red); }
+  </style>
+</head>
+<body>
+<div id="dots" class="dots"></div>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html" class="current">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+</div>
+
+<div class="slides">
+
+  <!-- SLIDE 1: CAPA -->
+  <div class="slide active" id="s1">
+    <div class="row w100" style="max-width:960px;align-items:flex-start;gap:48px">
+      <div class="col flex1 gap8">
+        <span class="chip chip-purple">Agent Harness Method · 03/09</span>
+        <h1 class="mt8">Anatomia do <span class="gradient-text">Harness</span></h1>
+        <p class="big mt16">Arquivo por arquivo — o que existe no <code>.claude/</code> e por que cada peça está lá.</p>
+      </div>
+      <div class="card" style="min-width:300px">
+        <div class="tree-line"><span class="dir">.claude/</span></div>
+        <div class="tree-line">├── <span class="file">CLAUDE.md</span>  <span class="comment">← índice durável</span></div>
+        <div class="tree-line">├── <span class="dir">rules/</span>         <span class="comment">← regras path-scoped</span></div>
+        <div class="tree-line">├── <span class="file">settings.json</span> <span class="comment">← permissões + hooks</span></div>
+        <div class="tree-line">├── <span class="dir">agents/</span>        <span class="comment">← especialistas</span></div>
+        <div class="tree-line">├── <span class="dir">skills/</span>        <span class="comment">← procedimentos</span></div>
+        <div class="tree-line">├── <span class="dir">kb/</span>            <span class="comment">← referência técnica</span></div>
+        <div class="tree-line">├── <span class="file">.mcp.json</span>     <span class="comment">← ferramentas externas</span></div>
+        <div class="tree-line">└── <span class="dir">commands/</span>      <span class="comment">← gates invocáveis</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: MAPA DO .CLAUDE/ -->
+  <div class="slide" id="s2">
+    <div class="col w100" style="max-width:960px;gap:16px">
+      <div class="col gap8">
+        <span class="chip chip-cyan">Mapa Completo</span>
+        <h2>O que cada arquivo responde</h2>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Arquivo / Pasta</th>
+              <th>Pergunta que responde</th>
+              <th>Quem lê</th>
+              <th>Quando carrega</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>CLAUDE.md</td><td>Qual é o projeto?</td><td>Toda sessão</td><td>Sempre (automático)</td></tr>
+            <tr><td>rules/*.md</td><td>Como devo me comportar aqui?</td><td>Quando toca a área</td><td>Path-scoped via frontmatter</td></tr>
+            <tr><td>settings.json</td><td>O que posso fazer?</td><td>Claude Code runtime</td><td>Sempre</td></tr>
+            <tr><td>agents/</td><td>Quem pode fazer isso?</td><td>Claude ao despachar</td><td>Quando invocado por nome/desc.</td></tr>
+            <tr><td>skills/</td><td>Como executo esse procedimento?</td><td>Claude ao invocar skill</td><td>Quando chamado com /skill-name</td></tr>
+            <tr><td>kb/</td><td>Qual é a referência técnica?</td><td>Agentes e Claude</td><td>Quando referenciado</td></tr>
+            <tr><td>.mcp.json</td><td>Quais ferramentas externas?</td><td>Claude Code runtime</td><td>Sempre</td></tr>
+            <tr><td>commands/</td><td>Como rodo os gates?</td><td>Claude ao invocar /cmd</td><td>Quando chamado</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: CLAUDE.MD -->
+  <div class="slide" id="s3">
+    <div class="col w100" style="max-width:960px;gap:16px">
+      <div class="col gap8">
+        <span class="chip chip-purple">CLAUDE.md</span>
+        <h2>O índice durável</h2>
+        <p>Carregado em toda sessão. Deve ser <strong style="color:var(--text)">curto</strong> — cada linha custa tokens de contexto. Só fatos que valem para o projeto inteiro.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent3)">O que vai aqui</h3>
+            <ul style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+              <li>Stack (linguagem, framework, stores)</li>
+              <li>Comandos de dev (subir, testar, validar)</li>
+              <li>Invariantes de SI e de produto</li>
+              <li>Mapa de KBs e rules</li>
+              <li>Onde fica o quê (layout de pastas)</li>
+              <li>Projeto ativo (projeto corrente e fase)</li>
+            </ul>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow)">Princípio chave</h3>
+            <p class="mt4">CLAUDE.md é um <em>índice de fatos</em>, não documentação. Regras por área ficam em <code>rules/</code>. Referência técnica fica em <code>kb/</code>. CLAUDE.md aponta para eles.</p>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="card" style="border-color:var(--red)">
+            <h3 style="color:var(--red)">Exemplo — Invariantes (workshop)</h3>
+            <pre style="margin-top:8px"><span class="cm">## Invariantes (nunca quebrar)</span>
+<span class="str">- Toda query a `negocio` é SOMENTE LEITURA
+  (role RO + allowlist + LIMIT + timeout)
+- App é runtime puro: nenhuma ingestão/carga
+  em backend/. A ingestão vive só em seed/
+- Stores pré-populados são sagrados: nunca
+  `docker compose down -v` nem rm volumes
+- Toda recomendação prescritiva amarrada a
+  uma fonte recuperada</span></pre>
+          </div>
+          <div class="highlight cyan">
+            <p>O hook de <code>Stop</code> <strong>detecta</strong> automaticamente quando a stack muda e avisa (nunca bloqueia). O <code>/sync-context</code> mostra o relatório de drift e <strong>pede confirmação</strong> antes de editar o CLAUDE.md — nada é reescrito às suas costas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: CONTEXT.MD -->
+  <div class="slide" id="s4">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-cyan">CONTEXT.md</span>
+        <h2>Glossário puro de domínio</h2>
+        <p>Criado e mantido pelo skill <code>/grill-with-docs</code>. Vive na raiz do projeto — não dentro de <code>.claude/</code>.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2)">CLAUDE.md vs CONTEXT.md</h3>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:12px">
+                <span class="chip chip-purple" style="flex-shrink:0">CLAUDE.md</span>
+                <span style="color:var(--text-muted);font-size:.9rem">Fatos técnicos do projeto: stack, comandos, invariantes, layout</span>
+              </div>
+              <div style="display:flex;gap:12px">
+                <span class="chip chip-cyan" style="flex-shrink:0">CONTEXT.md</span>
+                <span style="color:var(--text-muted);font-size:.9rem">Vocabulário de domínio: o que cada termo significa no negócio específico</span>
+              </div>
+            </div>
+          </div>
+          <div class="highlight green">
+            <h3 style="color:var(--green)">Quando criar</h3>
+            <p class="mt4">Sempre que o projeto tem terminologia própria que pode ser confundida com significados genéricos. Rodado com um especialista de domínio presente na sessão de grill.</p>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--accent3)">Exemplo (e-commerce)</h3>
+          <pre style="margin-top:10px"><span class="cm"># Glossário de domínio</span>
+
+<span class="kw">## pedido</span>
+<span class="str">Intenção de compra confirmada pelo cliente.
+Status: rascunho → aprovado → faturado.
+NÃO confundir com `carrinho` (tentativa).</span>
+
+<span class="kw">## sessão</span>
+<span class="str">Agregado diário de eventos de navegação
+por cliente. Granularidade: dia+cliente.
+Fonte: sessoes_diarias (schema negocio).</span>
+
+<span class="kw">## meta</span>
+<span class="str">Alvo comercial por região/vendedor/período.
+Unidade: R$ ou unidades, nunca %. </span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: RULES/ -->
+  <div class="slide" id="s5">
+    <div class="col w100" style="max-width:960px;gap:16px">
+      <div class="col gap8">
+        <span class="chip chip-green">rules/</span>
+        <h2>Regras path-scoped</h2>
+        <p>Carregam SOMENTE quando o agente toca arquivos que casam com o padrão <code>paths:</code>. Regras sem <code>paths:</code> carregam em toda sessão.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent2)">Frontmatter de path-scope</h3>
+            <pre style="margin-top:8px"><span class="cm">---
+paths:
+  - backend/agent/**
+  - backend/app/services/**
+---</span>
+
+<span class="cm"># Regra: Agente LangGraph</span>
+
+<span class="str">SQL allowlist: apenas SELECT.
+Injete SET TRANSACTION READ ONLY.
+LIMIT obrigatório em toda query.
+statement_timeout = 5000ms.</span></pre>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow)">Globais (sem paths:)</h3>
+            <ul style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+              <li><code>seguranca.md</code> — SI sempre ativa</li>
+              <li><code>definicao-de-pronto.md</code> — DoD sempre disponível</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="card" style="border-color:var(--accent)">
+            <h3 style="color:var(--accent)">Exemplo real — rules/agente.md (workshop)</h3>
+            <pre style="margin-top:8px"><span class="cm">---
+paths:
+  - backend/agent/**
+---</span>
+
+<span class="kw">## SQL: somente leitura</span>
+<span class="str">- Toda query começa com:
+  SET TRANSACTION READ ONLY;
+- Allowlist de palavras: apenas SELECT,
+  WITH, EXPLAIN, COUNT, AVG, SUM, MIN, MAX
+- LIMIT injetado se ausente (máx 500)
+- statement_timeout = '5s'
+- Nunca INSERT/UPDATE/DELETE/DDL</span>
+
+<span class="kw">## Qdrant</span>
+<span class="str">- Filtrar sempre por periodo_referencia
+- Nunca filtrar por data_ingestao</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: SETTINGS.JSON -->
+  <div class="slide" id="s6">
+    <div class="col w100" style="max-width:960px;gap:16px">
+      <div class="col gap8">
+        <span class="chip chip-yellow">settings.json</span>
+        <h2>Permissões e gates automáticos</h2>
+        <p>O que o agente pode fazer, o que está bloqueado, e o que roda automaticamente a cada Edit/Write ou ao parar.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--green)">allow — o que o agente pode</h3>
+            <pre style="margin-top:8px"><span class="str">"allow"</span>: [
+  <span class="str">"Bash(uv run pytest*)"</span>,
+  <span class="str">"Bash(uv run ruff*)"</span>,
+  <span class="str">"Bash(uv run mypy*)"</span>,
+  <span class="str">"Bash(docker compose ps)"</span>,
+  <span class="str">"Bash(git diff*)"</span>,
+  <span class="str">"Bash(git log*)"</span>
+]</pre>
+          </div>
+          <div class="card" style="border-color:var(--red)">
+            <h3 style="color:var(--red)">deny — o que está bloqueado</h3>
+            <pre style="margin-top:8px"><span class="str">"deny"</span>: [
+  <span class="str">"Bash(rm -rf*)"</span>,
+  <span class="str">"Bash(docker volume rm*)"</span>,
+  <span class="str">"Bash(docker compose down -v*)"</span>,
+  <span class="str">"Bash(dropdb*)"</span>,
+  <span class="str">"Bash(git push --force*)"</span>,
+  <span class="str">"Write(seed/data/**)"</span> <span class="cm">← dados sagrados</span>
+]</pre>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="card" style="border-color:var(--accent2)">
+            <h3 style="color:var(--accent2)">Hooks automáticos</h3>
+            <pre style="margin-top:8px"><span class="kw">"hooks"</span>: {
+  <span class="cm">// Ao editar: formata silenciosamente</span>
+  <span class="str">"PostToolUse"</span>: [{
+    <span class="str">"matcher"</span>: <span class="str">"Edit|Write"</span>,
+    <span class="str">"hooks"</span>: [{
+      <span class="str">"type"</span>: <span class="str">"command"</span>,
+      <span class="str">"command"</span>: <span class="str">"uv run ruff format . --quiet &amp;&amp; uv run ruff check --fix --quiet"</span>
+    }]
+  }],
+  <span class="cm">// Ao parar: gate completo</span>
+  <span class="str">"Stop"</span>: [{
+    <span class="str">"hooks"</span>: [{
+      <span class="str">"type"</span>: <span class="str">"command"</span>,
+      <span class="str">"command"</span>: <span class="str">"uv run ruff check backend &amp;&amp; uv run mypy backend &amp;&amp; uv run pytest -q"</span>
+    }]
+  }]
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: .MCP.JSON -->
+  <div class="slide" id="s7">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-cyan">.mcp.json</span>
+        <h2>Ferramentas externas</h2>
+        <p>Servidor MCP define as ferramentas que o agente pode usar além do filesystem. O <code>/harness-architect</code> preenche com os valores reais do projeto.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent2)">Template (antes do harness-architect)</h3>
+            <pre style="margin-top:8px">{
+  <span class="str">"mcpServers"</span>: {
+    <span class="str">"context7"</span>: {
+      <span class="str">"command"</span>: <span class="str">"npx"</span>,
+      <span class="str">"args"</span>: [<span class="str">"-y"</span>, <span class="str">"@upstash/context7-mcp"</span>]
+    },
+    <span class="str">"postgres"</span>: {
+      <span class="str">"command"</span>: <span class="str">"npx"</span>,
+      <span class="str">"args"</span>: [
+        <span class="str">"-y"</span>, <span class="str">"@modelcontextprotocol/server-postgres"</span>,
+        <span class="str">"${POSTGRES_READONLY_URL}"</span>, <span class="cm">← placeholder</span>
+        <span class="str">"--access-mode=restricted"</span>
+      ]
+    }
+  }
+}</pre>
+          </div>
+          <div class="highlight yellow">
+            <p>O <code>/harness-architect</code> substitui <code>${POSTGRES_READONLY_URL}</code> pela URL real extraída do <code>.env</code> — sem placeholder visível no arquivo final.</p>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent3)">Context7 — docs oficiais em runtime</h3>
+            <p class="mt4">Permite que o agente busque documentação atual de qualquer lib — FastAPI, LangGraph, Qdrant, Airflow — diretamente durante a implementação. Sem hallucinar APIs desatualizadas.</p>
+          </div>
+          <div class="card" style="border-color:var(--red)">
+            <h3 style="color:var(--red)">Postgres — somente leitura</h3>
+            <p class="mt4"><code>--access-mode=restricted</code> bloqueia qualquer escrita no banco. O agente pode inspecionar schema, fazer SELECT, mas NUNCA INSERT/UPDATE/DELETE via MCP.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: AGENTS/ -->
+  <div class="slide" id="s8">
+    <div class="col w100" style="max-width:960px;gap:16px">
+      <div class="col gap8">
+        <span class="chip chip-purple">agents/</span>
+        <h2>Especialistas de contexto fresco</h2>
+        <p>Cada agente roda com contexto isolado — não carrega o histórico da sessão principal. Perfeito para revisões independentes e análises sem viés de recência.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent2)">Frontmatter obrigatório</h3>
+            <pre style="margin-top:8px"><span class="cm">---
+name: revisor-codigo
+description: &gt;
+  Revisor de código do time. Use após
+  implementar / antes de commitar.
+  Dispare com "revisa esse diff",
+  "passa o revisor", "pronto pra commit?".
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
+color: purple
+---</span></pre>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow)">O que a description faz</h3>
+            <p class="mt4">É o único texto visto ao decidir qual agente despachar. Deve conter: nome do papel + quando usar + frases de gatilho. Sem isso, o agente nunca é escolhido automaticamente.</p>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="card" style="border-color:var(--accent3)">
+            <h3 style="color:var(--accent3)">O que o revisor-codigo checa</h3>
+            <ul style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+              <li>Invariantes violados (somente-leitura, runtime puro, volumes sagrados)</li>
+              <li>Rules do path afetado (ex: SQL allowlist se tocou backend/agent/)</li>
+              <li>Critérios de aceite da task atendidos</li>
+              <li>Código desnecessariamente complexo ou duplicado</li>
+              <li>Ausência de teste para código novo</li>
+            </ul>
+          </div>
+          <div class="card-grid cols3" style="margin-top:4px">
+            <div style="text-align:center;padding:10px">
+              <div class="verdict-badge v-ok" style="justify-content:center">aprovado</div>
+              <p style="font-size:.75rem;margin-top:6px">Pode fechar a task</p>
+            </div>
+            <div style="text-align:center;padding:10px">
+              <div class="verdict-badge v-warn" style="justify-content:center">c/ ressalvas</div>
+              <p style="font-size:.75rem;margin-top:6px">Fecha, mas registra</p>
+            </div>
+            <div style="text-align:center;padding:10px">
+              <div class="verdict-badge v-block" style="justify-content:center">bloqueado</div>
+              <p style="font-size:.75rem;margin-top:6px">Não fecha — corrige</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: SKILLS/ -->
+  <div class="slide" id="s9">
+    <div class="col w100" style="max-width:960px;gap:16px">
+      <div class="col gap8">
+        <span class="chip chip-green">skills/</span>
+        <h2>Procedimentos reutilizáveis</h2>
+        <p>Skills são procedimentos multi-step que o agente executa quando invocados com <code>/skill-name</code>. Diferentes de commands: skills têm lógica, commands são curtos.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent2)">Tipos de skills</h3>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+              <div>
+                <span class="chip chip-purple">Workflow</span>
+                <p class="mt4">Orquestram o fluxo: grill-me, to-prd, to-tasks, harness-architect, handoff. Instaladas no canônico por padrão.</p>
+              </div>
+              <div>
+                <span class="chip chip-cyan">Stack</span>
+                <p class="mt4">Específicas de tecnologia: fastapi-templates, langgraph-fundamentals, pipeline-architect. Instaladas pelo /harness-architect conforme o tipo de projeto.</p>
+              </div>
+              <div>
+                <span class="chip chip-green">Utilitários</span>
+                <p class="mt4">Comunidade/custom: caveman (comprime output), write-a-skill (cria novas skills), validar, scorecard.</p>
+              </div>
+            </div>
+          </div>
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2)">Caveman — economizador de tokens</h3>
+            <p class="mt4">Comprime output do Claude para estilo conciso/primitivo. Útil em sessões longas quando contexto está ficando cheio. <code>/caveman on</code> → output comprimido. <code>/caveman off</code> → volta ao normal.</p>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent3)">Estrutura de uma skill</h3>
+            <pre style="margin-top:8px"><span class="dir">skills/</span>
+  <span class="dir">minha-skill/</span>
+    <span class="file">SKILL.md</span>          <span class="cm">← instruções principais</span>
+    <span class="file">REFERENCE.md</span>     <span class="cm">← referência técnica</span>
+    <span class="dir">scripts/</span>
+      <span class="file">helper.sh</span>      <span class="cm">← scripts de suporte</span></pre>
+            <p class="mt8">O <code>SKILL.md</code> contém as instruções passo-a-passo. O <code>REFERENCE.md</code> é opcional — carregado só quando a skill precisa de consulta técnica.</p>
+          </div>
+          <div class="highlight green">
+            <h3 style="color:var(--green)">Criar nova skill</h3>
+            <p class="mt4">Use <code>/write-a-skill</code> para criar skills com estrutura correta, progressive disclosure e recursos embutidos. Não crie arquivos de skill à mão.</p>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow)">Instalação</h3>
+            <p class="mt4"><code>skills-lock.json</code> registra quais skills estão instaladas e suas versões. Funciona como um <code>package.json</code> para skills — garante reprodutibilidade entre clones.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: COMMANDS/ -->
+  <div class="slide" id="s10">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-yellow">commands/</span>
+        <h2>Comandos invocáveis</h2>
+        <p>Commands são curtos, diretos, sem processo multi-step. A diferença de uma skill está na complexidade — não no mecanismo.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--green)">/validar</h3>
+            <p class="mt4">Roda o gate manualmente: <code>ruff check --fix</code> + <code>mypy</code> + <code>pytest -q</code>. Mesmo gate do Stop hook, mas on-demand. Útil mid-task para checar antes de commitar.</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--accent2)">/scorecard</h3>
+            <p class="mt4">Lê <code>metrics/entregas.jsonl</code> e exibe métricas de entrega: taxa de autonomia, mediana de tentativas no gate, distribuição de vereditos. Medição da qualidade do agente ao longo do tempo.</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--accent3)">/novo-projeto</h3>
+            <p class="mt4">Orquestrador do fluxo guiado. Faz as 3 perguntas, cria <code>STATUS.md</code> e <code>00-ideia.md</code>, e orienta qual skill chamar a seguir. É um command — curto, mas dispara todo o fluxo.</p>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow)">Command vs Skill — quando usar cada um</h3>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <span class="chip chip-yellow" style="flex-shrink:0">Command</span>
+                <span style="color:var(--text-muted);font-size:.9rem">Menos de ~20 linhas. Executa uma coisa. Sem decisão de bifurcação. Ex: validar, scorecard.</span>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <span class="chip chip-purple" style="flex-shrink:0">Skill</span>
+                <span style="color:var(--text-muted);font-size:.9rem">Procedimento multi-step. Pode ter lógica condicional. Pode chamar subagentes. Ex: grill-me, harness-architect.</span>
+              </div>
+            </div>
+          </div>
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2)">Localização</h3>
+            <p class="mt4">Commands canônicos: <code>.claude/commands/core/</code>. Commands de projeto: <code>.claude/commands/</code>. A diferença é qual escopo eles cobrem — o core é universal, o projeto é específico.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: SEGURANCA.MD -->
+  <div class="slide" id="s11">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-red">rules/seguranca.md</span>
+        <h2>A rule de SI que carrega sempre</h2>
+        <p>Não tem <code>paths:</code> no frontmatter — carrega em toda sessão, independente do que está sendo editado. É a camada mais alta da hierarquia de rules.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card" style="border-color:var(--red)">
+            <h3 style="color:var(--red)">O que a seguranca.md declara</h3>
+            <ul style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+              <li>Banco de dados de produção é somente leitura</li>
+              <li>PII nunca em logs ou outputs de debug</li>
+              <li>Secrets nunca hardcoded (sempre env var)</li>
+              <li>Operações destrutivas bloqueadas (rm -rf, dropdb, down -v)</li>
+              <li>LGPD declarada: base legal registrada antes de processar dados pessoais</li>
+            </ul>
+          </div>
+          <div class="highlight red">
+            <h3 style="color:var(--red)">Se houver conflito — SI ganha sempre</h3>
+            <p class="mt4">Hierarquia: <strong style="color:var(--red)">SI rules</strong> &gt; regras de domínio &gt; regras de path. Nenhuma rule específica pode sobrescrever seguranca.md. Isso não é negociável.</p>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent3)">SI vs nível do assessment</h3>
+            <p class="mt8">A <code>seguranca.md</code> define o piso mínimo. O nível SI do assessment (a/b/c/d) adiciona restrições sobre esse piso:</p>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;gap:10px;align-items:center">
+                <span class="chip chip-green" style="min-width:28px;justify-content:center;display:inline-flex">a</span>
+                <span style="color:var(--text-muted);font-size:.88rem">Público — só o piso da seguranca.md</span>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span class="chip chip-cyan" style="min-width:28px;justify-content:center;display:inline-flex">b</span>
+                <span style="color:var(--text-muted);font-size:.88rem">Interno — + classificação de outputs</span>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span class="chip chip-yellow" style="min-width:28px;justify-content:center;display:inline-flex">c</span>
+                <span style="color:var(--text-muted);font-size:.88rem">Confidencial — + criptografia em repouso</span>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span class="chip chip-red" style="min-width:28px;justify-content:center;display:inline-flex">d</span>
+                <span style="color:var(--text-muted);font-size:.88rem">Restrito — requisitos vão para critérios de aceite obrigatórios nas tasks</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 11</span>
+  <button id="next" onclick="go(1)">Próximo →</button>
+</div>
+
+<script>
+const total = 11;
+let cur = 1;
+const dotsEl = document.getElementById('dots');
+for (let i = 1; i <= total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => show(i);
+  dotsEl.appendChild(d);
+}
+function show(n) {
+  document.getElementById('s' + cur).classList.remove('active');
+  dotsEl.children[cur - 1].classList.remove('active');
+  cur = n;
+  document.getElementById('s' + cur).classList.add('active');
+  dotsEl.children[cur - 1].classList.add('active');
+  document.getElementById('counter').textContent = cur + ' / ' + total;
+  document.getElementById('prev').disabled = cur === 1;
+  document.getElementById('next').disabled = cur === total;
+}
+function go(d) { if (cur + d >= 1 && cur + d <= total) show(cur + d); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>04 — Como Rastrear Progresso · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .flow { display: flex; align-items: stretch; gap: 0; width: 100%; margin-top: 8px; }
+    .flow-step { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 14px; position: relative; display: flex; flex-direction: column; gap: 6px; }
+    .flow-step + .flow-step { margin-left: -1px; border-radius: 0; }
+    .flow-step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .flow-step:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
+    .flow-arrow { display: flex; align-items: center; color: var(--accent); font-size: 1.4rem; padding: 0 4px; flex-shrink: 0; }
+    .step-num { font-size: 1.8rem; font-weight: 800; color: var(--border); line-height: 1; }
+    .step-title { font-size: .9rem; font-weight: 700; color: var(--text); }
+    .step-desc  { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .status-phase { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); }
+    .status-check { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 800; flex-shrink: 0; }
+    .check-done { background: var(--green); color: #000; }
+    .check-active { background: var(--accent); color: #fff; }
+    .check-todo { background: var(--border); color: var(--text-muted); }
+    .task-row { display: grid; grid-template-columns: 80px 1fr 120px 120px; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); font-size: .85rem; }
+    .task-row:hover { background: var(--surface2); }
+    .status-done { color: var(--green); font-weight: 700; font-size: .75rem; }
+    .status-prog { color: var(--yellow); font-weight: 700; font-size: .75rem; }
+    .status-todo { color: var(--text-muted); font-weight: 700; font-size: .75rem; }
+    .metric-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; text-align: center; }
+    .metric-value { font-size: 2rem; font-weight: 800; color: var(--accent); }
+    .metric-label { font-size: .78rem; color: var(--text-muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+<div id="dots" class="dots"></div>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html" class="current">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+</div>
+
+<div class="slides">
+
+  <!-- SLIDE 1: CAPA -->
+  <div class="slide active" id="s1">
+    <div class="col center gap8" style="max-width:720px">
+      <span class="chip chip-purple">Agent Harness Method · 04/09</span>
+      <h1 class="mt8">Como <span class="gradient-text">Rastrear</span> Progresso</h1>
+      <p class="big mt16">Sem perder o fio — do contexto entre sessões até as métricas de entrega que o /scorecard consome.</p>
+      <div class="row mt24" style="justify-content:center;flex-wrap:wrap;gap:10px">
+        <span class="tag"><span class="dot" style="background:var(--accent3)"></span>STATUS.md</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2)"></span>HANDOFF.md</span>
+        <span class="tag"><span class="dot" style="background:var(--green)"></span>metrics/</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow)"></span>ADR</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: A PERGUNTA "ONDE ESTOU?" -->
+  <div class="slide" id="s2">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-cyan">Orientação</span>
+        <h2>"Onde estou?" — 4 fontes de verdade</h2>
+        <p>Cada fonte responde uma pergunta diferente. Ler as 4 juntas dá contexto completo em menos de 2 minutos.</p>
+      </div>
+
+      <div class="card-grid cols2">
+        <div class="card" style="border-color:var(--accent3)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:1.4rem">📍</span>
+            <h3 style="color:var(--accent3)">Em qual fase está o projeto?</h3>
+          </div>
+          <code>.claude/projetos/{slug}/STATUS.md</code>
+          <p class="mt8">Fase atual (ideia → ship), nível SI, checklist de 7 fases. Atualizado por cada agente harness-* ao encerrar.</p>
+        </div>
+        <div class="card" style="border-color:var(--accent2)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:1.4rem">📋</span>
+            <h3 style="color:var(--accent2)">Quais tasks e em que status?</h3>
+          </div>
+          <code>tasks/README.md</code>
+          <p class="mt8">Índice de todas as tasks com status (not-started / in-progress / done) e blockers. Gerado e atualizado pelo harness-build.</p>
+        </div>
+        <div class="card" style="border-color:var(--green)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:1.4rem">🔄</span>
+            <h3 style="color:var(--green)">O que foi feito na última sessão?</h3>
+          </div>
+          <code>HANDOFF.md</code>
+          <p class="mt8">Memória entre sessões. O que foi feito, decisões tomadas, próximo passo imediato. Escrito antes de encerrar uma sessão longa.</p>
+        </div>
+        <div class="card" style="border-color:var(--yellow)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:1.4rem">📊</span>
+            <h3 style="color:var(--yellow)">Qual foi a qualidade das entregas?</h3>
+          </div>
+          <code>metrics/entregas.jsonl</code>
+          <p class="mt8">Histórico mensurável. Uma linha JSON por task fechada. Alimenta o /scorecard com taxa de autonomia, gate attempts, vereditos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: STATUS.MD -->
+  <div class="slide" id="s3">
+    <div class="col w100" style="max-width:960px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-purple">STATUS.md</span>
+        <h2>O dashboard por projeto</h2>
+        <p>Um STATUS.md por projeto em <code>.claude/projetos/{slug}/STATUS.md</code>. Ler este arquivo = entender onde o projeto está em 30 segundos.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="card">
+          <h3 style="color:var(--accent2)">Template do STATUS.md</h3>
+          <pre style="margin-top:8px"><span class="cm"># STATUS — {nome-do-projeto}</span>
+
+<span class="kw">**SI Level:**</span> <span class="str">b (interno)</span>
+<span class="kw">**Fase atual:**</span> <span class="str">03 — PRD</span>
+<span class="kw">**Última atualização:**</span> <span class="str">2026-06-27</span>
+
+<span class="cm">## Fases</span>
+<span class="str">- [x] 00 — Ideia capturada (00-ideia.md)
+- [x] 01 — Grill concluído (01-grill.md)
+- [x] 02 — PRD aprovado (02-prd.md)
+- [ ] 03 — Harness gerado
+- [ ] 04 — Tasks criadas (04-tasks-index.md)
+- [ ] 05 — Build em andamento
+- [ ] 06 — Ship (05-retro.md)</span>
+
+<span class="cm">## Notas de sessão</span>
+<span class="str">PRD aprovado pelo Fábio em 2026-06-27.
+Aguardando harness-architect para gerar
+regras de pipeline.</span></pre>
+        </div>
+        <div class="col gap8">
+          <div class="col gap8">
+            <h3 style="color:var(--text-muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em">Visualização — estado atual</h3>
+            <div class="status-phase"><div class="status-check check-done">✓</div><div><div style="font-size:.85rem;font-weight:700;color:var(--text)">00 — Ideia</div><div style="font-size:.75rem;color:var(--text-muted)">00-ideia.md criado</div></div></div>
+            <div class="status-phase"><div class="status-check check-done">✓</div><div><div style="font-size:.85rem;font-weight:700;color:var(--text)">01 — Grill</div><div style="font-size:.75rem;color:var(--text-muted)">01-grill.md concluído</div></div></div>
+            <div class="status-phase" style="border-color:var(--accent)"><div class="status-check check-active">→</div><div><div style="font-size:.85rem;font-weight:700;color:var(--accent)">03 — Harness</div><div style="font-size:.75rem;color:var(--text-muted)">Em andamento</div></div></div>
+            <div class="status-phase"><div class="status-check check-todo">○</div><div><div style="font-size:.85rem;font-weight:700;color:var(--text-muted)">04 — Tasks</div><div style="font-size:.75rem;color:var(--text-muted)">Aguardando harness</div></div></div>
+            <div class="status-phase"><div class="status-check check-todo">○</div><div><div style="font-size:.85rem;font-weight:700;color:var(--text-muted)">05–06 — Build & Ship</div><div style="font-size:.75rem;color:var(--text-muted)">Aguardando tasks</div></div></div>
+          </div>
+          <div class="highlight cyan">
+            <p>Cada agente <code>harness-*</code> atualiza o STATUS.md ao encerrar — checando a fase concluída e apontando a próxima. Não requer edição manual.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: TASKS/README.MD -->
+  <div class="slide" id="s4">
+    <div class="col w100" style="max-width:960px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-cyan">tasks/README.md</span>
+        <h2>O board de tasks</h2>
+        <p>Criado pelo <code>/to-tasks</code>. Atualizado pelo <code>harness-build</code> à medida que cada task avança. Visão consolidada de todo o backlog.</p>
+      </div>
+
+      <div class="card" style="padding:16px">
+        <div style="font-size:.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Exemplo — tasks/README.md</div>
+        <div class="col gap8">
+          <div class="task-row" style="background:var(--surface2);border-color:var(--border);font-weight:700;font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em">
+            <span>Task</span><span>Título</span><span>Status</span><span>Blocked by</span>
+          </div>
+          <div class="task-row"><span style="color:var(--text-muted);font-family:monospace">task-01</span><span>Implementar endpoint GET /produtos</span><span class="status-done">done</span><span style="color:var(--text-muted);font-size:.8rem">—</span></div>
+          <div class="task-row"><span style="color:var(--text-muted);font-family:monospace">task-02</span><span>Implementar filtros por categoria e região</span><span class="status-done">done</span><span style="color:var(--text-muted);font-size:.8rem">—</span></div>
+          <div class="task-row" style="border-color:var(--yellow)"><span style="color:var(--text-muted);font-family:monospace">task-03</span><span>Integrar Qdrant para busca semântica</span><span class="status-prog">in-progress</span><span style="color:var(--text-muted);font-size:.8rem">—</span></div>
+          <div class="task-row"><span style="color:var(--text-muted);font-family:monospace">task-04</span><span>Endpoint POST /chat com resposta em SSE</span><span class="status-todo">not-started</span><span style="color:var(--text-muted);font-size:.8rem">task-03</span></div>
+          <div class="task-row"><span style="color:var(--text-muted);font-family:monospace">task-05</span><span>Gravar runs no schema harness</span><span class="status-todo">not-started</span><span style="color:var(--text-muted);font-size:.8rem">task-04</span></div>
+        </div>
+      </div>
+
+      <div class="card-grid cols2">
+        <div class="highlight green">
+          <h3 style="color:var(--green)">Cada task tem seu próprio arquivo</h3>
+          <p class="mt4"><code>tasks/task-01-get-produtos.md</code> contém: o que construir, critérios de aceite, contexto técnico, log de tentativas do gate.</p>
+        </div>
+        <div class="highlight yellow">
+          <h3 style="color:var(--yellow)">Blockers são respeitados</h3>
+          <p class="mt4">O harness-build lê os blockers antes de iniciar. Se a task-04 tem "blocked by: task-03" e task-03 não está done, a task-04 é pulada automaticamente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: HANDOFF.MD -->
+  <div class="slide" id="s5">
+    <div class="col w100" style="max-width:960px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-green">HANDOFF.md</span>
+        <h2>Memória entre sessões</h2>
+        <p>Criado pelo skill <code>/handoff</code> — executado manualmente antes de encerrar uma sessão longa. Vive na raiz do projeto.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent3)">Template do HANDOFF.md</h3>
+            <pre style="margin-top:8px"><span class="cm"># HANDOFF — 2026-06-27</span>
+
+<span class="kw">## O que foi feito nessa sessão</span>
+<span class="str">- task-01 concluída e comitada
+- task-02 concluída: filtros por categoria
+  e região com LIMIT 500 + somente leitura
+- task-03 iniciada: Qdrant client conectado,
+  mas busca semântica ainda não testada</span>
+
+<span class="kw">## Decisões tomadas</span>
+<span class="str">- Escolhemos cosine distance para Qdrant
+  (ADR-0002 registrado)
+- Timeout de Qdrant: 3s (ajustável por env)</span>
+
+<span class="kw">## Próximo passo imediato</span>
+<span class="str">Finalizar task-03: testar busca semântica
+com golden dataset em seed/evals/golden/</span>
+
+<span class="kw">## Estado das tasks</span>
+<span class="str">01 ✓ | 02 ✓ | 03 🔄 | 04 ○ | 05 ○</span></pre>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2)">Como usar na próxima sessão</h3>
+            <p class="mt4">Na primeira mensagem da nova sessão, Claude lê o HANDOFF.md e retoma de onde parou — sem precisar reexplicar o contexto. O STATUS.md confirma a fase, o HANDOFF.md confirma o momento exato.</p>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow)">Quando rodar /handoff</h3>
+            <ul style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+              <li>Antes de encerrar uma sessão com mais de 1h de trabalho</li>
+              <li>Antes de uma pausa de mais de um dia</li>
+              <li>Quando está no meio de uma task não concluída</li>
+              <li>Quando tomou uma decisão técnica relevante</li>
+            </ul>
+          </div>
+          <div class="highlight green">
+            <p>O HANDOFF.md não substitui commits e ADRs — é memória de curtíssimo prazo, não documentação permanente. Pode ser sobrescrito a cada sessão.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: METRICS/ENTREGAS.JSONL -->
+  <div class="slide" id="s6">
+    <div class="col w100" style="max-width:960px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-yellow">metrics/entregas.jsonl</span>
+        <h2>Entrega mensurável</h2>
+        <p>Uma linha JSON por task fechada pelo <code>harness-build</code>. Appended automaticamente — nunca editado à mão.</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent2)">Schema de uma linha</h3>
+            <pre style="margin-top:8px">{
+  <span class="str">"issue"</span>: <span class="str">"task-03"</span>,
+  <span class="str">"titulo"</span>: <span class="str">"Integrar Qdrant busca semântica"</span>,
+  <span class="str">"data"</span>: <span class="str">"2026-06-27"</span>,
+  <span class="str">"criterios_aceite"</span>: {
+    <span class="str">"total"</span>: <span class="fn">4</span>,
+    <span class="str">"atendidos"</span>: <span class="fn">4</span>
+  },
+  <span class="str">"gate"</span>: {
+    <span class="str">"resultado"</span>: <span class="str">"verde"</span>,
+    <span class="str">"tentativas_ate_verde"</span>: <span class="fn">2</span>
+  },
+  <span class="str">"revisor"</span>: {
+    <span class="str">"veredito"</span>: <span class="str">"aprovado com ressalvas"</span>,
+    <span class="str">"bloqueantes"</span>: <span class="fn">0</span>,
+    <span class="str">"ressalvas"</span>: <span class="fn">1</span>
+  },
+  <span class="str">"intervencoes_humanas"</span>: <span class="fn">0</span>,
+  <span class="str">"commit"</span>: <span class="str">"a3f9c1d"</span>
+}</pre>
+          </div>
+        </div>
+        <div class="col gap8">
+          <h3 style="color:var(--text-muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em">O que o /scorecard deriva</h3>
+          <div class="card-grid cols2" style="margin-top:0">
+            <div class="metric-box">
+              <div class="metric-value" style="color:var(--green)">87%</div>
+              <div class="metric-label">Taxa de autonomia<br>(tasks com 0 intervenções)</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-value" style="color:var(--accent2)">1.4x</div>
+              <div class="metric-label">Mediana de tentativas<br>até o gate verde</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-value" style="color:var(--accent3)">72%</div>
+              <div class="metric-label">Taxa de aprovação<br>direta do revisor</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-value" style="color:var(--yellow)">0</div>
+              <div class="metric-label">Tasks com bloqueante<br>do revisor</div>
+            </div>
+          </div>
+          <div class="highlight red">
+            <h3 style="color:var(--red)">Aviso de Goodhart</h3>
+            <p class="mt4">O gate é um alvo legítimo — testes reais. Métricas de humano (taxa de aprovação do revisor, intervenções) <strong style="color:var(--red)">não são para o agente otimizar</strong> — são lagging indicators para o time melhorar o harness.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: DOCS/ADR/ -->
+  <div class="slide" id="s7">
+    <div class="col w100" style="max-width:960px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-purple">docs/adr/</span>
+        <h2>Decisões que precisam de memória</h2>
+        <p>ADR = Architecture Decision Record. Escrito quando uma decisão técnica é contestável — não é burocracia, é contexto para o próximo desenvolvedor (ou para você daqui a 3 meses).</p>
+      </div>
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent3)">Quando escrever um ADR</h3>
+            <ul style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+              <li>Decisão técnica com pelo menos 2 alternativas consideradas</li>
+              <li>Decisão que alguém razoável poderia questionar</li>
+              <li>Decisão que teria custo significativo de reversão</li>
+              <li>Quando a Definição de Pronto exige (DoD item 5)</li>
+            </ul>
+          </div>
+          <div class="card" style="border-color:var(--accent)">
+            <h3 style="color:var(--accent)">Formato simples</h3>
+            <pre style="margin-top:8px"><span class="cm"># ADR-0001: LangGraph Determinístico</span>
+
+<span class="kw">## Contexto</span>
+<span class="str">Precisamos de um grafo de agente que
+seja auditável e testável. ReAct livre
+é difícil de testar deterministicamente.</span>
+
+<span class="kw">## Decisão</span>
+<span class="str">Usar LangGraph com grafo determinístico:
+LLM decide DENTRO dos nós, não controla
+o fluxo. search é tool única parametrizada.</span>
+
+<span class="kw">## Alternativas consideradas</span>
+<span class="str">- ReAct livre (descartado: não auditável)
+- LangChain chain (descartado: sem estado)</span>
+
+<span class="kw">## Consequências</span>
+<span class="str">+ Testável, auditável, reprodutível
+- Menos flexível para casos edge</span></pre>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2)">Quando é criado vs arquivado</h3>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <span class="chip chip-yellow" style="flex-shrink:0;font-size:.7rem">Durante build</span>
+                <span style="color:var(--text-muted);font-size:.9rem">O desenvolvedor/agente escreve o ADR no momento da decisão — contexto fresco, alternativas ainda na cabeça.</span>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <span class="chip chip-green" style="flex-shrink:0;font-size:.7rem">No ship</span>
+                <span style="color:var(--text-muted);font-size:.9rem">O harness-ship lista todos os ADRs criados na retro (05-retro.md) — servem como histórico da evolução da arquitetura.</span>
+              </div>
+            </div>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow)">Naming convention</h3>
+            <p class="mt4"><code>docs/adr/ADR-NNNN-descricao-kebab-case.md</code><br>Numeração sequencial. Nunca deleta um ADR — se a decisão mudou, escreve um novo que a supersede.</p>
+          </div>
+          <div class="highlight green">
+            <p>ADR não é documentação de código. É memória organizacional. O código documenta o quê; o ADR documenta o porquê de ter chegado nesse quê.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: AUTO-GERAÇÃO DE DOCS -->
+  <div class="slide" id="s8">
+    <div class="col w100" style="max-width:960px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-green">Auto-geração</span>
+        <h2>Ferramentas que escrevem documentação</h2>
+        <p>O harness privilegia geração automática sobre edição manual — documentação que não é gerada automaticamente tende a ficar desatualizada.</p>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Ferramenta</th>
+              <th>O que cria</th>
+              <th>Quando usar</th>
+              <th>Manual ou auto?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>/readme-maker</code></td>
+              <td>README.md do projeto</td>
+              <td>Ao final de uma feature ou no ship</td>
+              <td><span class="chip chip-yellow" style="font-size:.7rem">Manual</span></td>
+            </tr>
+            <tr>
+              <td><code>/sync-context</code></td>
+              <td>Atualiza CLAUDE.md, CONTEXT.md e AGENTS.md</td>
+              <td>Obrigatório no fechamento (ship / EXIT_COMPLETE do Dev Loop)</td>
+              <td><span class="chip chip-cyan" style="font-size:.7rem">Semi-auto</span></td>
+            </tr>
+            <tr>
+              <td><code>/grill-with-docs</code></td>
+              <td>CONTEXT.md (glossário)</td>
+              <td>Com especialista de domínio presente</td>
+              <td><span class="chip chip-yellow" style="font-size:.7rem">Manual</span></td>
+            </tr>
+            <tr>
+              <td><code>harness-ship</code></td>
+              <td>05-retro.md (retrospectiva)</td>
+              <td>Automático ao encerrar o projeto</td>
+              <td><span class="chip chip-green" style="font-size:.7rem">Auto</span></td>
+            </tr>
+            <tr>
+              <td><code>harness-build</code></td>
+              <td>metrics/entregas.jsonl</td>
+              <td>Automático ao fechar cada task</td>
+              <td><span class="chip chip-green" style="font-size:.7rem">Auto</span></td>
+            </tr>
+            <tr>
+              <td><code>/handoff</code></td>
+              <td>HANDOFF.md</td>
+              <td>Antes de encerrar sessão longa</td>
+              <td><span class="chip chip-yellow" style="font-size:.7rem">Manual</span></td>
+            </tr>
+            <tr>
+              <td>Dev / agente</td>
+              <td>docs/adr/ADR-NNNN.md</td>
+              <td>Durante o build, a cada decisão contestável</td>
+              <td><span class="chip chip-yellow" style="font-size:.7rem">Manual</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight cyan">
+        <p>A regra de ouro: se um documento pode ser gerado automaticamente, ele deve ser. Documentação manual só quando o contexto humano é insubstituível (ADRs, glossário de domínio, handoff).</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 8</span>
+  <button id="next" onclick="go(1)">Próximo →</button>
+</div>
+
+<script>
+const total = 8;
+let cur = 1;
+const dotsEl = document.getElementById('dots');
+for (let i = 1; i <= total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => show(i);
+  dotsEl.appendChild(d);
+}
+function show(n) {
+  document.getElementById('s' + cur).classList.remove('active');
+  dotsEl.children[cur - 1].classList.remove('active');
+  cur = n;
+  document.getElementById('s' + cur).classList.add('active');
+  dotsEl.children[cur - 1].classList.add('active');
+  document.getElementById('counter').textContent = cur + ' / ' + total;
+  document.getElementById('prev').disabled = cur === 1;
+  document.getElementById('next').disabled = cur === total;
+}
+function go(d) { if (cur + d >= 1 && cur + d <= total) show(cur + d); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+});
+</script>
+</body>
+</html>

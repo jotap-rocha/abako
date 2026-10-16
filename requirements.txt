@@ -1,0 +1,10 @@
+# O install-harness (install_harness.py) usa só a standard library do Python 3.10+
+# (argparse, difflib, filecmp, json, shutil, sys, datetime, pathlib) — nenhuma
+# dependência pip é necessária para instalar/atualizar o harness num projeto.
+#
+# Este arquivo existe só como marcador explícito para ferramentas/CI que esperam
+# um requirements.txt na raiz. Não há nada para instalar: basta ter `python3` disponível.
+#
+# Exceção: a skill excalidraw-diagram tem seu próprio ambiente isolado em
+# .claude/skills/excalidraw-diagram/references/.venv/ (playwright, etc.) — não relacionado
+# ao install-harness.

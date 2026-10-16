@@ -1,11 +1,110 @@
+# Secrets e variáveis de ambiente
 .env
-.env.*
-!.env.example
-node_modules/
+.env.local
+.env.*.local
+*.key
+*.pem
+credentials.json
+service-account.json
+
+# Python
 __pycache__/
-.venv/
-dist/
+*.py[cod]
+*$py.class
+*.so
+.Python
 build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+.uv/
+uv.lock
+
+# Pytest / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Mypy
+.mypy_cache/
+*.pyi.bak
+
+# Ruff
+.ruff_cache/
+
+# Node / Frontend
+node_modules/
+dist/
+.next/
+.nuxt/
+.cache/
 *.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
-.claude/
+Thumbs.db
+desktop.ini
+
+# Docker
+docker-compose.override.yml
+
+# Databricks
+.databricks/
+*.dbc
+
+# Spark local
+derby.log
+metastore_db/
+spark-warehouse/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Logs
+logs/
+*.log
+
+# Relatórios gerados
+reports/
+*.html.bak
+
+# Throttle do hook de drift de contexto (check_context_drift.py)
+.claude/.context-drift-stamp
+.cursor/.context-drift-stamp
+
+# Dados temporários
+tmp/
+temp/
+scratch/
+
+# MinIO / S3 local
+data/
+
+# Airflow
+airflow.db
+airflow.cfg
+airflow_webserver_config.py
+logs/
+
+# fluxo-events — stack local de parent (não versionar)
+**/fluxo/stack.json
+
+# Artefatos binários de distribuição
+*.zip
+
+# Analítico local (dados financeiros)
+*.duckdb
+*.duckdb.wal

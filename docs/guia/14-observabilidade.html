@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>13 — Observabilidade em IA · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .pipeline-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .82rem; color: var(--text-muted); background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; width: 100%; }
+    .pipeline-flow .step { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--text); font-size: .8rem; white-space: nowrap; }
+    .pipeline-flow .arrow { color: var(--accent); font-weight: 700; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; }
+    .badge-green { background: #064e3b; color: var(--green); }
+    .badge-red { background: #450a0a; color: var(--red); }
+    .badge-yellow { background: #451a03; color: var(--yellow); }
+    .badge-cyan { background: #0c4a6e; color: var(--accent2); }
+    ul.clean { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    ul.clean li::before { content: "→ "; color: var(--accent); font-weight: 700; }
+    .vs-divider { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: .85rem; font-weight: 600; }
+    .vs-divider::before, .vs-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+  <a href="10-rag-search.html">10 RAG Search</a>
+  <a href="11-langgraph.html">11 LangGraph</a>
+  <a href="#">12 (em breve)</a>
+  <a href="#" class="current">13 Observabilidade</a>
+  <a href="#">14 (em breve)</a>
+  <a href="#">15 (em breve)</a>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="slides" id="slides">
+
+  <!-- Slide 1 — Capa -->
+  <div class="slide active" id="s1">
+    <div class="col" style="align-items:center; gap:24px; max-width:820px; text-align:center;">
+      <span class="chip chip-cyan">Sprint 2 · Agent Harness</span>
+      <h1 class="gradient-text">Observabilidade em IA</h1>
+      <p class="big">Langfuse, structured logging, SLOs e alertas</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px;">
+        <span class="tag"><span class="dot" style="background:var(--accent);"></span>Langfuse</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2);"></span>structlog</span>
+        <span class="tag"><span class="dot" style="background:var(--accent3);"></span>SLOs</span>
+        <span class="tag"><span class="dot" style="background:var(--green);"></span>Métricas</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow);"></span>Alertas</span>
+      </div>
+      <div class="highlight cyan mt16" style="max-width:680px;">
+        <p class="big">"O que você não mede, você não melhora. Em IA, o que não tem trace, não tem diagnóstico."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2 — O problema -->
+  <div class="slide" id="s2">
+    <div class="col" style="gap:20px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">O Problema</span>
+        <h2>Por que observabilidade em IA é diferente?</h2>
+      </div>
+
+      <div class="card-grid cols2" style="gap:16px;">
+        <div class="card col" style="gap:10px;">
+          <h3 style="color:var(--red);">Desafios únicos de LLMs</h3>
+          <ul class="clean">
+            <li><span style="color:var(--red);">Caixa preta:</span> <span style="color:var(--text-muted); font-size:.88rem;">raciocínio interno invisível, saída imprevisível</span></li>
+            <li><span style="color:var(--red);">Custo acumula:</span> <span style="color:var(--text-muted); font-size:.88rem;">cada token custa — sem medição, sem controle</span></li>
+            <li><span style="color:var(--red);">Latência varia:</span> <span style="color:var(--text-muted); font-size:.88rem;">p50 bom, p99 péssimo — média engana</span></li>
+            <li><span style="color:var(--red);">Alucinação silenciosa:</span> <span style="color:var(--text-muted); font-size:.88rem;">não levanta exceção, não aparece no log</span></li>
+            <li><span style="color:var(--red);">Grounding ausente:</span> <span style="color:var(--text-muted); font-size:.88rem;">resposta sem fonte = falha que parece sucesso</span></li>
+          </ul>
+        </div>
+
+        <div class="card col" style="gap:10px;">
+          <h3 style="color:var(--accent2);">Hierarquia de observabilidade</h3>
+          <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">request do usuário</span>
+            </div>
+            <span class="arrow" style="padding-left:8px;">↓ abre</span>
+            <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">[trace] — request inteira</span>
+            <span class="arrow" style="padding-left:8px;">↓ contém</span>
+            <span class="step" style="border-color:#064e3b; color:var(--green);">[span] — suboperação</span>
+            <span class="arrow" style="padding-left:8px;">↓ inclui</span>
+            <span class="step" style="border-color:#451a03; color:var(--yellow);">[generation] — chamada LLM</span>
+            <span class="arrow" style="padding-left:8px;">↓ recebe</span>
+            <span class="step" style="border-color:#312e81; color:var(--accent3);">[score] — avaliação</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight yellow">
+        <h3 style="color:var(--yellow);">Princípio OBS-00</h3>
+        <p class="mt4">Observabilidade em IA não é opcional — é o único caminho para sair do ciclo "deploy e reza". Sem traces, você está voando cego em produção.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3 — Langfuse conceitos -->
+  <div class="slide" id="s3">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Langfuse</span>
+        <h2>Hierarquia de conceitos</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <div class="card-grid cols2" style="gap:12px;">
+            <div class="card col" style="gap:8px; border-color:#312e81;">
+              <h3 style="color:var(--accent3); font-size:.95rem;">Trace</h3>
+              <p class="muted" style="font-size:.82rem;">Request inteira do usuário — do input ao output final. Unidade de observação principal.</p>
+            </div>
+            <div class="card col" style="gap:8px; border-color:#0c4a6e;">
+              <h3 style="color:var(--accent2); font-size:.95rem;">Span</h3>
+              <p class="muted" style="font-size:.82rem;">Suboperação dentro do trace (ex.: recuperar contexto, executar SQL, montar prompt).</p>
+            </div>
+            <div class="card col" style="gap:8px; border-color:#451a03;">
+              <h3 style="color:var(--yellow); font-size:.95rem;">Generation</h3>
+              <p class="muted" style="font-size:.82rem;">Chamada ao LLM com tokens prompt/completion, custo estimado e latência.</p>
+            </div>
+            <div class="card col" style="gap:8px; border-color:#064e3b;">
+              <h3 style="color:var(--green); font-size:.95rem;">Score</h3>
+              <p class="muted" style="font-size:.82rem;">Avaliação humana ou automatizada. Ex.: grounding 0-1, relevância, correto/errado.</p>
+            </div>
+          </div>
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.9rem;">Dataset</h3>
+            <p class="mt4" style="font-size:.82rem;">Coleção de pares input/expected-output. Alimenta evals automatizadas contra golden dataset em <code>seed/evals/golden/</code>.</p>
+          </div>
+        </div>
+
+        <div class="col" style="min-width:300px; gap:12px;">
+          <pre><span class="kw">from</span> langfuse.decorators <span class="kw">import</span> observe, langfuse_context
+
+<span class="cm"># @observe abre um trace automaticamente</span>
+<span class="fn">@observe</span>(name=<span class="str">"agent-run"</span>)
+<span class="kw">async def</span> <span class="fn">run_agent</span>(query: str) -> str:
+    langfuse_context.<span class="fn">update_current_trace</span>(
+        session_id=session_id,
+        user_id=user_id,
+        tags=[<span class="str">"prod"</span>],
+    )
+    result = <span class="kw">await</span> <span class="fn">classify_node</span>(query)
+    <span class="kw">return</span> result
+
+<span class="fn">@observe</span>(name=<span class="str">"classify"</span>)
+<span class="kw">async def</span> <span class="fn">classify_node</span>(query: str):
+    langfuse_context.<span class="fn">update_current_observation</span>(
+        input=query,
+        metadata={<span class="str">"model"</span>: <span class="str">"gpt-4o-mini"</span>},
+    )
+    <span class="cm"># ... lógica do nó</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4 — Langfuse LangChain -->
+  <div class="slide" id="s4">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Integração</span>
+        <h2>Langfuse + LangChain / LangGraph</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <pre><span class="kw">from</span> langfuse.callback <span class="kw">import</span> CallbackHandler
+<span class="kw">from</span> langfuse <span class="kw">import</span> Langfuse
+
+langfuse = <span class="fn">Langfuse</span>()  <span class="cm"># lê LANGFUSE_* do env</span>
+
+<span class="cm"># Factory — cria handler por sessão</span>
+<span class="kw">def</span> <span class="fn">make_handler</span>(session_id: str) -> CallbackHandler:
+    <span class="kw">return</span> <span class="fn">CallbackHandler</span>(
+        session_id=session_id,
+        trace_name=<span class="str">"agent-run"</span>,
+    )
+
+<span class="cm"># Integrar no grafo LangGraph</span>
+<span class="kw">async def</span> <span class="fn">invoke_graph</span>(query: str, session_id: str):
+    handler = <span class="fn">make_handler</span>(session_id)
+    <span class="kw">try</span>:
+        result = <span class="kw">await</span> app.<span class="fn">ainvoke</span>(
+            {<span class="str">"query"</span>: query},
+            config={<span class="str">"callbacks"</span>: [handler]},
+        )
+        <span class="kw">return</span> result
+    <span class="kw">finally</span>:
+        <span class="cm"># OBRIGATÓRIO — flush antes de encerrar</span>
+        langfuse.<span class="fn">flush</span>()</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.95rem;">O que o handler captura</h3>
+            <ul class="clean mt8" style="font-size:.82rem;">
+              <li>Cada chamada LLM como Generation</li>
+              <li>Tokens prompt + completion</li>
+              <li>Custo estimado por modelo</li>
+              <li>Latência de cada nó do grafo</li>
+              <li>Inputs e outputs de cada step</li>
+            </ul>
+          </div>
+          <div class="highlight red">
+            <h3 style="color:var(--red); font-size:.95rem;">Anti-padrão: esquecer flush()</h3>
+            <p class="mt4" style="font-size:.82rem;">O Langfuse envia traces em batch de forma assíncrona. Sem <code>flush()</code> antes de encerrar o processo, traces são perdidos silenciosamente — especialmente em serverless/Lambda.</p>
+          </div>
+          <div class="card" style="gap:8px;">
+            <h3 style="font-size:.9rem;">Env vars necessárias</h3>
+            <p class="muted" style="font-size:.82rem;"><code>LANGFUSE_PUBLIC_KEY</code></p>
+            <p class="muted" style="font-size:.82rem;"><code>LANGFUSE_SECRET_KEY</code></p>
+            <p class="muted" style="font-size:.82rem;"><code>LANGFUSE_HOST</code> (self-hosted)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5 — Structured logging -->
+  <div class="slide" id="s5">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-green">Logging</span>
+        <h2>Structured logging com structlog</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <pre><span class="kw">import</span> structlog, contextvars
+
+<span class="cm"># Configurar uma vez no startup</span>
+structlog.<span class="fn">configure</span>(
+    processors=[
+        structlog.contextvars.<span class="fn">merge_contextvars</span>,
+        structlog.processors.<span class="fn">add_log_level</span>,
+        structlog.processors.<span class="fn">TimeStamper</span>(fmt=<span class="str">"iso"</span>),
+        structlog.processors.<span class="fn">JSONRenderer</span>(),
+    ]
+)
+log = structlog.<span class="fn">get_logger</span>()
+
+<span class="cm"># Router — bind por request</span>
+<span class="kw">async def</span> <span class="fn">chat_endpoint</span>(req: ChatRequest):
+    structlog.contextvars.<span class="fn">clear_contextvars</span>()
+    structlog.contextvars.<span class="fn">bind_contextvars</span>(
+        request_id=req.request_id,
+        path=<span class="str">"/chat"</span>,
+        session_id=req.session_id,
+    )
+    log.<span class="fn">info</span>(<span class="str">"request.received"</span>, query_len=<span class="fn">len</span>(req.query))
+
+<span class="cm"># Agent node — adiciona contexto de nó</span>
+<span class="kw">async def</span> <span class="fn">classify_node</span>(state):
+    log.<span class="fn">info</span>(<span class="str">"node.classify.start"</span>, intent=<span class="str">None</span>)
+    <span class="cm"># ... lógica</span>
+    log.<span class="fn">info</span>(<span class="str">"node.classify.done"</span>, intent=state.intent)</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="card col" style="gap:10px;">
+            <h3 style="font-size:.9rem;">Campos obrigatórios por camada</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+              <div>
+                <span class="badge badge-cyan" style="font-size:.75rem; margin-bottom:4px;">router</span>
+                <p class="muted" style="font-size:.8rem;"><code>request_id</code>, <code>path</code>, <code>method</code></p>
+              </div>
+              <div>
+                <span class="badge badge-green" style="font-size:.75rem; margin-bottom:4px;">service</span>
+                <p class="muted" style="font-size:.8rem;"><code>session_id</code>, <code>user_id</code></p>
+              </div>
+              <div>
+                <span class="badge badge-yellow" style="font-size:.75rem; margin-bottom:4px;">agent</span>
+                <p class="muted" style="font-size:.8rem;"><code>intent</code>, <code>node</code>, <code>latency_ms</code></p>
+              </div>
+            </div>
+          </div>
+          <div class="highlight red">
+            <h3 style="color:var(--red); font-size:.9rem;">Exclusão de PII</h3>
+            <p class="mt4" style="font-size:.82rem;">Nunca logue conteúdo de query do usuário verbatim. Use hash ou truncate. <code>query[:50]</code> no máximo; campos como CPF, e-mail e senha são proibidos nos logs.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6 — Métricas por camada -->
+  <div class="slide" id="s6">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-yellow">Métricas</span>
+        <h2>Métricas por camada</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field
+<span class="kw">import</span> asyncio, time
+
+<span class="fn">@dataclass</span>
+<span class="kw">class</span> <span class="fn">RunMetrics</span>:
+    latency_ms: float = <span class="fn">field</span>(default=<span class="str">0.0</span>)
+    prompt_tokens: int = <span class="fn">field</span>(default=<span class="str">0</span>)
+    completion_tokens: int = <span class="fn">field</span>(default=<span class="str">0</span>)
+    estimated_cost_usd: float = <span class="fn">field</span>(default=<span class="str">0.0</span>)
+    node_timings: dict = <span class="fn">field</span>(default_factory=dict)
+
+<span class="kw">class</span> <span class="fn">MetricsCollector</span>:
+    <span class="kw">async def</span> <span class="fn">measure</span>(self, name: str, coro):
+        t0 = time.<span class="fn">perf_counter</span>()
+        result = <span class="kw">await</span> coro
+        elapsed = (time.<span class="fn">perf_counter</span>() - t0) * <span class="str">1000</span>
+        self.timings[name] = elapsed
+        <span class="kw">return</span> result
+
+    <span class="kw">async def</span> <span class="fn">gather</span>(self, tasks: dict):
+        <span class="kw">return await</span> asyncio.<span class="fn">gather</span>(*tasks.values())
+
+<span class="cm"># SQL: latência p95 e custo/dia</span>
+<span class="cm">-- SELECT percentile_cont(0.95) WITHIN GROUP</span>
+<span class="cm">--   (ORDER BY latency_ms) AS p95_ms</span>
+<span class="cm">--   FROM harness.runs WHERE date = CURRENT_DATE;</span>
+<span class="cm">-- SELECT SUM(estimated_cost_usd) FROM harness.runs</span>
+<span class="cm">--   WHERE created_at::date = CURRENT_DATE;</span></pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="card col" style="gap:10px;">
+            <h3 style="font-size:.9rem;">Onde gravar</h3>
+            <ul class="clean" style="font-size:.82rem;">
+              <li>Schema <code>harness.runs</code> no Postgres</li>
+              <li>Langfuse Generation (tokens + custo)</li>
+              <li>structlog para cada nó do grafo</li>
+            </ul>
+          </div>
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.9rem;">Custo estimado por modelo</h3>
+            <p class="mt4" style="font-size:.82rem;">GPT-4o: <code>input * $2.50/1M + output * $10/1M</code><br/>GPT-4o-mini: <code>input * $0.15/1M + output * $0.60/1M</code><br/>Calcule no nó generate e grave no trace.</p>
+          </div>
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.9rem;">Invariante OBS-02</h3>
+            <p class="mt4" style="font-size:.82rem;">Todo trace Langfuse deve ter <code>estimated_cost_usd</code> preenchido. Trace sem custo = trace incompleto.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7 — SLOs -->
+  <div class="slide" id="s7">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">SLOs</span>
+        <h2>Service Level Objectives</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Métrica</th>
+                <th>SLI (o que medimos)</th>
+                <th>SLO (target)</th>
+                <th>Alerta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Latência</td>
+                <td style="color:var(--text-muted);">p95 end-to-end ms</td>
+                <td><span class="badge badge-green" style="font-size:.75rem;">p95 &lt; 3 000 ms</span></td>
+                <td style="color:var(--text-muted);">&gt; 3 500 ms</td>
+              </tr>
+              <tr>
+                <td>Custo/request</td>
+                <td style="color:var(--text-muted);">USD por run</td>
+                <td><span class="badge badge-green" style="font-size:.75rem;">&lt; $0,05</span></td>
+                <td style="color:var(--text-muted);">&gt; $0,08</td>
+              </tr>
+              <tr>
+                <td>Error rate</td>
+                <td style="color:var(--text-muted);">runs com erro / total</td>
+                <td><span class="badge badge-green" style="font-size:.75rem;">&lt; 1%</span></td>
+                <td style="color:var(--text-muted);">&gt; 2%</td>
+              </tr>
+              <tr>
+                <td>Grounding score</td>
+                <td style="color:var(--text-muted);">score Langfuse p50</td>
+                <td><span class="badge badge-green" style="font-size:.75rem;">&gt; 0,80</span></td>
+                <td style="color:var(--text-muted);">&lt; 0,65</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+
+<span class="fn">@dataclass</span>
+<span class="kw">class</span> <span class="fn">SLOCheck</span>:
+    name: str
+    metric: float
+    target: float
+    higher_is_better: bool = <span class="kw">False</span>
+
+    <span class="kw">def</span> <span class="fn">passing</span>(self) -> bool:
+        <span class="kw">if</span> self.higher_is_better:
+            <span class="kw">return</span> self.metric >= self.target
+        <span class="kw">return</span> self.metric <= self.target</pre>
+        </div>
+
+        <div class="col" style="min-width:260px; gap:12px;">
+          <div class="card col" style="gap:10px;">
+            <h3 style="font-size:.9rem;">SLI vs SLO vs SLA</h3>
+            <p class="muted" style="font-size:.82rem;"><strong style="color:var(--accent3);">SLI</strong> — o que você mede (p95 latência)</p>
+            <p class="muted" style="font-size:.82rem;"><strong style="color:var(--accent2);">SLO</strong> — o target interno (p95 &lt; 3 s)</p>
+            <p class="muted" style="font-size:.82rem;"><strong style="color:var(--yellow);">SLA</strong> — contrato com cliente (&lt; 5 s ou desconto)</p>
+            <p class="muted" style="font-size:.8rem; margin-top:4px;">O SLO é mais restritivo que o SLA — quando viola o SLO, você ainda tem margem antes de violar o SLA.</p>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow); font-size:.9rem;">Invariante OBS-05</h3>
+            <p class="mt4" style="font-size:.82rem;">SLO definido <strong>antes</strong> de ir a produção. Sem SLO, não há como saber se o sistema está saudável ou degradado.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8 — Alertas -->
+  <div class="slide" id="s8">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">Alertas</span>
+        <h2>Alertas e thresholds</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <pre><span class="kw">import</span> httpx
+
+alert_thresholds = {
+    <span class="str">"latency_p95_ms"</span>:   (<span class="str">3500</span>, <span class="kw">False</span>),  <span class="cm"># (limit, higher_ok)</span>
+    <span class="str">"cost_per_run_usd"</span>: (<span class="str">0.08</span>, <span class="kw">False</span>),
+    <span class="str">"error_rate"</span>:       (<span class="str">0.02</span>, <span class="kw">False</span>),
+    <span class="str">"grounding_score"</span>:  (<span class="str">0.65</span>, <span class="kw">True</span>),   <span class="cm"># higher = ok</span>
+}
+
+<span class="kw">async def</span> <span class="fn">check_slos</span>(metrics: dict) -> list[str]:
+    violations = []
+    <span class="kw">for</span> name, (limit, higher_ok) <span class="kw">in</span> alert_thresholds.<span class="fn">items</span>():
+        val = metrics.<span class="fn">get</span>(name, <span class="kw">None</span>)
+        <span class="kw">if</span> val <span class="kw">is None</span>: <span class="kw">continue</span>
+        breach = val < limit <span class="kw">if</span> higher_ok <span class="kw">else</span> val > limit
+        <span class="kw">if</span> breach:
+            violations.<span class="fn">append</span>(<span class="fn">f</span><span class="str">"{name}={val:.3f} (limit={limit})"</span>)
+    <span class="kw">return</span> violations
+
+<span class="kw">async def</span> <span class="fn">notify_slack</span>(violations: list[str]):
+    <span class="kw">if not</span> violations: <span class="kw">return</span>
+    msg = <span class="str">"*[SLO BREACH]* "</span> + <span class="str">", "</span>.<span class="fn">join</span>(violations)
+    <span class="kw">async with</span> httpx.<span class="fn">AsyncClient</span>() <span class="kw">as</span> c:
+        <span class="kw">await</span> c.<span class="fn">post</span>(SLACK_WEBHOOK, json={<span class="str">"text"</span>: msg})</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.95rem;">Quando alertar vs logar</h3>
+            <p class="mt4" style="font-size:.82rem;"><strong style="color:var(--red);">Alerta</strong> = ação humana necessária agora. Ex.: violação de SLO, erro acima de threshold, custo explodiu.</p>
+            <p style="font-size:.82rem; margin-top:8px; color:var(--text-muted);"><strong style="color:var(--accent2);">Log</strong> = diagnóstico posterior. Ex.: latência acima da média, token count alto, tentativa de retry.</p>
+          </div>
+          <div class="card col" style="gap:8px;">
+            <h3 style="font-size:.9rem;">Canais de alerta</h3>
+            <ul class="clean" style="font-size:.82rem;">
+              <li>Slack webhook (síncrono)</li>
+              <li>Email via SendGrid (digest)</li>
+              <li>PagerDuty (on-call crítico)</li>
+              <li>Langfuse alerts (UI config)</li>
+            </ul>
+          </div>
+          <div class="highlight yellow">
+            <p style="font-size:.82rem;">Não crie alerta para cada métrica — <strong>fadiga de alerta</strong> é tão ruim quanto ausência de alerta. Alerte apenas o que exige ação imediata.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9 — Os 5 invariantes -->
+  <div class="slide" id="s9">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">Invariantes</span>
+        <h2>Os 5 invariantes de observabilidade</h2>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Invariante</th>
+            <th>O que proíbe</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-cyan" style="font-size:.75rem;">OBS-01</span></td>
+            <td>Toda chamada LLM tem trace Langfuse</td>
+            <td style="color:var(--text-muted); font-size:.85rem;">LLM invocado fora de um trace aberto; handler omitido no grafo</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-cyan" style="font-size:.75rem;">OBS-02</span></td>
+            <td>Custo estimado gravado no trace</td>
+            <td style="color:var(--text-muted); font-size:.85rem;"><code>estimated_cost_usd = None</code> no trace; geração sem cálculo de tokens</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-cyan" style="font-size:.75rem;">OBS-03</span></td>
+            <td>Log estruturado em toda camada (não print)</td>
+            <td style="color:var(--text-muted); font-size:.85rem;"><code>print()</code> em código de produção; <code>logging.basicConfig</code> sem structlog</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-cyan" style="font-size:.75rem;">OBS-04</span></td>
+            <td>flush() antes de encerrar o processo</td>
+            <td style="color:var(--text-muted); font-size:.85rem;">Processo encerrado sem <code>langfuse.flush()</code>; traces parciais perdidos</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-cyan" style="font-size:.75rem;">OBS-05</span></td>
+            <td>SLO definido antes de go live</td>
+            <td style="color:var(--text-muted); font-size:.85rem;">Feature em produção sem SLO documentado; threshold de alerta ausente</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="highlight yellow mt8">
+        <h3 style="color:var(--yellow);">Como verificar</h3>
+        <p class="mt4">OBS-01 a OBS-04 são checáveis em code review e nos testes de integração do grafo. OBS-05 é verificado pelo <code>/scorecard</code> antes de fechar a issue — feature sem SLO não passa na Definição de Pronto.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10 — O harness para observabilidade -->
+  <div class="slide" id="s10">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-green">Harness</span>
+        <h2>O harness para observabilidade</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <div class="card col" style="gap:10px;">
+            <h3 style="font-size:.95rem; color:var(--accent3);">KB de observabilidade</h3>
+            <p class="muted" style="font-size:.82rem;">Estrutura em <code>kb/observabilidade/</code>:</p>
+            <ul class="clean" style="font-size:.82rem;">
+              <li><code>index.md</code> — mapa do domínio + invariantes OBS-01 a OBS-05</li>
+              <li><code>concepts/langfuse.md</code> — hierarquia + API + flush</li>
+              <li><code>concepts/structured-logging.md</code> — structlog + contextvars + PII</li>
+              <li><code>concepts/slos.md</code> — SLI/SLO/SLA + thresholds</li>
+              <li><code>patterns/metrics-collector.md</code> — RunMetrics + asyncio.gather</li>
+              <li><code>patterns/alert-webhook.md</code> — check_slos + notify_slack</li>
+            </ul>
+          </div>
+
+          <div class="card col" style="gap:10px;">
+            <h3 style="font-size:.95rem; color:var(--accent2);">Langfuse no docker-compose (planejado)</h3>
+            <pre style="font-size:.78rem;"><span class="cm"># docker-compose.yml — adicionar:</span>
+langfuse:
+  image: langfuse/langfuse:latest
+  environment:
+    DATABASE_URL: postgresql://...
+    NEXTAUTH_SECRET: <span class="str">"..."</span>
+    SALT: <span class="str">"..."</span>
+  ports: [<span class="str">"3001:3000"</span>]
+  depends_on: [postgres]</pre>
+          </div>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.95rem;">Env vars necessárias</h3>
+            <ul class="clean mt8" style="font-size:.82rem;">
+              <li><code>LANGFUSE_PUBLIC_KEY</code></li>
+              <li><code>LANGFUSE_SECRET_KEY</code></li>
+              <li><code>LANGFUSE_HOST=http://langfuse:3000</code></li>
+              <li><code>SLACK_WEBHOOK_URL</code></li>
+              <li><code>SLO_LATENCY_MS=3000</code></li>
+            </ul>
+          </div>
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.95rem;">Fluxo contínuo</h3>
+            <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:6px; background:transparent; border:none; padding:8px 0 0 0;">
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">brainstorm — definir SLOs</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">build — instrumentar traces</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#064e3b; color:var(--green);">medir — Langfuse dashboard</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#451a03; color:var(--yellow);">melhorar — iterar nos nós</span>
+              <span class="arrow" style="padding-left:8px;">↓ repeat</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<nav class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 10</span>
+  <button id="next" onclick="go(1)">Proximo →</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  let cur = 0;
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => go(i - cur);
+    dotsEl.appendChild(d);
+  });
+  function go(delta) {
+    slides[cur].classList.remove('active');
+    dotsEl.children[cur].classList.remove('active');
+    cur = Math.max(0, Math.min(slides.length - 1, cur + delta));
+    slides[cur].classList.add('active');
+    dotsEl.children[cur].classList.add('active');
+    document.getElementById('counter').textContent = `${cur + 1} / ${slides.length}`;
+    document.getElementById('prev').disabled = cur === 0;
+    document.getElementById('next').disabled = cur === slides.length - 1;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  });
+</script>
+
+</body>
+</html>

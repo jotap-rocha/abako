@@ -1,0 +1,28 @@
+---
+# Regras de domínio financeiro do sisfin
+paths:
+  - "backend/**"
+  - "db/**"
+  - "pipeline/**"
+  - "frontend/**"
+  - "tests/**"
+  - "fixtures/**"
+---
+
+# Domínio financeiro
+
+Fonte da verdade: `tests/contracts/invariantes.yaml` (INV-01..26), `fixtures/numericos.yaml` e os ADRs 006–023. Esta rule só lembra o que o agente não pode quebrar.
+
+- **Dinheiro nunca é float.** `NUMERIC` no banco, `Decimal` no Python, texto no JSON e no front (ADR 012, INV-14).
+- **Regra de cálculo vive no SQL/backend**, nunca no front (ADR 015). O front só formata na borda.
+- **Ledger:** edição = nova versão, só a vigente conta, exclusão lógica. Nunca `UPDATE`/`DELETE` nas tabelas de versão (ADR 006, 019).
+- **Divergência de saldo** é sinalizada, nunca corrigida sozinha (INV-03, INV-23).
+- **Gasto real** exclui transferência, investimento, repasse, rendimento, pagamento de fatura, terceiros e conta de benefício (INV-04, 05, 11, 20).
+- **Parcelas:** soma = total; a última absorve os centavos. Limite usa o valor total da compra (INV-02, 06).
+- **R2** usa só a fatura própria; crédito do vale nunca entra no disponível (INV-18, 26).
+- **Vale:** sobra = Σ max(resta, 0) por bolso; decisão nunca move saldo (INV-25).
+- **Datas** de negócio são datas civis em `America/Sao_Paulo`; nada de timestamp/UTC para data de negócio (ADR 012).
+- **`user_id`:** toda tabela o tem; toda consulta filtra pelo `user_id` da **sessão**, nunca do corpo da requisição (INV-13).
+- **Toda regra nova nasce com invariante + fixture + teste.** Valor esperado dos testes vem das fixtures calculadas à mão, nunca recalculado pela mesma fórmula do código (sem tautologia).
+- **Analítico unidirecional:** o pipeline lê o Postgres por papel somente leitura e escreve só no arquivo DuckDB, com troca atômica (ADR 008).
+- **Testes só contra `tst`.** A suíte aborta se a conexão não for a de teste (ADR 021).

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>15 — Testing Patterns · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .pipeline-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .82rem; color: var(--text-muted); background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; width: 100%; }
+    .pipeline-flow .step { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--text); font-size: .8rem; white-space: nowrap; }
+    .pipeline-flow .arrow { color: var(--accent); font-weight: 700; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; }
+    .badge-green { background: #064e3b; color: var(--green); }
+    .badge-red { background: #450a0a; color: var(--red); }
+    .badge-yellow { background: #451a03; color: var(--yellow); }
+    .badge-cyan { background: #0c4a6e; color: var(--accent2); }
+    ul.clean { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    ul.clean li::before { content: "→ "; color: var(--accent); font-weight: 700; }
+    .vs-divider { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: .85rem; font-weight: 600; }
+    .vs-divider::before, .vs-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="file-nav">
+  <a href="#">01 Conceitos</a>
+  <a href="#">02 Fluxo</a>
+  <a href="#">03 Harness</a>
+  <a href="#">04 Tracking</a>
+  <a href="#">05 Guiado</a>
+  <a href="#">06 Segurança</a>
+  <a href="#">07 Pipeline Arq.</a>
+  <a href="#">08 Pipeline Prat.</a>
+  <a href="#">09 Agentes SDD</a>
+  <a href="#">10 RAG Search</a>
+  <a href="#">11 LangGraph</a>
+  <a href="#">12</a>
+  <a href="#">13</a>
+  <a href="#">14</a>
+  <a href="#" class="current">15 Testing</a>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="slides" id="slides">
+
+  <!-- Slide 1 — Capa -->
+  <div class="slide active" id="s1">
+    <div class="col" style="align-items:center; gap:24px; max-width:820px; text-align:center;">
+      <span class="chip chip-purple">Sprint 3 · Agent Harness</span>
+      <h1 class="gradient-text">Testing Patterns</h1>
+      <p class="big">Pirâmide, pytest, vitest e fronteiras de mock</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px;">
+        <span class="tag"><span class="dot" style="background:var(--accent);"></span>Pirâmide</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2);"></span>pytest fixtures</span>
+        <span class="tag"><span class="dot" style="background:var(--accent3);"></span>Factory pattern</span>
+        <span class="tag"><span class="dot" style="background:var(--green);"></span>vitest</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow);"></span>Mock boundaries</span>
+      </div>
+      <div class="highlight cyan mt16" style="max-width:680px;">
+        <p class="big">"Teste o comportamento, não a implementação. Mock o que for externo; use o real para o que for seu."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2 — A Pirâmide -->
+  <div class="slide" id="s2">
+    <div class="col" style="gap:20px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Estratégia</span>
+        <h2>A Pirâmide — 70 / 25 / 5</h2>
+      </div>
+
+      <div class="card-grid cols3" style="gap:12px; margin-bottom:4px;">
+        <div class="card col" style="gap:8px; border-color:#064e3b;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="badge badge-green">70%</span>
+            <h3 style="color:var(--green);">Unit</h3>
+          </div>
+          <p style="font-size:.85rem;">Lógica pura. Todo I/O externo mockado. Roda em milissegundos.</p>
+        </div>
+        <div class="card col" style="gap:8px; border-color:#312e81;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="badge" style="background:#1e1a3a; color:var(--accent3);">25%</span>
+            <h3 style="color:var(--accent3);">Integration</h3>
+          </div>
+          <p style="font-size:.85rem;">Banco real, LLM mockado. Verifica contratos entre camadas.</p>
+        </div>
+        <div class="card col" style="gap:8px; border-color:#451a03;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="badge badge-yellow">5%</span>
+            <h3 style="color:var(--yellow);">E2E</h3>
+          </div>
+          <p style="font-size:.85rem;">Playwright. Caminho feliz apenas. Detecta regressão de UI.</p>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Camada</th>
+            <th>O que testa</th>
+            <th>O que mocka</th>
+            <th>Velocidade</th>
+            <th>Quando escrever</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="color:var(--green);">Unit</span></td>
+            <td>Funções, regras de negócio, transformações</td>
+            <td>LLM, banco, HTTP, Qdrant, filesystem</td>
+            <td>&lt; 1 ms</td>
+            <td>Sempre — TDD ou junto com a feature</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--accent3);">Integration</span></td>
+            <td>Repositórios, services com banco, grafo LangGraph</td>
+            <td>LLM, HTTP externo</td>
+            <td>100 ms – 2 s</td>
+            <td>Para cada boundary com infra real</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--yellow);">E2E</span></td>
+            <td>Fluxo completo do usuário</td>
+            <td>Nada (ou serviços externos opcionais)</td>
+            <td>5 – 30 s</td>
+            <td>Caminho feliz + 1 caminho de erro crítico</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="highlight green">
+        <h3 style="color:var(--green);">Regra prática</h3>
+        <p class="mt4">Se o teste levou mais de 2 s para rodar, provavelmente está no nível errado da pirâmide — ou está fazendo I/O onde não deveria.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3 — O que mockar -->
+  <div class="slide" id="s3">
+    <div class="col" style="gap:20px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-yellow">Fronteiras</span>
+        <h2>O que mockar — e o que não mockar</h2>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Dependência</th>
+            <th>Unit</th>
+            <th>Integration</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>LLM (OpenAI, Anthropic)</td>
+            <td><span class="badge badge-red">sempre mockar</span></td>
+            <td><span class="badge badge-red">sempre mockar</span></td>
+            <td>Custo, latência, não-determinismo, rate limit</td>
+          </tr>
+          <tr>
+            <td>HTTP externo (APIs)</td>
+            <td><span class="badge badge-red">mockar</span></td>
+            <td><span class="badge badge-red">mockar</span></td>
+            <td>Evita dependência de disponibilidade externa</td>
+          </tr>
+          <tr>
+            <td>Banco de dados (Postgres)</td>
+            <td><span class="badge badge-red">mock em unit</span></td>
+            <td><span class="badge badge-green">real em integration</span></td>
+            <td>Queries, migrações e constraints precisam de banco real</td>
+          </tr>
+          <tr>
+            <td>Qdrant</td>
+            <td><span class="badge badge-red">mock em unit</span></td>
+            <td><span class="badge badge-green">real em integration</span></td>
+            <td>Filtros de payload e ranking precisam do engine real</td>
+          </tr>
+          <tr>
+            <td>Filesystem</td>
+            <td><span class="badge badge-green">real</span></td>
+            <td><span class="badge badge-green">real</span></td>
+            <td>Simples, determinístico, sem estado compartilhado</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="highlight yellow">
+        <h3 style="color:var(--yellow);">Lição do workshop</h3>
+        <p class="mt4">Um mock de banco passou em CI por 3 sprints. Na primeira migração real em prod, a constraint <code>UNIQUE(tenant_id, titulo)</code> explodiu — o mock não a conhecia. <strong>Banco real em integration não é opcional.</strong></p>
+      </div>
+
+      <div class="highlight cyan">
+        <h3 style="color:var(--accent2);">Critério de decisão</h3>
+        <p class="mt4">Se a dependência tem <em>estado persistido</em>, <em>schema</em> ou <em>comportamento não-trivial</em> — use o real em integration. Se tem custo, latência ou não-determinismo — mock.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4 — pytest fixtures — scopes -->
+  <div class="slide" id="s4">
+    <div class="col" style="gap:18px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">pytest</span>
+        <h2>Fixtures — Scopes</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Scope</th>
+                <th>Cria uma vez por</th>
+                <th>Usar para</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>function</code></td>
+                <td>Cada teste</td>
+                <td>Transação com rollback, estado isolado</td>
+              </tr>
+              <tr>
+                <td><code>class</code></td>
+                <td>Classe de testes</td>
+                <td>Contexto compartilhado por grupo de testes</td>
+              </tr>
+              <tr>
+                <td><code>module</code></td>
+                <td>Arquivo <code>.py</code></td>
+                <td>Setup caro mas não global (seed de tabela)</td>
+              </tr>
+              <tr>
+                <td><code>session</code></td>
+                <td>Toda a suíte</td>
+                <td>Pool de conexões, containers Docker</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="highlight green" style="margin-top:4px;">
+            <h3 style="color:var(--green); font-size:.9rem;">Padrão recomendado</h3>
+            <p class="mt4" style="font-size:.82rem;">Pool em <code>session</code>, transação com rollback em <code>function</code>. Cada teste começa limpo sem recriar o banco.</p>
+          </div>
+        </div>
+
+        <div class="col" style="min-width:380px; gap:10px;">
+          <pre><span class="cm"># tests/conftest.py</span>
+<span class="kw">import</span> pytest
+<span class="kw">import</span> asyncpg
+
+<span class="kw">@pytest.fixture</span>(scope=<span class="str">"session"</span>)
+<span class="kw">async def</span> <span class="fn">db_pool</span>():
+    pool = <span class="kw">await</span> asyncpg.<span class="fn">create_pool</span>(
+        dsn=<span class="str">"postgresql://test:test@localhost/testdb"</span>
+    )
+    <span class="kw">yield</span> pool
+    <span class="kw">await</span> pool.<span class="fn">close</span>()
+
+<span class="kw">@pytest.fixture</span>(scope=<span class="str">"function"</span>)
+<span class="kw">async def</span> <span class="fn">db_conn</span>(db_pool):
+    <span class="kw">async with</span> db_pool.<span class="fn">acquire</span>() <span class="kw">as</span> conn:
+        <span class="cm"># Abre transação — rollback ao sair</span>
+        tr = conn.<span class="fn">transaction</span>()
+        <span class="kw">await</span> tr.<span class="fn">start</span>()
+        <span class="kw">yield</span> conn
+        <span class="kw">await</span> tr.<span class="fn">rollback</span>()
+</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5 — Factory fixtures -->
+  <div class="slide" id="s5">
+    <div class="col" style="gap:18px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Factory Pattern</span>
+        <h2>Factory Fixtures</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <pre><span class="cm"># tests/conftest.py</span>
+TENANT_A = <span class="str">"tenant-aaa-111"</span>
+TENANT_B = <span class="str">"tenant-bbb-222"</span>
+
+<span class="kw">@pytest.fixture</span>
+<span class="kw">def</span> <span class="fn">make_caso</span>(db_conn):
+    <span class="str">"""Retorna função de criação com defaults."""</span>
+    <span class="kw">async def</span> <span class="fn">_factory</span>(
+        tenant_id: str = TENANT_A,
+        titulo: str = <span class="str">"Caso de teste"</span>,
+        status: str = <span class="str">"aberto"</span>,
+        **kwargs,
+    ):
+        row = <span class="kw">await</span> db_conn.<span class="fn">fetchrow</span>(
+            <span class="str">"""INSERT INTO casos
+               (tenant_id, titulo, status)
+               VALUES ($1, $2, $3)
+               RETURNING *"""</span>,
+            tenant_id, titulo, status,
+        )
+        <span class="kw">return</span> dict(row)
+    <span class="kw">return</span> _factory
+
+<span class="cm"># No teste</span>
+<span class="kw">async def</span> <span class="fn">test_isolamento_tenant</span>(make_caso):
+    caso_a = <span class="kw">await</span> <span class="fn">make_caso</span>(tenant_id=TENANT_A)
+    caso_b = <span class="kw">await</span> <span class="fn">make_caso</span>(tenant_id=TENANT_B)
+    <span class="kw">assert</span> caso_a[<span class="str">"tenant_id"</span>] != caso_b[<span class="str">"tenant_id"</span>]
+</pre>
+        </div>
+
+        <div class="col" style="min-width:300px; gap:12px;">
+          <div class="card col" style="gap:10px; border-color:#0c4a6e;">
+            <h3 style="color:var(--accent2);">Por que factory &gt; dados hard-coded</h3>
+            <ul class="clean" style="margin-top:4px;">
+              <li><span style="font-size:.85rem;">Parâmetros opcionais com defaults sensatos</span></li>
+              <li><span style="font-size:.85rem;">Reutilizável em toda a suíte sem duplicação</span></li>
+              <li><span style="font-size:.85rem;">Testes declarativos: o teste expressa o que importa</span></li>
+              <li><span style="font-size:.85rem;">Fácil de evoluir quando o schema muda</span></li>
+            </ul>
+          </div>
+          <div class="highlight">
+            <h3 style="font-size:.9rem;">Constantes no conftest</h3>
+            <p class="mt4" style="font-size:.82rem;"><code>TENANT_A</code> e <code>TENANT_B</code> em <code>tests/conftest.py</code> — importáveis em qualquer módulo de teste sem reimportar o fixture.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6 — Mock fixtures -->
+  <div class="slide" id="s6">
+    <div class="col" style="gap:18px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">Mocks</span>
+        <h2>Mock Fixtures — Composição</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="cm"># tests/unit/conftest.py</span>
+<span class="kw">from</span> unittest.mock <span class="kw">import</span> AsyncMock, MagicMock
+<span class="kw">import</span> pytest
+
+<span class="kw">@pytest.fixture</span>
+<span class="kw">def</span> <span class="fn">mock_llm</span>():
+    llm = <span class="fn">AsyncMock</span>()
+    llm.<span class="fn">ainvoke</span>.return_value = <span class="fn">AsyncMock</span>(
+        content=<span class="str">"resposta mock"</span>
+    )
+    <span class="kw">return</span> llm
+
+<span class="kw">@pytest.fixture</span>
+<span class="kw">def</span> <span class="fn">mock_qdrant</span>():
+    qdrant = <span class="fn">MagicMock</span>()
+    qdrant.<span class="fn">search</span>.return_value = []
+    <span class="kw">return</span> qdrant
+
+<span class="kw">@pytest.fixture</span>
+<span class="kw">def</span> <span class="fn">chat_service</span>(mock_llm, mock_qdrant, db_conn):
+    <span class="kw">from</span> app.services.chat <span class="kw">import</span> ChatService
+    <span class="kw">return</span> <span class="fn">ChatService</span>(
+        llm=mock_llm,
+        qdrant=mock_qdrant,
+        conn=db_conn,
+    )
+</pre>
+        </div>
+
+        <div class="col" style="min-width:320px; gap:12px;">
+          <div class="card col" style="gap:10px; border-color:#064e3b;">
+            <h3 style="color:var(--green);">Hierarquia de conftest</h3>
+            <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:6px; margin-top:4px;">
+              <span class="step" style="border-color:#064e3b; color:var(--green);">tests/conftest.py</span>
+              <p style="font-size:.75rem; color:var(--text-muted); padding-left:8px;">db_pool, db_conn, TENANT_A/B, make_caso</p>
+              <span class="arrow" style="padding-left:12px;">↓</span>
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">tests/unit/conftest.py</span>
+              <p style="font-size:.75rem; color:var(--text-muted); padding-left:8px;">mock_llm, mock_qdrant, chat_service</p>
+              <span class="arrow" style="padding-left:12px;">↓</span>
+              <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">tests/integration/conftest.py</span>
+              <p style="font-size:.75rem; color:var(--text-muted); padding-left:8px;">llm real (opicional), qdrant real</p>
+            </div>
+          </div>
+          <div class="highlight cyan">
+            <p style="font-size:.82rem;">Fixtures de escopo maior são herdadas. Unit herda <code>db_conn</code> do global mas substitui o LLM pelo mock.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7 — pytest patterns -->
+  <div class="slide" id="s7">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Patterns</span>
+        <h2>pytest — Patterns Essenciais</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="cm"># pytest.ini / pyproject.toml</span>
+[tool.pytest.ini_options]
+asyncio_mode = <span class="str">"auto"</span>
+addopts = <span class="str">"--cov=app --cov-fail-under=80"</span>
+markers = [
+    <span class="str">"integration: marca testes de integração"</span>,
+    <span class="str">"slow: testes lentos (> 2s)"</span>,
+    <span class="str">"llm: requer chamada real ao LLM"</span>,
+]
+
+<span class="cm"># Parametrize: casos felizes + edge cases</span>
+<span class="kw">@pytest.mark.parametrize</span>(<span class="str">"query,esperado"</span>, [
+    (<span class="str">"vendas do mês"</span>, <span class="str">"SELECT"</span>),
+    (<span class="str">""</span>,              <span class="kw">None</span>),      <span class="cm"># string vazia</span>
+    (<span class="kw">None</span>,            <span class="kw">None</span>),      <span class="cm"># None</span>
+])
+<span class="kw">async def</span> <span class="fn">test_classify</span>(query, esperado, chat_service):
+    resultado = <span class="kw">await</span> chat_service.<span class="fn">classify</span>(query)
+    <span class="kw">assert</span> resultado == esperado, (
+        <span class="str">f"classify({query!r}) retornou {resultado!r}, esperado {esperado!r}"</span>
+    )
+
+<span class="cm"># Exceções com match de mensagem</span>
+<span class="kw">def</span> <span class="fn">test_query_sem_limit</span>(sql_validator):
+    <span class="kw">with</span> pytest.<span class="fn">raises</span>(ValueError, match=<span class="str">"LIMIT obrigatório"</span>):
+        sql_validator.<span class="fn">validate</span>(<span class="str">"SELECT * FROM pedidos"</span>)
+</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="card col" style="gap:8px; border-color:#312e81;">
+            <h3 style="color:var(--accent3);">Markers em uso</h3>
+            <ul class="clean" style="margin-top:4px;">
+              <li><code style="font-size:.78rem;">-m "not integration"</code> — só unit (CI rápido)</li>
+              <li><code style="font-size:.78rem;">-m integration</code> — testes com banco</li>
+              <li><code style="font-size:.78rem;">-m "not slow"</code> — exclui testes lentos</li>
+              <li><code style="font-size:.78rem;">-m llm</code> — requer API key real</li>
+            </ul>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow); font-size:.9rem;">assert com mensagem</h3>
+            <p class="mt4" style="font-size:.82rem;">Sempre inclua contexto no assert. Quando falhar às 2h, a mensagem salva o debug.</p>
+          </div>
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.9rem;">Coverage gate</h3>
+            <p class="mt4" style="font-size:.82rem;"><code>--cov-fail-under=80</code> no gate impede que o PR passe com coverage abaixo do mínimo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8 — vitest — setup e componentes -->
+  <div class="slide" id="s8">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-green">Frontend</span>
+        <h2>vitest — Setup e Componentes</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="cm">// vitest.config.ts</span>
+<span class="kw">import</span> { defineConfig } <span class="kw">from</span> <span class="str">'vitest/config'</span>
+
+<span class="kw">export default</span> <span class="fn">defineConfig</span>({
+  test: {
+    environment: <span class="str">'jsdom'</span>,
+    setupFiles: [<span class="str">'./src/tests/setup.ts'</span>],
+    globals: <span class="kw">true</span>,
+  },
+})
+
+<span class="cm">// src/tests/setup.ts</span>
+<span class="kw">import</span> <span class="str">'@testing-library/jest-dom'</span>
+<span class="kw">import</span> { vi } <span class="kw">from</span> <span class="str">'vitest'</span>
+
+vi.<span class="fn">mock</span>(<span class="str">'@/lib/supabase'</span>, () => ({
+  supabase: { from: vi.<span class="fn">fn</span>() }
+}))
+
+<span class="cm">// Teste de componente — padrão AAA</span>
+<span class="kw">import</span> { render, screen } <span class="kw">from</span> <span class="str">'@testing-library/react'</span>
+<span class="kw">import</span> userEvent <span class="kw">from</span> <span class="str">'@testing-library/user-event'</span>
+
+it(<span class="str">'exibe erro quando campo vazio'</span>, <span class="kw">async</span> () => {
+  <span class="cm">// Arrange</span>
+  <span class="fn">render</span>(&lt;FormCaso /&gt;)
+  <span class="cm">// Act</span>
+  <span class="kw">await</span> userEvent.<span class="fn">click</span>(screen.<span class="fn">getByRole</span>(<span class="str">'button'</span>, { name: <span class="str">/salvar/i</span> }))
+  <span class="cm">// Assert</span>
+  <span class="fn">expect</span>(screen.<span class="fn">getByRole</span>(<span class="str">'alert'</span>)).<span class="fn">toBeInTheDocument</span>()
+})
+</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="card col" style="gap:10px; border-color:#064e3b;">
+            <h3 style="color:var(--green);">getByRole &gt; className</h3>
+            <ul class="clean" style="margin-top:4px;">
+              <li><span style="font-size:.82rem;">Reflete como o usuário percebe o UI</span></li>
+              <li><span style="font-size:.82rem;">Valida acessibilidade implicitamente</span></li>
+              <li><span style="font-size:.82rem;">Resistente a refactoring de estilos</span></li>
+              <li><span style="font-size:.82rem;">Falha quando o role semântico muda — sinal real</span></li>
+            </ul>
+          </div>
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.9rem;">Por que jsdom?</h3>
+            <p class="mt4" style="font-size:.82rem;">Simula DOM no Node sem browser. Suficiente para testar lógica de componente. Use Playwright apenas para E2E.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9 — vitest — hooks customizados -->
+  <div class="slide" id="s9">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Hooks React</span>
+        <h2>vitest — Hooks Customizados</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="kw">import</span> { renderHook, waitFor } <span class="kw">from</span> <span class="str">'@testing-library/react'</span>
+<span class="kw">import</span> { vi, expect, it } <span class="kw">from</span> <span class="str">'vitest'</span>
+<span class="kw">import</span> { useCasos } <span class="kw">from</span> <span class="str">'@/hooks/useCasos'</span>
+<span class="kw">import</span> { supabase } <span class="kw">from</span> <span class="str">'@/lib/supabase'</span>
+
+it(<span class="str">'carrega casos e limpa loading'</span>, <span class="kw">async</span> () => {
+  <span class="cm">// Mock chain: from().select().eq()</span>
+  <span class="kw">const</span> mockEq = vi.<span class="fn">fn</span>().<span class="fn">mockResolvedValue</span>({
+    data: [{ id: <span class="str">'1'</span>, titulo: <span class="str">'Fraude PIX'</span> }],
+    error: <span class="kw">null</span>,
+  })
+  <span class="kw">const</span> mockSelect = vi.<span class="fn">fn</span>().<span class="fn">mockReturnValue</span>({ eq: mockEq })
+  vi.<span class="fn">mocked</span>(supabase.from).<span class="fn">mockReturnValue</span>({ select: mockSelect } <span class="kw">as any</span>)
+
+  <span class="kw">const</span> { result } = <span class="fn">renderHook</span>(() => <span class="fn">useCasos</span>(<span class="str">'tenant-123'</span>))
+
+  <span class="cm">// Verifica estado inicial loading</span>
+  <span class="fn">expect</span>(result.current.loading).<span class="fn">toBe</span>(<span class="kw">true</span>)
+
+  <span class="kw">await</span> <span class="fn">waitFor</span>(() => {
+    <span class="fn">expect</span>(result.current.loading).<span class="fn">toBe</span>(<span class="kw">false</span>)
+  })
+
+  <span class="cm">// Verifica dados retornados</span>
+  <span class="fn">expect</span>(result.current.casos).<span class="fn">toHaveLength</span>(1)
+  <span class="fn">expect</span>(result.current.casos[0].titulo).<span class="fn">toBe</span>(<span class="str">'Fraude PIX'</span>)
+  <span class="fn">expect</span>(result.current.error).<span class="fn">toBeNull</span>()
+})
+</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="card col" style="gap:10px; border-color:#450a0a;">
+            <h3 style="color:var(--red);">Anti-padrão</h3>
+            <p style="font-size:.82rem; margin-top:4px;">Testar implementação em vez de comportamento:</p>
+            <pre style="margin-top:6px; font-size:.75rem; background:#1a0a0a; border-color:#450a0a;"><span class="cm">// Ruim — testa detalhes internos</span>
+<span class="fn">expect</span>(hook.current._fetchFn)
+  .<span class="fn">toHaveBeenCalledWith</span>(...)
+
+<span class="cm">// Bom — testa o que o usuário vê</span>
+<span class="fn">expect</span>(result.current.casos)
+  .<span class="fn">toHaveLength</span>(1)
+</pre>
+          </div>
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.9rem;">Estados a testar</h3>
+            <ul class="clean" style="margin-top:4px;">
+              <li><span style="font-size:.82rem;">loading: true no início</span></li>
+              <li><span style="font-size:.82rem;">dados corretos após resolve</span></li>
+              <li><span style="font-size:.82rem;">error preenchido após reject</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10 — O harness para testes -->
+  <div class="slide" id="s10">
+    <div class="col" style="gap:18px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Harness</span>
+        <h2>O Harness para Testes</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <div class="card col" style="gap:10px; border-color:#312e81;">
+            <h3 style="color:var(--accent3);">KB <code>kb/testing/</code></h3>
+            <ul class="clean" style="margin-top:4px;">
+              <li><code style="font-size:.78rem;">index.md</code> — visão geral e links</li>
+              <li><code style="font-size:.78rem;">concepts/pyramid.md</code> — camadas e proporções</li>
+              <li><code style="font-size:.78rem;">concepts/mock-boundaries.md</code> — o que mockar</li>
+              <li><code style="font-size:.78rem;">patterns/pytest-fixtures.md</code> — scopes e factory</li>
+              <li><code style="font-size:.78rem;">patterns/vitest-hooks.md</code> — renderHook + waitFor</li>
+            </ul>
+          </div>
+
+          <div class="card col" style="gap:10px; border-color:#0c4a6e;">
+            <h3 style="color:var(--accent2);">Skill <code>/gen-tests</code></h3>
+            <p style="font-size:.85rem;">Gera scaffolding de pytest e vitest a partir de um arquivo de código. Produz:</p>
+            <ul class="clean" style="margin-top:4px;">
+              <li><span style="font-size:.82rem;">Fixtures de scope correto para o módulo</span></li>
+              <li><span style="font-size:.82rem;">Factory fixtures para entidades do arquivo</span></li>
+              <li><span style="font-size:.82rem;">Testes parametrizados com edge cases</span></li>
+              <li><span style="font-size:.82rem;">Mock stubs para LLM e Qdrant</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col" style="min-width:320px; gap:12px;">
+          <div class="card col" style="gap:10px; border-color:#064e3b;">
+            <h3 style="color:var(--green);">Gate hard no Stop hook</h3>
+            <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:6px; margin-top:4px; background:transparent; border:none; padding:0;">
+              <span class="step" style="border-color:#064e3b; color:var(--green);">ruff check --fix backend</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">mypy backend</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">pytest -q</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#451a03; color:var(--yellow);">coverage &gt;= 80%</span>
+            </div>
+            <p style="font-size:.78rem; margin-top:8px; color:var(--text-muted);">Se qualquer etapa falha, o agente não pode commitar. O gate é executado pelo hook — não pela memória do agente.</p>
+          </div>
+
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.9rem;">Fluxo recomendado</h3>
+            <div style="display:flex; flex-direction:column; gap:4px; margin-top:8px;">
+              <div style="display:flex; align-items:center; gap:8px; font-size:.8rem;">
+                <span class="badge badge-cyan" style="font-size:.7rem; min-width:80px;">escrever</span>
+                <span style="color:var(--text-muted);">código de produção</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; font-size:.8rem;">
+                <span class="badge" style="background:#1e1a3a; color:var(--accent3); font-size:.7rem; min-width:80px;">/gen-tests</span>
+                <span style="color:var(--text-muted);">gera scaffolding</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; font-size:.8rem;">
+                <span class="badge badge-yellow" style="font-size:.7rem; min-width:80px;">revisar</span>
+                <span style="color:var(--text-muted);">ajusta casos gerados</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; font-size:.8rem;">
+                <span class="badge badge-green" style="font-size:.7rem; min-width:80px;">/validar</span>
+                <span style="color:var(--text-muted);">gate verde → commit</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<nav class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 10</span>
+  <button id="next" onclick="go(1)">Proximo →</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  let cur = 0;
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => go(i - cur);
+    dotsEl.appendChild(d);
+  });
+  function go(delta) {
+    slides[cur].classList.remove('active');
+    dotsEl.children[cur].classList.remove('active');
+    cur = Math.max(0, Math.min(slides.length - 1, cur + delta));
+    slides[cur].classList.add('active');
+    dotsEl.children[cur].classList.add('active');
+    document.getElementById('counter').textContent = `${cur + 1} / ${slides.length}`;
+    document.getElementById('prev').disabled = cur === 0;
+    document.getElementById('next').disabled = cur === slides.length - 1;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  });
+</script>
+
+</body>
+</html>

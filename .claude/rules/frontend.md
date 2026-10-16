@@ -1,0 +1,20 @@
+---
+# Convenções do frontend React + TypeScript (PWA) do sisfin
+paths:
+  - "frontend/**"
+---
+
+# Frontend
+
+SPA/PWA em React + TypeScript que consome a API pelo **cliente gerado do OpenAPI**. Simples, tipada, com estados explícitos. O usuário não domina web: explique termos técnicos.
+
+- **Componentes funcionais + hooks.** Sem class components.
+- **Tipos explícitos**; nada de `any`.
+- **Cliente da API gerado** do OpenAPI: não edite o código gerado e não escreva chamadas HTTP à mão. Chamadas isoladas em um módulo próprio (`src/api/`).
+- **Dinheiro sempre como texto ou decimal, nunca `number`.** Formate moeda só na borda de exibição.
+- **Nenhuma regra de cálculo financeiro no front** (saldo, gasto real, limite, sobra, nível da reserva). Falta um número? Peça um endpoint.
+- **Formulário dinâmico** dirigido pela matriz tipo → campos (7 tipos, ADR 011), com validação.
+- **Estados de UI sempre tratados:** carregando, erro, vazio e sucesso.
+- **Sem escrita offline no MVP.** Alvo: Chrome desktop, layout responsivo.
+- **Tela principal sem o vale;** o vale só na sua página de métricas (ADR 023).
+- **Dado pessoal na UI** só mascarado. **Sem segredo no bundle.**

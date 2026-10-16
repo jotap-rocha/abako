@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10 — Workshop 4h: Harness vs SDD · Agent Harness Method</title>
+  <style>
+    :root { --bg:#0f1117;--surface:#1a1d27;--surface2:#222636;--border:#2e3250;--accent:#6366f1;--accent2:#22d3ee;--accent3:#a78bfa;--green:#34d399;--yellow:#fbbf24;--red:#f87171;--text:#e2e8f0;--text-muted:#94a3b8;--radius:12px; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw}
+    .slides{width:100%;height:100%;position:relative}
+    .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;padding:44px 60px;animation:fadeIn .35s ease}
+    .slide.active{display:flex}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:10px 20px;z-index:100}
+    .nav button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:.85rem;font-weight:600;transition:opacity .2s}
+    .nav button:hover{opacity:.85}.nav button:disabled{opacity:.3;cursor:default}
+    .slide-counter{font-size:.85rem;color:var(--text-muted);min-width:70px;text-align:center}
+    .dots{position:fixed;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:5px;flex-wrap:wrap;max-width:600px;justify-content:center}
+    .dot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .2s,transform .2s}
+    .dot.active{background:var(--accent);transform:scale(1.4)}
+    h1{font-size:2.6rem;font-weight:800;line-height:1.15}
+    h2{font-size:1.85rem;font-weight:700;line-height:1.2}
+    h3{font-size:1.05rem;font-weight:600}
+    p,li{font-size:.95rem;line-height:1.7;color:var(--text-muted)}
+    .big{font-size:1.15rem;color:var(--text)}.muted{color:var(--text-muted);font-size:.88rem}
+    .chip{display:inline-block;padding:4px 12px;border-radius:99px;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .chip-purple{background:#312e81;color:var(--accent3)}.chip-cyan{background:#0c4a6e;color:var(--accent2)}.chip-green{background:#064e3b;color:var(--green)}.chip-yellow{background:#451a03;color:var(--yellow)}.chip-red{background:#450a0a;color:var(--red)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px}
+    .card-grid{display:grid;gap:14px;width:100%}.card-grid.cols2{grid-template-columns:1fr 1fr}.card-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+    .highlight{border-left:4px solid var(--accent);background:var(--surface2);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;width:100%}
+    .highlight.green{border-color:var(--green)}.highlight.yellow{border-color:var(--yellow)}.highlight.cyan{border-color:var(--accent2)}.highlight.red{border-color:var(--red)}
+    pre{background:#0d0f16;border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.8rem;color:#c4c9e0;font-family:'Cascadia Code','Fira Code',monospace;overflow-x:auto;line-height:1.55}
+    .kw{color:#c792ea}.str{color:#c3e88d}.cm{color:#546e7a}.fn{color:#82aaff}
+    .tag{display:inline-flex;align-items:center;gap:5px;font-size:.75rem;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 10px}
+    .tag .tdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .gradient-text{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .w100{width:100%}.row{display:flex;gap:14px;align-items:flex-start;width:100%}.col{display:flex;flex-direction:column;gap:10px}
+    .flex1{flex:1}.center{text-align:center}
+    .gap6{gap:6px}.gap10{gap:10px}.gap14{gap:14px}.gap18{gap:18px}
+    table{border-collapse:collapse;width:100%;font-size:.84rem}
+    th{text-align:left;padding:7px 12px;background:var(--surface2);color:var(--text-muted);font-weight:600;font-size:.74rem;letter-spacing:.04em;text-transform:uppercase}
+    td{padding:8px 12px;border-top:1px solid var(--border);color:var(--text-muted)}
+    td:first-child{color:var(--text);font-weight:500}
+    code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:.8em;font-family:'Cascadia Code',monospace;color:var(--accent2)}
+    .file-nav{position:fixed;top:48px;right:20px;display:flex;flex-direction:column;gap:3px;z-index:99}
+    .file-nav a{font-size:.68rem;color:var(--text-muted);text-decoration:none;padding:3px 7px;border-radius:6px;background:var(--surface);border:1px solid var(--border)}
+    .file-nav a:hover{color:var(--accent2);border-color:var(--accent)}.file-nav a.current{color:var(--accent);border-color:var(--accent)}
+    .step-list{display:flex;flex-direction:column;gap:8px;width:100%}
+    .step-item{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px}
+    .step-badge{min-width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;flex-shrink:0;margin-top:2px}
+    .step-item-content{display:flex;flex-direction:column;gap:2px}
+    .step-item-title{font-size:.88rem;font-weight:700;color:var(--text)}
+    .step-item-desc{font-size:.78rem;color:var(--text-muted);line-height:1.45}
+
+    /* Workshop-specific */
+    .gain-card{border:2px solid var(--accent2);background:rgba(34,211,238,.07);border-radius:var(--radius);padding:18px 22px;width:100%}
+    .gain-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent2);margin-bottom:7px;display:block}
+    .gain-card p{color:var(--text);font-size:.95rem;line-height:1.65}
+    .exercise-card{border:2px solid var(--yellow);background:rgba(251,191,36,.06);border-radius:var(--radius);padding:18px 22px;width:100%}
+    .ex-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--yellow);margin-bottom:10px;display:block}
+    .exercise-card ol,.exercise-card ul{padding-left:18px;display:flex;flex-direction:column;gap:7px}
+    .exercise-card li{font-size:.86rem;color:var(--text);line-height:1.5}
+    .exercise-card p{font-size:.86rem;color:var(--text-muted);line-height:1.5;margin-top:10px}
+    .timer-badge{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:.74rem;color:var(--text-muted);font-weight:600}
+    .vs-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+    .vs-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;flex-direction:column;gap:7px}
+    .vs-col.claude{border-color:var(--accent)}.vs-col.cursor{border-color:var(--accent3)}
+    .vs-col-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block}
+    .vs-col.claude .vs-col-label{color:var(--accent)}.vs-col.cursor .vs-col-label{color:var(--accent3)}
+    .vs-col p,.vs-col li{font-size:.82rem;line-height:1.5}
+    .vs-col ul{padding-left:14px;display:flex;flex-direction:column;gap:5px}
+    .blist{list-style:none;display:flex;flex-direction:column;gap:7px;padding:0;width:100%}
+    .blist li{display:flex;gap:8px;align-items:flex-start;font-size:.88rem;color:var(--text-muted);line-height:1.5}
+    .blist li::before{content:"›";color:var(--accent);flex-shrink:0;font-size:1rem;line-height:1.55}
+    .blist li strong{color:var(--text)}
+    .blist.green li::before{color:var(--green)}.blist.red li::before{color:var(--red)}.blist.yellow li::before{color:var(--yellow)}.blist.cyan li::before{color:var(--accent2)}
+    .module-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .break-bg{background:radial-gradient(ellipse at center,#16192a 0%,#0f1117 100%)}
+  </style>
+</head>
+<body>
+
+<div id="dots" class="dots"></div>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+  <a href="10-workshop-harness-vs-sdd.html" class="current">10 Workshop 4h</a>
+</div>
+
+<div class="slides">
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 1 — CAPA
+═══════════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="col" style="max-width:780px;gap:18px;align-items:center;text-align:center">
+    <span class="chip chip-purple">Agent Harness Method &middot; Workshop &middot; 4h</span>
+    <h1 class="gradient-text">Harness vs SDD</h1>
+    <p class="big">Do caos ao método em 4 horas<br>com Claude Code e Cursor</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px">
+      <span class="tag"><span class="tdot" style="background:var(--accent)"></span>lecture + exercises</span>
+      <span class="tag"><span class="tdot" style="background:var(--green)"></span>12 módulos</span>
+      <span class="tag"><span class="tdot" style="background:var(--accent2)"></span>Claude Code tips</span>
+      <span class="tag"><span class="tdot" style="background:var(--accent3)"></span>Cursor parallels</span>
+      <span class="tag"><span class="tdot" style="background:var(--yellow)"></span>capstone exercise</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 2 — AGENDA
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="col" style="max-width:900px;gap:14px;width:100%">
+    <span class="chip chip-cyan">Agenda · 4 horas</span>
+    <h2>O que vamos fazer hoje</h2>
+    <div class="card-grid cols2" style="gap:10px">
+      <div class="col gap6">
+        <div class="step-item"><div class="step-badge" style="background:#312e81">1</div><div class="step-item-content"><span class="step-item-title">O Problema da IA Crua</span><span class="step-item-desc">15 min · lecture + exercise</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#312e81">2</div><div class="step-item-content"><span class="step-item-title">O que é um Harness?</span><span class="step-item-desc">20 min · lecture + exercise</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#0c4a6e">3</div><div class="step-item-content"><span class="step-item-title">SDD: A Fundação</span><span class="step-item-desc">15 min · lecture</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#0c4a6e">4</div><div class="step-item-content"><span class="step-item-title">Harness vs SDD: Lado a Lado</span><span class="step-item-desc">15 min · lecture</span></div></div>
+        <div class="step-item" style="border-color:var(--accent2)"><div class="step-badge" style="background:var(--surface2);color:var(--text-muted)">☕</div><div class="step-item-content"><span class="step-item-title" style="color:var(--text-muted)">Pausa</span><span class="step-item-desc">15 min</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#064e3b">5</div><div class="step-item-content"><span class="step-item-title">Setup & Primeiro Projeto</span><span class="step-item-desc">35 min · demo + exercise</span></div></div>
+      </div>
+      <div class="col gap6">
+        <div class="step-item"><div class="step-badge" style="background:#064e3b">6</div><div class="step-item-content"><span class="step-item-title">Gates de Qualidade: O Ratchet</span><span class="step-item-desc">20 min · lecture + exercise</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#312e81">7</div><div class="step-item-content"><span class="step-item-title">Agentes, Skills e KBs</span><span class="step-item-desc">20 min · lecture + quiz</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#450a0a">8</div><div class="step-item-content"><span class="step-item-title">Segurança desde o Dia 0</span><span class="step-item-desc">15 min · lecture + exercise</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#0c4a6e">9</div><div class="step-item-content"><span class="step-item-title">Tracking, Métricas & Memória</span><span class="step-item-desc">20 min · lecture</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#312e81">10</div><div class="step-item-content"><span class="step-item-title">Pipeline Specialization</span><span class="step-item-desc">15 min · lecture</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#451a03">11</div><div class="step-item-content"><span class="step-item-title">Capstone Exercise</span><span class="step-item-desc">30 min · hands-on em grupos</span></div></div>
+        <div class="step-item"><div class="step-badge" style="background:#064e3b">12</div><div class="step-item-content"><span class="step-item-title">Takeaways & Próximos Passos</span><span class="step-item-desc">10 min · recap + CTA</span></div></div>
+      </div>
+    </div>
+    <div class="highlight cyan" style="padding:10px 16px"><p style="font-size:.82rem">Cada módulo começa com <strong style="color:var(--accent2)">"O que você vai ganhar"</strong> — você sempre sabe por que está aqui antes de começar.</p></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 1 — O PROBLEMA DA IA CRUA
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-red">Módulo 1</span>
+      <span class="timer-badge">⏱ 15 min · lecture + exercise</span>
+    </div>
+    <h2>O Problema da IA Crua</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai identificar os <strong>3 modos de falha</strong> da IA sem estrutura — e mapear qual deles já te custou tempo real nos últimos 60 dias.</p>
+    </div>
+    <div class="highlight">
+      <p style="font-size:.88rem;color:var(--text)">"Systems substantially outperforming base models — the difference is not the model, it's the environment around it."</p>
+      <p style="font-size:.78rem;margin-top:4px">— @addyosmani, Agent Harness Engineering</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s4">
+  <div class="col" style="max-width:880px;gap:16px;width:100%">
+    <span class="chip chip-red">Módulo 1 · Os 3 Modos de Falha</span>
+    <h2>Por que IA sem estrutura falha</h2>
+    <div class="card-grid cols3">
+      <div class="card col gap6" style="border-color:var(--red)">
+        <span style="font-size:1.6rem">🧹</span>
+        <h3 style="color:var(--red)">Blank Slate</h3>
+        <p style="font-size:.83rem">Toda sessão recomeça do zero. O agente não sabe quem é você, qual é o produto, quais são os invariantes. Você re-explica tudo.</p>
+        <p style="font-size:.78rem;color:var(--red);margin-top:4px">Custo: 15-30 min por sessão desperdiçados.</p>
+      </div>
+      <div class="card col gap6" style="border-color:var(--yellow)">
+        <span style="font-size:1.6rem">🔇</span>
+        <h3 style="color:var(--yellow)">Session Amnesia</h3>
+        <p style="font-size:.83rem">Decisões de arquitetura, invariantes de produto, regras de SI — tudo se perde ao fechar o chat. O agente repete erros já corrigidos.</p>
+        <p style="font-size:.78rem;color:var(--yellow);margin-top:4px">Custo: bugs recorrentes, inconsistência.</p>
+      </div>
+      <div class="card col gap6" style="border-color:var(--accent)">
+        <span style="font-size:1.6rem">💥</span>
+        <h3 style="color:var(--accent3)">No Gates</h3>
+        <p style="font-size:.83rem">A IA comita código que não passa no type check, não tem teste, ou viola regras de SI. Você descobre em produção ou na PR review.</p>
+        <p style="font-size:.78rem;color:var(--accent3);margin-top:4px">Custo: retrabalho, incidentes, perda de confiança.</p>
+      </div>
+    </div>
+    <div class="highlight cyan">
+      <p style="font-size:.85rem"><strong style="color:var(--text)">A raiz do problema:</strong> o modelo é capaz — o que falta é o ambiente que o governa. Harness é esse ambiente.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s5">
+  <div class="col" style="max-width:820px;gap:16px;width:100%">
+    <span class="chip chip-yellow">✋ Exercise 01 · 5 min</span>
+    <h2>Failure Audit</h2>
+    <div class="exercise-card">
+      <span class="ex-label">✋ Exercício 01 — Faça individualmente, 3 min. Depois compartilhe em duplas, 2 min.</span>
+      <ol>
+        <li>Pense numa falha de IA nos últimos 60 dias (código errado, dado perdido, bug em produção, retrabalho inesperado).</li>
+        <li>Identifique qual dos 3 modos causou o problema: <strong>Blank Slate</strong>, <strong>Session Amnesia</strong> ou <strong>No Gates</strong>.</li>
+        <li>Estime o tempo perdido em horas (seja honesto).</li>
+        <li>Complete a frase: <em>"O que estava faltando era __________."</em></li>
+      </ol>
+      <p>🙋 Debrief: mostre as mãos — qual modo foi mais comum aqui na sala?</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 2 — O QUE É UM HARNESS?
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-purple">Módulo 2</span>
+      <span class="timer-badge">⏱ 20 min · lecture + exercise</span>
+    </div>
+    <h2>O que é um Harness?</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai sair com o <strong>modelo mental completo</strong> do que é um harness — e entender por que ele transforma a IA de risco imprevisível em ativo confiável.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s7">
+  <div class="col" style="max-width:900px;gap:14px;width:100%">
+    <span class="chip chip-purple">Módulo 2 · A Living Artifact</span>
+    <h2>Harness = o ambiente que governa o agente</h2>
+    <div class="row">
+      <div class="col flex1 gap10">
+        <div class="highlight cyan">
+          <h3 style="color:var(--accent2);margin-bottom:6px">"Treat the structure around AI models as a living artifact."</h3>
+          <p style="font-size:.8rem">— @addyosmani, Agent Harness Engineering (798K views)</p>
+        </div>
+        <p style="font-size:.88rem">Analogia: harness é o sistema imunológico. O agente falha, o sistema aprende, a falha não se repete.</p>
+        <p style="font-size:.88rem">Não é sobre o modelo — é sobre o que o rodeia.</p>
+      </div>
+      <div class="col flex1 gap6">
+        <h3 style="color:var(--text-muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em">Os 7 componentes</h3>
+        <div class="card col gap6" style="padding:12px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><code>CLAUDE.md</code><span style="font-size:.76rem;color:var(--text-muted)">fatos duráveis do projeto</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><code>rules/</code><span style="font-size:.76rem;color:var(--text-muted)">invariantes (globais e path-scoped)</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><code>agents/</code><span style="font-size:.76rem;color:var(--text-muted)">especialistas com contexto fresco</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><code>skills/</code><span style="font-size:.76rem;color:var(--text-muted)">playbooks reutilizáveis</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><code>kb/</code><span style="font-size:.76rem;color:var(--text-muted)">documentação de domínio</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><code>settings.json</code><span style="font-size:.76rem;color:var(--text-muted)">allow / deny list / hooks</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><code>.mcp.json</code><span style="font-size:.76rem;color:var(--text-muted)">ferramentas externas (Context-7, DB)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s8">
+  <div class="col" style="max-width:900px;gap:14px;width:100%">
+    <span class="chip chip-purple">Módulo 2 · O Princípio do Ratchet</span>
+    <h2>Cada falha vira uma regra permanente</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap10">
+        <div class="highlight" style="border-color:var(--accent3)">
+          <h3 style="color:var(--accent3);margin-bottom:5px">"Each agent failure becomes a permanent rule. This is the ratchet."</h3>
+          <p style="font-size:.8rem">— @addyosmani</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="card" style="padding:10px 14px;text-align:center;flex:1"><span style="font-size:.8rem;color:var(--red)">❌ Erro</span></div>
+          <span style="color:var(--accent)">→</span>
+          <div class="card" style="padding:10px 14px;text-align:center;flex:1"><span style="font-size:.8rem;color:var(--yellow)">🔍 Diagnóstico</span></div>
+          <span style="color:var(--accent)">→</span>
+          <div class="card" style="padding:10px 14px;text-align:center;flex:1"><span style="font-size:.8rem;color:var(--accent2)">📝 rules/xyz.md</span></div>
+          <span style="color:var(--accent)">→</span>
+          <div class="card" style="padding:10px 14px;text-align:center;flex:1"><span style="font-size:.8rem;color:var(--green)">✅ Nunca repete</span></div>
+        </div>
+      </div>
+      <div class="col flex1 gap10">
+        <div class="highlight green">
+          <h3 style="color:var(--green);margin-bottom:5px">"Harnesses don't shrink — they evolve."</h3>
+          <p style="font-size:.82rem">A cada projeto o harness fica mais inteligente. Prompt engineering trata sintomas. Harness trata causas.</p>
+        </div>
+        <div class="highlight cyan">
+          <h3 style="color:var(--accent2);margin-bottom:5px">Harness-as-Service (HaaS)</h3>
+          <p style="font-size:.82rem">@addyosmani sugere: harnesses maduros viram serviço compartilhado do time — todos se beneficiam das regras aprendidas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s9">
+  <div class="col" style="max-width:820px;gap:16px;width:100%">
+    <span class="chip chip-yellow">✋ Exercise 02 · 5 min</span>
+    <h2>Mapeie seu Harness Atual</h2>
+    <div class="exercise-card">
+      <span class="ex-label">✋ Exercício 02 — Abra qualquer projeto seu. Marque ✅ ou ❌ para cada componente:</span>
+      <ul>
+        <li>[ ] <strong>CLAUDE.md ou .cursorrules</strong> com invariantes do produto declarados</li>
+        <li>[ ] <strong>Regras de segurança</strong> declaradas explicitamente (não só "seja cuidadoso")</li>
+        <li>[ ] <strong>Gate automático</strong> — lint + type check + testes antes do commit</li>
+        <li>[ ] <strong>Revisão de código estruturada</strong> antes de cada merge</li>
+        <li>[ ] <strong>Persistência de decisões</strong> entre sessões (STATUS.md, HANDOFF, notas)</li>
+        <li>[ ] <strong>Métricas de entrega</strong> rastreadas (você sabe quantas tasks o agente fechou autônomo?)</li>
+      </ul>
+      <p>🙋 Debrief: quantos ✅? Qual componente está mais faltando no time?</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 3 — SDD: A FUNDAÇÃO
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-cyan">Módulo 3</span>
+      <span class="timer-badge">⏱ 15 min · lecture</span>
+    </div>
+    <h2>SDD: A Fundação</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai entender o que inspirou o harness method — e saber exatamente <strong>quando usar SDD puro vs harness completo</strong>.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s11">
+  <div class="col" style="max-width:900px;gap:14px;width:100%">
+    <span class="chip chip-cyan">Módulo 3 · Spec Driven Development</span>
+    <h2>SDD: 5 fases, artefatos persistidos</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap10">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="step-item"><div class="step-badge" style="font-size:.7rem">01</div><div class="step-item-content"><span class="step-item-title">/brainstorm</span><span class="step-item-desc">Exploração livre da ideia → <code>BRAINSTORM_{F}.md</code></span></div></div>
+          <div class="step-item"><div class="step-badge" style="font-size:.7rem">02</div><div class="step-item-content"><span class="step-item-title">/define</span><span class="step-item-desc">Captura de requisitos → <code>DEFINE_{F}.md</code></span></div></div>
+          <div class="step-item"><div class="step-badge" style="font-size:.7rem">03</div><div class="step-item-content"><span class="step-item-title">/design</span><span class="step-item-desc">Arquitetura técnica → <code>DESIGN_{F}.md</code></span></div></div>
+          <div class="step-item"><div class="step-badge" style="font-size:.7rem">04</div><div class="step-item-content"><span class="step-item-title">/build</span><span class="step-item-desc">Implementação → <code>BUILD_REPORT_{F}.md</code></span></div></div>
+          <div class="step-item"><div class="step-badge" style="font-size:.7rem">05</div><div class="step-item-content"><span class="step-item-title">/ship</span><span class="step-item-desc">Entrega → <code>SHIPPED_{date}.md</code></span></div></div>
+        </div>
+      </div>
+      <div class="col flex1 gap10">
+        <div class="highlight green">
+          <h3 style="color:var(--green);margin-bottom:6px">O que o SDD resolve bem</h3>
+          <ul class="blist green" style="margin-top:4px">
+            <li>Disciplina de faseamento — impede o "só sai codando"</li>
+            <li>Artefatos persistidos por feature</li>
+            <li>Agentes especializados por fase</li>
+            <li>Workflow reproduzível entre projetos</li>
+          </ul>
+        </div>
+        <div class="highlight cyan">
+          <h3 style="color:var(--accent2);margin-bottom:4px">Criado pelo agentspec</h3>
+          <p style="font-size:.82rem">Framework de desenvolvimento guiado por agentes — base sobre a qual o harness method foi construído.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s12">
+  <div class="col" style="max-width:860px;gap:14px;width:100%">
+    <span class="chip chip-cyan">Módulo 3 · Pontos Cegos do SDD</span>
+    <h2>O que o SDD não cobre</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap8">
+        <ul class="blist red">
+          <li><strong>Sem SI assessment</strong> — segurança e privacidade não são first-class (sem níveis a/b/c/d)</li>
+          <li><strong>Sem detecção de tipo</strong> — pipeline ≠ webapp ≠ API. O grill é genérico para todos.</li>
+          <li><strong>Sem gates obrigatórios</strong> — ruff + mypy + pytest existem, mas não são enforced por agente</li>
+          <li><strong>Sem /scorecard</strong> — não há métricas de entrega, autonomia ou taxa de revisão</li>
+          <li><strong>Sem multi-projeto</strong> — um STATUS.md global, não um por slug de projeto</li>
+          <li><strong>Sem deny list executável</strong> — não bloqueia rm -rf nem git push --force a nível de hook</li>
+        </ul>
+      </div>
+      <div class="col flex1 gap10">
+        <div class="highlight yellow">
+          <h3 style="color:var(--yellow);margin-bottom:5px">Quando SDD é suficiente</h3>
+          <ul class="blist yellow" style="margin-top:4px">
+            <li>Experimento rápido &lt; 1 semana</li>
+            <li>Projeto solo, sem PII</li>
+            <li>Sem dados de produção</li>
+            <li>Sem time compartilhando o mesmo repo</li>
+          </ul>
+        </div>
+        <div class="highlight">
+          <p style="font-size:.88rem;color:var(--text)"><strong>"SDD é o DNA.</strong><br>O harness é o organismo adulto."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 4 — HARNESS VS SDD: LADO A LADO
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s13">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-purple">Módulo 4</span>
+      <span class="timer-badge">⏱ 15 min · lecture</span>
+    </div>
+    <h2>Harness vs SDD: Lado a Lado</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai aprender a <strong>escolher entre as duas abordagens</strong> — e entender cada adição que o harness traz para projetos de produção real.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s14">
+  <div class="col" style="max-width:900px;gap:12px;width:100%">
+    <span class="chip chip-purple">Módulo 4 · Tabela Comparativa</span>
+    <h2>Harness vs SDD: 10 dimensões</h2>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table>
+        <thead><tr><th>Dimensão</th><th>SDD (agentspec)</th><th>Harness Method</th></tr></thead>
+        <tbody>
+          <tr><td>Entry point</td><td>/brainstorm</td><td>/novo-projeto (+ SI assessment + tipo)</td></tr>
+          <tr><td>Persistência</td><td>.claude/design/features/</td><td>.claude/projetos/{slug}/ — um por projeto</td></tr>
+          <tr><td>SI Assessment</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅ níveis a / b / c / d</td></tr>
+          <tr><td>Detecção de tipo</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅ pipeline → +10 perguntas obrigatórias</td></tr>
+          <tr><td>Gate hard</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅ /validar (ruff + mypy + pytest) obrigatório</td></tr>
+          <tr><td>Gate soft</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅ revisor-codigo com veredito explícito</td></tr>
+          <tr><td>Deny list executável</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅ settings.json bloqueia comandos destrutivos</td></tr>
+          <tr><td>Métricas de entrega</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅ metrics/entregas.jsonl + /scorecard</td></tr>
+          <tr><td>Context-7 MCP</td><td>opcional</td><td style="color:var(--green)">✅ integrado no kb-architect</td></tr>
+          <tr><td>Retrospectiva</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅ 05-retro.md + /scorecard ao shippar</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s15">
+  <div class="col" style="max-width:880px;gap:14px;width:100%">
+    <span class="chip chip-purple">Módulo 4 · O Caminho de Upgrade</span>
+    <h2>SDD → Harness é aditivo, não substituição</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap10">
+        <div class="highlight yellow">
+          <h3 style="color:var(--yellow);margin-bottom:6px">Use SDD quando...</h3>
+          <ul class="blist yellow" style="margin-top:4px">
+            <li>Experimento rápido &lt; 1 semana</li>
+            <li>Trabalho solo, sem PII</li>
+            <li>Sem dados de produção envolvidos</li>
+            <li>Sem time compartilhando o repo</li>
+          </ul>
+        </div>
+        <div class="highlight green">
+          <h3 style="color:var(--green);margin-bottom:6px">Use Harness quando...</h3>
+          <ul class="blist green" style="margin-top:4px">
+            <li>Time (2+ devs compartilhando o repo)</li>
+            <li>PII ou dados de produção envolvidos</li>
+            <li>Multi-sessão (projeto &gt; 1 dia)</li>
+            <li>Pipeline de dados ou agente LLM</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col flex1 gap10">
+        <div class="vs-row" style="grid-template-columns:1fr">
+          <div class="vs-col claude">
+            <span class="vs-col-label">Claude Code</span>
+            <p>harness-* agents <strong>enforce o método</strong> — cada fase tem um agente dedicado que verifica a fase anterior antes de avançar.</p>
+          </div>
+        </div>
+        <div class="vs-row" style="grid-template-columns:1fr">
+          <div class="vs-col cursor">
+            <span class="vs-col-label">Cursor</span>
+            <p>.cursorrules + Cursor Rules (beta) — texto interpretado pelo modelo. <strong>Sugestões</strong>, não enforcement executável.</p>
+          </div>
+        </div>
+        <div class="highlight cyan">
+          <p style="font-size:.83rem">Gap crítico: Claude Code executa hooks em shell. Cursor lê regras como texto. Harness é enforcement real.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SLIDE 16 — BREAK
+═══════════════════════════════════════════════ -->
+<div class="slide break-bg" id="s16">
+  <div class="col" style="gap:16px;align-items:center;text-align:center">
+    <span style="font-size:3rem">☕</span>
+    <h1 style="color:var(--border);font-size:3rem">Pausa · 15 min</h1>
+    <p class="big" style="color:var(--text-muted)">Quando voltar: vamos abrir o terminal<br>e criar seu primeiro projeto com harness</p>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <span class="tag"><span class="tdot" style="background:var(--accent2)"></span>Abra o repo no editor</span>
+      <span class="tag"><span class="tdot" style="background:var(--yellow)"></span>Instale Claude Code se não tiver</span>
+      <span class="tag"><span class="tdot" style="background:var(--green)"></span>Pense num projeto real para o capstone</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 5 — SETUP & PRIMEIRO PROJETO
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s17">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-green">Módulo 5</span>
+      <span class="timer-badge">⏱ 35 min · demo + exercise</span>
+    </div>
+    <h2>Setup & Primeiro Projeto</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai criar seu primeiro projeto com o método completo — do clone ao <strong>STATUS.md</strong> — com o <code>.claude/</code> explorado linha a linha, entendendo o que cada componente faz na prática.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s18">
+  <div class="col" style="max-width:900px;gap:14px;width:100%">
+    <span class="chip chip-green">Módulo 5 · Anatomia do .claude/</span>
+    <h2>O que mora dentro do harness</h2>
+    <div class="row gap14">
+      <div class="flex1">
+        <pre><span class="cm"># Estrutura do repositório canônico</span>
+.claude/
+├── agents/          <span class="cm">← especialistas c/ contexto fresco</span>
+│   ├── harness-brainstorm.md
+│   ├── harness-build.md
+│   ├── revisor-codigo.md
+│   └── kb-architect.md  <span class="cm">(+11 outros)</span>
+├── skills/          <span class="cm">← playbooks reutilizáveis</span>
+│   ├── grill-me/SKILL.md
+│   ├── to-prd/SKILL.md
+│   └── validar.md   <span class="cm">(+13 outros)</span>
+├── rules/           <span class="cm">← invariantes de comportamento</span>
+│   ├── seguranca.md <span class="cm">← carrega em TODA sessão</span>
+│   └── pipeline.md  <span class="cm">← só ao tocar src/pipeline/**</span>
+├── kb/              <span class="cm">← documentação de domínio</span>
+├── commands/        <span class="cm">← /validar · /scorecard</span>
+├── projetos/        <span class="cm">← STATUS.md por slug</span>
+└── settings.json    <span class="cm">← deny list + hooks</span></pre>
+      </div>
+      <div class="col flex1 gap8">
+        <div class="highlight red">
+          <h3 style="color:var(--red);margin-bottom:4px">settings.json bloqueia:</h3>
+          <p style="font-size:.8rem"><code>rm -rf</code> · <code>docker volume rm</code> · <code>git push --force</code> · <code>dropdb</code> · <code>docker compose down -v</code></p>
+          <p style="font-size:.78rem;margin-top:4px">A nível de hook shell — não de instrução. Não tem como contornar via prompt.</p>
+        </div>
+        <div class="highlight">
+          <h3 style="color:var(--accent3);margin-bottom:4px">rules/seguranca.md</h3>
+          <p style="font-size:.8rem">Único arquivo sem <code>paths:</code> — carrega em toda sessão, independente de qual arquivo você tocou.</p>
+        </div>
+        <div class="highlight cyan">
+          <h3 style="color:var(--accent2);margin-bottom:4px">Path-scoped rules</h3>
+          <p style="font-size:.8rem"><code>rules/pipeline.md</code> só carrega ao tocar <code>src/pipeline/**</code>. Contexto relevante, sem poluição.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s19">
+  <div class="col" style="max-width:880px;gap:14px;width:100%">
+    <span class="chip chip-green">Módulo 5 · CLAUDE.md vs .cursorrules</span>
+    <h2>Como cada ferramenta persiste contexto</h2>
+    <div class="vs-row">
+      <div class="vs-col claude">
+        <span class="vs-col-label">Claude Code — CLAUDE.md</span>
+        <ul>
+          <li>Carregado em <strong>toda sessão automaticamente</strong></li>
+          <li>Suporta seções declarativas: Stack, Comandos, Invariantes, KB Map</li>
+          <li>Complementado por <code>rules/</code> path-scoped (carregam só ao tocar aquele path)</li>
+          <li>CONTEXT.md separado para glossário de domínio</li>
+          <li><code>.claude/projetos/</code> persiste estado por projeto</li>
+        </ul>
+      </div>
+      <div class="vs-col cursor">
+        <span class="vs-col-label">Cursor — .cursorrules</span>
+        <ul>
+          <li>Carregado na maioria das sessões</li>
+          <li>Texto plano — sem seções estruturadas</li>
+          <li>Cursor Rules (Beta): regras por file glob — similar ao path-scoped, mas menos maduro</li>
+          <li>Sem equivalente nativo de STATUS.md ou HANDOFF</li>
+          <li>Memória via notas manuais ou ferramentas externas</li>
+        </ul>
+      </div>
+    </div>
+    <div class="highlight cyan">
+      <p style="font-size:.85rem"><strong style="color:var(--text)">Diferença fundamental:</strong> CLAUDE.md é o índice de fatos duráveis. rules/ são os invariantes executáveis. Juntos, eliminam os 3 modos de falha do Módulo 1.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s20">
+  <div class="col" style="max-width:880px;gap:14px;width:100%">
+    <span class="chip chip-cyan">Módulo 5 · Claude Tips — Nível Iniciante</span>
+    <h2>Hacks que previnem 80% das sessões desperdiçadas</h2>
+    <p style="font-size:.82rem;color:var(--text-muted)">Baseado em @sairahul1 · 2.9M views · "27 Hidden Claude Features"</p>
+    <div class="vs-row">
+      <div class="col gap8">
+        <div class="highlight cyan">
+          <h3 style="color:var(--accent2);margin-bottom:4px">Memory persistence ritual</h3>
+          <p style="font-size:.83rem"><strong>Harness:</strong> toda sessão começa com <code>cat STATUS.md</code>. Termina com <code>/handoff</code>. Novo agente retoma exatamente do ponto certo.</p>
+          <p style="font-size:.8rem;margin-top:4px"><strong>Cursor:</strong> você faz isso manualmente em notas ou README.</p>
+        </div>
+        <div class="highlight">
+          <h3 style="color:var(--accent3);margin-bottom:4px">Custom instructions = invariantes reais</h3>
+          <p style="font-size:.83rem">CLAUDE.md não é um README — é o sistema imunológico. Escreva invariantes do produto, não tutoriais.</p>
+        </div>
+      </div>
+      <div class="col gap8">
+        <div class="highlight green">
+          <h3 style="color:var(--green);margin-bottom:4px">Concurrent projects sem interferência</h3>
+          <p style="font-size:.83rem">Harness: múltiplos slugs em <code>.claude/projetos/</code>. agente-de-vendas + fraud-detector + data-lake — cada um com STATUS.md próprio.</p>
+          <p style="font-size:.8rem;margin-top:4px">Cursor: sem equivalente nativo — você gerencia mentalmente.</p>
+        </div>
+        <div class="highlight yellow">
+          <h3 style="color:var(--yellow);margin-bottom:4px">Start ritual</h3>
+          <p style="font-size:.83rem">Toda sessão: <strong>1)</strong> leia STATUS.md, <strong>2)</strong> leia tasks/README.md, <strong>3)</strong> abra o HANDOFF.md da última sessão. Nunca re-explique contexto.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s21">
+  <div class="col" style="max-width:820px;gap:14px;width:100%">
+    <span class="chip chip-yellow">✋ Exercise 03 · 12 min</span>
+    <h2>Clone & Explore</h2>
+    <div class="exercise-card">
+      <span class="ex-label">✋ Exercício 03 — Abra o terminal e siga os passos:</span>
+      <ol>
+        <li><code>git clone &lt;repo-canonico&gt; meu-workshop &amp;&amp; cd meu-workshop</code></li>
+        <li>Abra no <strong>Claude Code</strong> (<code>claude .</code>) ou no <strong>Cursor</strong>.</li>
+        <li>Explore <code>.claude/settings.json</code> — encontre a seção <code>permissions.deny</code>. Quais comandos estão bloqueados?</li>
+        <li>Leia <code>.claude/rules/seguranca.md</code> — identifique os invariantes SI-01, SI-02, SI-03.</li>
+        <li>Execute <strong>/novo-projeto</strong> e responda as 3 perguntas: ideia → SI level → tipo de projeto.</li>
+        <li>Abra <code>.claude/projetos/{slug}/STATUS.md</code> — o que foi criado automaticamente?</li>
+      </ol>
+      <p>✅ Esperado: STATUS.md com fase 0 concluída, SI level marcado, tipo detectado e checklist iniciado.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s22">
+  <div class="col" style="max-width:880px;gap:14px;width:100%">
+    <span class="chip chip-green">Módulo 5 · Debrief: /novo-projeto</span>
+    <h2>O que o STATUS.md criou para você</h2>
+    <div class="row gap14">
+      <div class="flex1">
+        <pre><span class="cm"># Meu Projeto</span>
+<span class="kw">Slug:</span> meu-projeto
+<span class="kw">Iniciado em:</span> 2026-06-28
+
+<span class="cm">## SI Assessment: Nível b</span>
+<span class="cm">   (dados internos, sem PII direto)</span>
+
+<span class="cm">## Tipo: Web App / API</span>
+
+<span class="cm">## Fase atual: 0 — Ideia capturada</span>
+
+<span class="cm">## Checklist</span>
+<span class="str">- [x] 0. Ideia + SI assessment (2026-06-28)</span>
+<span class="fn">- [ ] 1. Grill concluído</span>
+<span class="fn">- [ ] 2. PRD gerado</span>
+<span class="fn">- [ ] 3. Harness montado (/harness-architect)</span>
+<span class="fn">- [ ] 4. Tasks criadas</span>
+<span class="fn">- [ ] 5. Implementação concluída</span>
+<span class="fn">- [ ] 6. Ship / retrospectiva</span></pre>
+      </div>
+      <div class="col flex1 gap8">
+        <div class="card col gap6" style="border-color:var(--red)">
+          <h3 style="color:var(--text)">SI levels — o que significa cada um</h3>
+          <p style="font-size:.8rem"><strong style="color:var(--green)">a</strong> — público, sem restrições</p>
+          <p style="font-size:.8rem"><strong style="color:var(--accent2)">b</strong> — dados internos, uso dos usuários</p>
+          <p style="font-size:.8rem"><strong style="color:var(--yellow)">c</strong> — PII direto (CPF, email, saúde)</p>
+          <p style="font-size:.8rem"><strong style="color:var(--red)">d</strong> — produção crítica, dados restritos</p>
+        </div>
+        <div class="highlight">
+          <h3 style="color:var(--accent3);margin-bottom:4px">Por que o tipo importa</h3>
+          <p style="font-size:.82rem">Tipo <strong>pipeline</strong> → /grill-me faz +10 perguntas obrigatórias (volume, SLA, lineage, quarantine…). Tipo <strong>agente LLM</strong> → perguntas sobre grounding e determinismo.</p>
+        </div>
+        <div class="highlight cyan">
+          <p style="font-size:.82rem">Cada fase avança com <strong>timestamp</strong>. Nova sessão, novo agente — todos partem do mesmo ponto.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 6 — GATES DE QUALIDADE
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s23">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-green">Módulo 6</span>
+      <span class="timer-badge">⏱ 20 min · lecture + exercise</span>
+    </div>
+    <h2>Gates de Qualidade: O Ratchet na Prática</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai aprender o que impede código quebrado de entrar no repositório — e como <strong>escrever a primeira regra do seu harness pessoal</strong> usando o Princípio do Ratchet.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s24">
+  <div class="col" style="max-width:900px;gap:14px;width:100%">
+    <span class="chip chip-green">Módulo 6 · Os Dois Gates + DoD</span>
+    <h2>Hard gate + Soft gate + Definição de Pronto</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap8">
+        <div class="highlight red">
+          <h3 style="color:var(--red);margin-bottom:5px">Gate Hard — /validar</h3>
+          <p style="font-size:.83rem"><strong>ruff</strong> (lint) + <strong>mypy</strong> (type check) + <strong>pytest</strong> (testes)</p>
+          <p style="font-size:.83rem;margin-top:4px">VERMELHO = não commita. Sem exceção. Sem "só dessa vez".</p>
+          <p style="font-size:.8rem;color:var(--red);margin-top:4px">Executa como hook PostToolUse após cada Edit — automático.</p>
+        </div>
+        <div class="highlight yellow">
+          <h3 style="color:var(--yellow);margin-bottom:5px">Gate Soft — revisor-codigo</h3>
+          <p style="font-size:.83rem">Agente lê o diff contra <code>rules/</code>, verifica invariantes de SI, retorna:</p>
+          <p style="font-size:.83rem;margin-top:4px"><strong style="color:var(--green)">APROVADO</strong> · <strong style="color:var(--yellow)">APROVADO COM RESSALVAS</strong> · <strong style="color:var(--red)">BLOQUEADO</strong></p>
+        </div>
+      </div>
+      <div class="col flex1 gap8">
+        <h3 style="color:var(--text-muted);font-size:.78rem;text-transform:uppercase">DoD — Definição de Pronto (6 critérios)</h3>
+        <div class="step-list">
+          <div class="step-item" style="padding:10px 14px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.7rem">1</div><div class="step-item-content"><span class="step-item-title">Gate verde</span><span class="step-item-desc">ruff + mypy + pytest passando</span></div></div>
+          <div class="step-item" style="padding:10px 14px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.7rem">2</div><div class="step-item-content"><span class="step-item-title">Rules respeitadas</span><span class="step-item-desc">nenhum invariante violado</span></div></div>
+          <div class="step-item" style="padding:10px 14px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.7rem">3</div><div class="step-item-content"><span class="step-item-title">Revisor aprovado</span><span class="step-item-desc">sem bloqueante em aberto</span></div></div>
+          <div class="step-item" style="padding:10px 14px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.7rem">4</div><div class="step-item-content"><span class="step-item-title">Critérios de aceite com evidência</span><span class="step-item-desc">cada um tem teste ou demo</span></div></div>
+          <div class="step-item" style="padding:10px 14px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.7rem">5</div><div class="step-item-content"><span class="step-item-title">ADR registrado</span><span class="step-item-desc">se houve decisão contestável</span></div></div>
+          <div class="step-item" style="padding:10px 14px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.7rem">6</div><div class="step-item-content"><span class="step-item-title">Delivery record</span><span class="step-item-desc">1 linha JSON em metrics/entregas.jsonl</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s25">
+  <div class="col" style="max-width:820px;gap:14px;width:100%">
+    <span class="chip chip-yellow">✋ Exercise 04 · 5 min</span>
+    <h2>Audite seu DoD</h2>
+    <div class="exercise-card">
+      <span class="ex-label">✋ Exercício 04 — Abra .claude/rules/definicao-de-pronto.md. Para cada critério:</span>
+      <ol>
+        <li>Você atende hoje no seu fluxo atual? <strong>✅ ou ❌</strong></li>
+        <li>Se ❌ — qual seria o custo real de implementar essa semana? (horas, não "um dia faço")</li>
+        <li>Escolha <strong>1 critério</strong> que você vai implementar nos próximos 7 dias. Anote com data de entrega.</li>
+      </ol>
+      <p>🙋 Debrief: quais critérios foram mais faltantes no time? Qual o critério que mais assusta implementar?</p>
+    </div>
+    <div class="highlight">
+      <h3 style="color:var(--accent3);margin-bottom:4px">O Ratchet em ação</h3>
+      <p style="font-size:.85rem">Quando o revisor-codigo retornar BLOQUEADO pela primeira vez: escreva a rule que teria pegado isso antes. Isso é o ratchet — cada falha sobe um dente, nunca desce.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s26">
+  <div class="col" style="max-width:880px;gap:14px;width:100%">
+    <span class="chip chip-cyan">Módulo 6 · Claude Tips — Nível Intermediário</span>
+    <h2>Hacks que desbloqueiam produtividade</h2>
+    <p style="font-size:.82rem;color:var(--text-muted)">Baseado em @sairahul1 · "27 Hidden Claude Features"</p>
+    <div class="vs-row">
+      <div class="col gap8">
+        <div class="highlight cyan">
+          <h3 style="color:var(--accent2);margin-bottom:4px">Subagents for isolation</h3>
+          <p style="font-size:.83rem">Spawn agents para pesquisa sem poluir o contexto principal. Harness: <code>revisor-codigo</code> roda com contexto fresco — não vê seu histórico de conversa.</p>
+        </div>
+        <div class="highlight">
+          <h3 style="color:var(--accent3);margin-bottom:4px">Slash commands = workflow streamlining</h3>
+          <p style="font-size:.83rem"><code>/validar</code> · <code>/scorecard</code> · <code>/grill-me</code> — operações de workflow em uma palavra. Sem digitar 3 parágrafos de instrução.</p>
+        </div>
+      </div>
+      <div class="col gap8">
+        <div class="highlight green">
+          <h3 style="color:var(--green);margin-bottom:4px">Context maximization</h3>
+          <p style="font-size:.83rem">HANDOFF.md ao encerrar sessão → próximo agente lê e retoma exato ponto. Zero re-explicação. Zero Blank Slate.</p>
+        </div>
+        <div class="vs-row" style="grid-template-columns:1fr 1fr;gap:8px">
+          <div class="vs-col claude" style="padding:10px 12px">
+            <span class="vs-col-label">Claude Code</span>
+            <p>PostToolUse hooks disparam shell commands após cada tool call — pipeline automático.</p>
+          </div>
+          <div class="vs-col cursor" style="padding:10px 12px">
+            <span class="vs-col-label">Cursor</span>
+            <p>Terminal tasks manuais. Sem hooks executáveis nativos — você roda /validar na mão.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 7 — AGENTES, SKILLS E KBs
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s27">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-purple">Módulo 7</span>
+      <span class="timer-badge">⏱ 20 min · lecture + quiz</span>
+    </div>
+    <h2>Agentes, Skills e KBs</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai aprender a diferença entre agente, skill e KB — e parar de <strong>super-engenheirar tarefas simples</strong> (ou sub-engenheirar as complexas).</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s28">
+  <div class="col" style="max-width:900px;gap:12px;width:100%">
+    <span class="chip chip-purple">Módulo 7 · Agente vs Skill vs KB</span>
+    <h2>A decisão mais importante do harness</h2>
+    <div class="card-grid cols3">
+      <div class="card col gap6" style="border-color:var(--accent)">
+        <h3 style="color:var(--accent)">Agente</h3>
+        <p style="font-size:.82rem;color:var(--text)">Contexto fresco · especialista · caro</p>
+        <p style="font-size:.8rem">Use quando precisa de isolamento e expertise de domínio.</p>
+        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+          <p style="font-size:.76rem;color:var(--text-muted)">Exemplos:</p>
+          <p style="font-size:.76rem"><code>revisor-codigo</code> · <code>kb-architect</code> · <code>harness-build</code> · <code>rag-architect</code></p>
+        </div>
+      </div>
+      <div class="card col gap6" style="border-color:var(--green)">
+        <h3 style="color:var(--green)">Skill</h3>
+        <p style="font-size:.82rem;color:var(--text)">Playbook de procedimento · barato · reutilizável</p>
+        <p style="font-size:.8rem">Use para procedimentos que você repete. Roda no contexto atual.</p>
+        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+          <p style="font-size:.76rem;color:var(--text-muted)">Exemplos:</p>
+          <p style="font-size:.76rem"><code>grill-me</code> · <code>to-prd</code> · <code>validar</code> · <code>gen-tests</code> · <code>new-adr</code></p>
+        </div>
+      </div>
+      <div class="card col gap6" style="border-color:var(--accent2)">
+        <h3 style="color:var(--accent2)">Knowledge Base</h3>
+        <p style="font-size:.82rem;color:var(--text)">Documentação de domínio · persistida · consultada</p>
+        <p style="font-size:.8rem">Consumida por agentes e skills. Fica em <code>.claude/kb/</code>.</p>
+        <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+          <p style="font-size:.76rem;color:var(--text-muted)">Exemplos:</p>
+          <p style="font-size:.76rem"><code>kb/fastapi/</code> · <code>kb/pipeline/</code> · <code>kb/langgraph/</code> · <code>kb/rag/</code></p>
+        </div>
+      </div>
+    </div>
+    <div class="highlight">
+      <p style="font-size:.86rem"><strong style="color:var(--text)">Árvore de decisão:</strong> "Precisa de contexto limpo + expertise?" → <strong style="color:var(--accent)">Agente</strong>. "É um procedimento que repito?" → <strong style="color:var(--green)">Skill</strong>. "É documentação de referência?" → <strong style="color:var(--accent2)">KB</strong>.</p>
+    </div>
+    <div class="vs-row">
+      <div class="vs-col claude"><span class="vs-col-label">Claude Code</span><p>Agents em <code>.claude/agents/*.md</code> com tool restrictions declaradas. Skills em <code>.claude/skills/*/SKILL.md</code>.</p></div>
+      <div class="vs-col cursor"><span class="vs-col-label">Cursor</span><p>Composer Agents — contexto fresco similar. Sem arquivos de definição estruturados. Sem equivalente de Skill ou KB.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s29">
+  <div class="col" style="max-width:880px;gap:14px;width:100%">
+    <span class="chip chip-purple">Módulo 7 · Context-7 MCP</span>
+    <h2>Docs vivos — nunca use documentação do training data</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap8">
+        <div class="highlight red">
+          <h3 style="color:var(--red);margin-bottom:5px">O problema</h3>
+          <p style="font-size:.83rem">Docs de bibliotecas no training data ficam velhas. O LLM hallucina a API certa, usa parâmetros depreciados, sugere padrões de versões antigas.</p>
+        </div>
+        <div class="highlight green">
+          <h3 style="color:var(--green);margin-bottom:5px">Context-7 MCP resolve</h3>
+          <p style="font-size:.83rem">MCP server que busca docs oficiais em tempo real:</p>
+          <ul class="blist green" style="margin-top:4px">
+            <li><code>resolve-library-id</code> → "fastapi" para /tiangolo/fastapi</li>
+            <li><code>get-library-docs</code> → ID + tópico + versão → docs atuais</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col flex1 gap8">
+        <div class="card col gap6">
+          <h3 style="font-size:.85rem;color:var(--text)">Score de confiança do kb-architect</h3>
+          <p style="font-size:.8rem;color:var(--green)">Doc &lt; 1 mês: +0.05 confiança</p>
+          <p style="font-size:.8rem;color:var(--yellow)">Doc &gt; 6 meses: −0.05 confiança</p>
+          <p style="font-size:.8rem;color:var(--red)">Breaking change detectada: −0.15 confiança</p>
+          <p style="font-size:.8rem;color:var(--green)">Exemplos de produção: +0.05 confiança</p>
+        </div>
+        <div class="vs-row" style="grid-template-columns:1fr 1fr;gap:8px">
+          <div class="vs-col claude" style="padding:10px 12px">
+            <span class="vs-col-label">Claude Code</span>
+            <p>Context-7 MCP → docs no contexto do agente automaticamente via <code>.mcp.json</code>.</p>
+          </div>
+          <div class="vs-col cursor" style="padding:10px 12px">
+            <span class="vs-col-label">Cursor</span>
+            <p>@docs feature → indexa URLs específicas. Menos automatizado, sem scoring de frescor.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s30">
+  <div class="col" style="max-width:820px;gap:14px;width:100%">
+    <span class="chip chip-yellow">✋ Quick Quiz · 5 min</span>
+    <h2>Agente, Skill ou KB?</h2>
+    <div class="exercise-card">
+      <span class="ex-label">✋ Quick Quiz — Para cada item, responda: Agente / Skill / KB? (resposta em duplas)</span>
+      <ol>
+        <li>Gerar testes unitários para um módulo Python</li>
+        <li>Revisar um diff por vulnerabilidades de segurança</li>
+        <li>Criar um Architecture Decision Record (ADR)</li>
+        <li>Documentação de padrões Airflow específicos do projeto</li>
+        <li>Projetar uma arquitetura RAG do zero para novos dados</li>
+        <li>Executar ruff + mypy + pytest</li>
+        <li>Buscar docs atuais da API do PySpark 3.5</li>
+      </ol>
+      <p>🎯 Gabarito: (1) Skill gen-tests · (2) Agente revisor-codigo · (3) Skill new-adr · (4) KB kb/airflow/ · (5) Agente rag-architect · (6) Command /validar · (7) MCP Context-7</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 8 — SEGURANÇA DA INFORMAÇÃO
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s31">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-red">Módulo 8</span>
+      <span class="timer-badge">⏱ 15 min · lecture + exercise</span>
+    </div>
+    <h2>Segurança da Informação desde o Dia 0</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai entender por que SI não é um checklist no final do projeto — é a <strong>primeira pergunta do /novo-projeto</strong>. E vai configurar sua deny list antes de sair hoje.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s32">
+  <div class="col" style="max-width:900px;gap:12px;width:100%">
+    <span class="chip chip-red">Módulo 8 · Os 4 Vetores de Risco</span>
+    <h2>O que pode dar errado sem SI no harness</h2>
+    <div class="card-grid cols2">
+      <div class="highlight red">
+        <h3 style="color:var(--red);margin-bottom:5px">💣 Destruição</h3>
+        <p style="font-size:.83rem"><code>rm -rf</code> · <code>docker volume rm</code> · <code>dropdb</code> · <code>DELETE</code> em produção sem ADR</p>
+        <p style="font-size:.8rem;margin-top:4px">Bloqueados via <code>settings.json</code> deny list — hook shell, não instrução de texto.</p>
+      </div>
+      <div class="highlight yellow">
+        <h3 style="color:var(--yellow);margin-bottom:5px">👁 Exposição de PII</h3>
+        <p style="font-size:.83rem">CPF, email, nome, IP, saúde em logs, URLs ou output do LLM. LGPD: dados pessoais identificam ou podem identificar uma pessoa.</p>
+        <p style="font-size:.8rem;margin-top:4px">Regra: PII nunca em logs. Sempre mascarado na UI.</p>
+      </div>
+      <div class="highlight">
+        <h3 style="color:var(--accent3);margin-bottom:5px">✍️ Escrita não autorizada em produção</h3>
+        <p style="font-size:.83rem">DELETE/DROP sem ADR aprovado por humano. Banco de produção é <strong>somente leitura por padrão</strong> — role RO, LIMIT, timeout declarados em CLAUDE.md.</p>
+      </div>
+      <div class="highlight cyan">
+        <h3 style="color:var(--accent2);margin-bottom:5px">🔗 Vazamento cross-tenant</h3>
+        <p style="font-size:.83rem">Query de tenant A retorna dados de tenant B. RLS obrigatório em toda query multi-tenant. Filtro de tenant no nível do banco, não da aplicação.</p>
+      </div>
+    </div>
+    <div class="card" style="padding:10px 16px">
+      <p style="font-size:.82rem">SI levels: <strong style="color:var(--green)">a</strong>=público · <strong style="color:var(--accent2)">b</strong>=interno/uso de usuários · <strong style="color:var(--yellow)">c</strong>=PII direto · <strong style="color:var(--red)">d</strong>=produção crítica/dados restritos</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s33">
+  <div class="col" style="max-width:820px;gap:14px;width:100%">
+    <span class="chip chip-yellow">✋ Exercise 05 · 5 min</span>
+    <h2>Configure sua Deny List</h2>
+    <div class="exercise-card">
+      <span class="ex-label">✋ Exercício 05 — Abra .claude/settings.json e verifique:</span>
+      <ol>
+        <li>Encontre a seção <code>permissions.deny</code>. Quais comandos estão bloqueados?</li>
+        <li>Verifique: <code>rm -rf</code> · <code>docker compose down -v</code> · <code>git push --force</code> · <code>dropdb</code> estão na lista?</li>
+        <li>Adicione <strong>1 comando</strong> que faz sentido para o seu contexto (ex: <code>kubectl delete</code> · <code>terraform destroy</code> · <code>bq rm</code>).</li>
+        <li>Abra <code>rules/seguranca.md</code> e classifique: qual nível SI (a/b/c/d) seria o seu projeto atual?</li>
+      </ol>
+      <p>🙋 Debrief: alguém tem um caso real de destroy acidental por IA? O que teria impedido?</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 9 — TRACKING, MÉTRICAS E MEMÓRIA
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s34">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-cyan">Módulo 9</span>
+      <span class="timer-badge">⏱ 20 min · lecture</span>
+    </div>
+    <h2>Tracking, Métricas e Memória de Sessão</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai aprender a <strong>nunca perder contexto entre sessões</strong> — e a medir o que o agente realmente entregou (não o que você imagina que entregou).</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s35">
+  <div class="col" style="max-width:900px;gap:12px;width:100%">
+    <span class="chip chip-cyan">Módulo 9 · As 4 Fontes de Verdade</span>
+    <h2>Onde o estado do projeto mora</h2>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:4px">
+      <table>
+        <thead><tr><th>Artefato</th><th>Onde fica</th><th>O que resolve</th><th>Quando atualizar</th></tr></thead>
+        <tbody>
+          <tr><td>STATUS.md</td><td>.claude/projetos/{slug}/</td><td>Qual fase? Qual SI level? Que tipo?</td><td>A cada avanço de fase</td></tr>
+          <tr><td>tasks/README.md</td><td>tasks/</td><td>Board: done / in-progress / bloqueada / blocked-by</td><td>A cada mudança de status</td></tr>
+          <tr><td>HANDOFF.md</td><td>raiz do projeto</td><td>O que foi feito + próximo passo (inter-sessão)</td><td>Ao fechar cada sessão</td></tr>
+          <tr><td>metrics/entregas.jsonl</td><td>metrics/</td><td>Uma linha JSON por task — alimenta /scorecard</td><td>Ao fechar cada task</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="row gap14">
+      <div class="highlight green flex1">
+        <h3 style="color:var(--green);margin-bottom:4px">Ritual de início de sessão</h3>
+        <p style="font-size:.82rem">1) <code>cat STATUS.md</code> · 2) <code>cat tasks/README.md</code> · 3) <code>cat HANDOFF.md</code> → você sabe onde está sem re-explicar nada.</p>
+      </div>
+      <div class="highlight yellow flex1">
+        <h3 style="color:var(--yellow);margin-bottom:4px">Ritual de fim de sessão</h3>
+        <p style="font-size:.82rem"><code>/handoff</code> gera automaticamente: o que foi feito, decisões tomadas, próximo passo, estado das tasks.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s36">
+  <div class="col" style="max-width:900px;gap:12px;width:100%">
+    <span class="chip chip-cyan">Módulo 9 · /scorecard e ADRs</span>
+    <h2>Meça o que importa — não o que é fácil</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap8">
+        <h3 style="color:var(--text-muted);font-size:.78rem;text-transform:uppercase">/scorecard calcula de metrics/entregas.jsonl</h3>
+        <div class="card col gap6" style="padding:14px 18px">
+          <div style="display:flex;justify-content:space-between"><span style="font-size:.84rem;color:var(--text)">Autonomia %</span><span style="font-size:.8rem;color:var(--text-muted)">tasks fechadas sem edição humana</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font-size:.84rem;color:var(--text)">Gate attempts</span><span style="font-size:.8rem;color:var(--text-muted)">rodadas de /validar até passar</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font-size:.84rem;color:var(--text)">Aprovação revisor</span><span style="font-size:.8rem;color:var(--text-muted)">taxa de aprovação first-try</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font-size:.84rem;color:var(--text)">Bloqueios</span><span style="font-size:.8rem;color:var(--text-muted)">tasks reabertas ou bugs pós-ship</span></div>
+        </div>
+        <div class="highlight cyan">
+          <p style="font-size:.82rem">Não persiga vaidade (linhas de código, commits). A meta é: <strong>autonomia % subindo</strong> ao longo dos projetos.</p>
+        </div>
+      </div>
+      <div class="col flex1 gap8">
+        <h3 style="color:var(--text-muted);font-size:.78rem;text-transform:uppercase">ADRs — Architecture Decision Records</h3>
+        <div class="card col gap6" style="padding:14px 18px">
+          <p style="font-size:.83rem;color:var(--text)">Quando criar um ADR:</p>
+          <ul class="blist" style="margin-top:4px">
+            <li>Escolha de tecnologia ou biblioteca</li>
+            <li>Decisão de segurança (escopo de escrita)</li>
+            <li>Breaking change de schema</li>
+            <li>Qualquer decisão que você vai questionar em 3 meses</li>
+          </ul>
+        </div>
+        <div class="highlight">
+          <p style="font-size:.82rem"><strong>Formato:</strong> data · contexto · decisão · consequências · alternativas consideradas. Um arquivo por decisão em <code>docs/adr/ADR-NNNN.md</code>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s37">
+  <div class="col" style="max-width:880px;gap:14px;width:100%">
+    <span class="chip chip-purple">Módulo 9 · Claude Tips — Nível Pro</span>
+    <h2>Transforme Claude em membro de equipe</h2>
+    <p style="font-size:.82rem;color:var(--text-muted)">Baseado em @sairahul1 · "27 Hidden Claude Features"</p>
+    <div class="card-grid cols2">
+      <div class="highlight">
+        <h3 style="color:var(--accent3);margin-bottom:5px">O Ratchet na prática</h3>
+        <p style="font-size:.83rem">Após cada falha: escreva uma rule. Nunca repita o mesmo erro. O harness cresce — o modelo não mudou, mas o ambiente ficou mais inteligente.</p>
+      </div>
+      <div class="highlight green">
+        <h3 style="color:var(--green);margin-bottom:5px">Hooks como automação real</h3>
+        <p style="font-size:.83rem">PostToolUse → /validar após cada Edit automático. Stop → gera HANDOFF.md ao fechar sessão. Sem disciplina manual — o harness faz.</p>
+      </div>
+      <div class="highlight cyan">
+        <h3 style="color:var(--accent2);margin-bottom:5px">Agent specialization</h3>
+        <p style="font-size:.83rem">Agentes de domínio gerados pelo /harness-architect: <code>pipeline-architect</code> · <code>schema-guardian</code> · <code>sisfraude-specialist</code>. Não use agente genérico para tudo.</p>
+      </div>
+      <div class="vs-row" style="grid-template-columns:1fr 1fr;gap:8px">
+        <div class="vs-col claude" style="padding:10px 12px"><span class="vs-col-label">Claude Code</span><p>Hooks executáveis (shell) + agents com tool restrictions declaradas em arquivo.</p></div>
+        <div class="vs-col cursor" style="padding:10px 12px"><span class="vs-col-label">Cursor</span><p>Sem hooks executáveis. Cursor Rules são sugestões — não enforcement. Gap crítico.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 10 — PIPELINE SPECIALIZATION
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s38">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-purple">Módulo 10</span>
+      <span class="timer-badge">⏱ 15 min · lecture</span>
+    </div>
+    <h2>Pipeline Specialization</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Se você trabalha com dados, vai aprender as <strong>10 perguntas obrigatórias</strong> que o harness faz antes de você escrever uma linha de código de pipeline — e por que elas existem.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s39">
+  <div class="col" style="max-width:900px;gap:12px;width:100%">
+    <span class="chip chip-purple">Módulo 10 · As 10 Perguntas de Pipeline</span>
+    <h2>O /grill-me para pipelines é diferente</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap6">
+        <p style="font-size:.8rem;color:var(--text-muted)">Detecção automática no /novo-projeto → "Tipo: Pipeline" → +10 perguntas no /grill-me</p>
+        <div class="step-list">
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">1</div><div class="step-item-content"><span class="step-item-title">Fontes de dados</span><span class="step-item-desc">schema, owner, formato</span></div></div>
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">2</div><div class="step-item-content"><span class="step-item-title">Estabilidade do schema</span><span class="step-item-desc">evolui? breaking changes esperados?</span></div></div>
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">3</div><div class="step-item-content"><span class="step-item-title">Volume e frequência</span><span class="step-item-desc">GB/dia? batch ou streaming?</span></div></div>
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">4</div><div class="step-item-content"><span class="step-item-title">Sensibilidade (PII)</span><span class="step-item-desc">CPF? email? dados de saúde?</span></div></div>
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">5</div><div class="step-item-content"><span class="step-item-title">SLA de freshness</span><span class="step-item-desc">atraso máximo tolerável?</span></div></div>
+        </div>
+      </div>
+      <div class="col flex1 gap6">
+        <p style="font-size:.8rem;color:var(--text-muted)" style="margin-top:24px">&nbsp;</p>
+        <div class="step-list">
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">6</div><div class="step-item-content"><span class="step-item-title">Consumidores da camada Gold</span><span class="step-item-desc">BI, ML, API? quem é o dono?</span></div></div>
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">7</div><div class="step-item-content"><span class="step-item-title">Owner e on-call</span><span class="step-item-desc">quem acorda às 3h quando quebra?</span></div></div>
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">8</div><div class="step-item-content"><span class="step-item-title">Ambiente</span><span class="step-item-desc">local / dev / prd · Unity Catalog?</span></div></div>
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">9</div><div class="step-item-content"><span class="step-item-title">Estratégia de qualidade</span><span class="step-item-desc">contratos ODCS? quarantine table?</span></div></div>
+          <div class="step-item" style="padding:8px 12px"><div class="step-badge" style="min-width:22px;height:22px;font-size:.68rem">10</div><div class="step-item-content"><span class="step-item-title">Portabilidade</span><span class="step-item-desc">multi-tenant? multi-env?</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s40">
+  <div class="col" style="max-width:900px;gap:12px;width:100%">
+    <span class="chip chip-purple">Módulo 10 · Medallion no Harness</span>
+    <h2>Arquitetura Medallion com regras aplicadas</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap8">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="card col gap4" style="border-left:4px solid var(--red);border-radius:0 var(--radius) var(--radius) 0">
+            <h3 style="color:var(--red);font-size:.9rem">Raw (sagrado/imutável)</h3>
+            <p style="font-size:.79rem">Nunca transformado, nunca deletado. Ponto de auditoria.</p>
+          </div>
+          <div class="card col gap4" style="border-left:4px solid var(--yellow);border-radius:0 var(--radius) var(--radius) 0">
+            <h3 style="color:var(--yellow);font-size:.9rem">Bronze (tipagem + metadata)</h3>
+            <p style="font-size:.79rem">Colunas obrigatórias: <code>_ingested_at</code> · <code>_source</code> · <code>_run_id</code> · <code>_batch_id</code></p>
+          </div>
+          <div class="card col gap4" style="border-left:4px solid var(--accent2);border-radius:0 var(--radius) var(--radius) 0">
+            <h3 style="color:var(--accent2);font-size:.9rem">Silver (limpeza + validação)</h3>
+            <p style="font-size:.79rem">Contratos ODCS aplicados. Quarantine table para dados rejeitados.</p>
+          </div>
+          <div class="card col gap4" style="border-left:4px solid var(--green);border-radius:0 var(--radius) var(--radius) 0">
+            <h3 style="color:var(--green);font-size:.9rem">Gold (agregações prontas)</h3>
+            <p style="font-size:.79rem">Consumível por BI, ML, API. SLA de freshness aplicado aqui.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col flex1 gap8">
+        <div class="highlight red">
+          <h3 style="color:var(--red);margin-bottom:4px">Quarantine — nunca delete dados ruins</h3>
+          <p style="font-size:.82rem">Registre <code>_quarantine_reason</code> · <code>_quarantine_ts</code> · <code>_run_id</code>. Audite. Corrija a source. Reprocesse.</p>
+        </div>
+        <div class="highlight">
+          <h3 style="color:var(--accent3);margin-bottom:4px">Zero hardcode de ambiente</h3>
+          <p style="font-size:.82rem"><code>PIPELINE_ENV=dev</code> → <code>config/environments/dev.yaml</code> → resolve <code>dev_catalog.bronze.orders</code>. Nunca escreva catalog name no código.</p>
+        </div>
+        <div class="highlight cyan">
+          <h3 style="color:var(--accent2);margin-bottom:4px">Agentes gerados pelo /harness-architect</h3>
+          <p style="font-size:.82rem">Para pipelines: <code>pipeline-architect</code> · <code>schema-guardian</code> · rules de pipeline e schema evolution são criadas automaticamente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 11 — CAPSTONE EXERCISE
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s41">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-yellow">Módulo 11</span>
+      <span class="timer-badge">⏱ 30 min · hands-on em grupos</span>
+    </div>
+    <h2>Capstone Exercise</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai aplicar o método completo num <strong>projeto real do seu contexto</strong> — e terminar o workshop com STATUS.md, grill e PRD prontos para usar amanhã.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s42">
+  <div class="col" style="max-width:820px;gap:14px;width:100%">
+    <span class="chip chip-yellow">✋ Capstone · 25 min</span>
+    <h2>Crie seu projeto com o método completo</h2>
+    <div class="exercise-card">
+      <span class="ex-label">✋ Capstone — Em grupos de 2-3 pessoas. Facilitador circula.</span>
+      <ol>
+        <li>Escolham um projeto <strong>real ou realista</strong> do contexto de vocês (não um todo-list).</li>
+        <li>Execute <strong>/novo-projeto</strong> → responda as 3 perguntas: ideia + SI level + tipo de projeto.</li>
+        <li>Execute <strong>/grill-me</strong> → o agente vai entrevistar sem piedade. Respondam honestamente — requisitos falsos colapsam aqui.</li>
+        <li>Salve o Q&A em <code>01-grill.md</code> (o agente faz isso automaticamente via harness-define).</li>
+        <li>Execute <strong>/to-prd</strong> → revise o PRD gerado. O que está errado? O que está faltando?</li>
+      </ol>
+      <p>📌 Anote: qual foi a pergunta do grill que mais mudou sua visão do projeto?</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s43">
+  <div class="col" style="max-width:820px;gap:14px;width:100%">
+    <span class="chip chip-yellow">Capstone · Debrief · 5 min</span>
+    <h2>O que cada grupo descobriu</h2>
+    <div class="card-grid cols3">
+      <div class="card col gap6" style="text-align:center">
+        <span style="font-size:1.8rem">🔐</span>
+        <h3 style="color:var(--red)">Qual foi o SI level?</h3>
+        <p style="font-size:.82rem">Por quê esse nível? O que muda no fluxo com nível c ou d?</p>
+      </div>
+      <div class="card col gap6" style="text-align:center">
+        <span style="font-size:1.8rem">🔍</span>
+        <h3 style="color:var(--accent2)">Que tipo foi detectado?</h3>
+        <p style="font-size:.82rem">Pipeline teve +10 perguntas? O que a detecção de tipo mudou no grill?</p>
+      </div>
+      <div class="card col gap6" style="text-align:center">
+        <span style="font-size:1.8rem">💡</span>
+        <h3 style="color:var(--yellow)">A pergunta que mudou tudo</h3>
+        <p style="font-size:.82rem">Qual pergunta do grill mais mudou a visão de vocês sobre o projeto?</p>
+      </div>
+    </div>
+    <div class="highlight green">
+      <p style="font-size:.88rem;color:var(--text)"><strong>Síntese:</strong> o /grill-me é onde os requisitos falsos colapsam. Você saiu com um PRD mais honesto do que teria escrito sozinho — sem o agente te confrontar.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MÓDULO 12 — TAKEAWAYS & PRÓXIMOS PASSOS
+═══════════════════════════════════════════════ -->
+<div class="slide" id="s44">
+  <div class="col" style="max-width:820px;gap:18px;width:100%">
+    <div class="module-header">
+      <span class="chip chip-green">Módulo 12</span>
+      <span class="timer-badge">⏱ 10 min · recap + CTA</span>
+    </div>
+    <h2>Takeaways & Próximos Passos</h2>
+    <div class="gain-card">
+      <span class="gain-label">O que você vai ganhar</span>
+      <p>Você vai sair com <strong>3 leis, 5 comandos</strong> e <strong>1 ação concreta</strong> para fazer nas próximas 24 horas.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s45">
+  <div class="col" style="max-width:900px;gap:14px;width:100%">
+    <span class="chip chip-green">Módulo 12 · As 3 Leis</span>
+    <h2>As 3 leis do harness</h2>
+    <div class="card-grid cols3">
+      <div class="card col gap8" style="border-color:var(--accent);text-align:center">
+        <span style="font-size:2.5rem;font-weight:900;color:var(--surface2)">I</span>
+        <h3 style="color:var(--accent)">Estrutura &gt; Prompting</h3>
+        <p style="font-size:.84rem">CLAUDE.md + rules bate prompt engineering toda vez. Um invariante declarado vale mil "seja cuidadoso".</p>
+      </div>
+      <div class="card col gap8" style="border-color:var(--accent3);text-align:center">
+        <span style="font-size:2.5rem;font-weight:900;color:var(--surface2)">II</span>
+        <h3 style="color:var(--accent3)">O Ratchet</h3>
+        <p style="font-size:.84rem">Toda falha é uma rule esperando ser escrita. Harnesses não regridem — cada erro sobe um dente.</p>
+      </div>
+      <div class="card col gap8" style="border-color:var(--green);text-align:center">
+        <span style="font-size:2.5rem;font-weight:900;color:var(--surface2)">III</span>
+        <h3 style="color:var(--green)">Gates não são opcionais</h3>
+        <p style="font-size:.84rem">Ship only green. /validar + revisor-codigo não são sugestões — são a porta de saída de cada task.</p>
+      </div>
+    </div>
+    <div class="highlight cyan">
+      <h3 style="color:var(--accent2);margin-bottom:5px">Os 5 comandos para saber de cor</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <code>/novo-projeto</code><code>/grill-me</code><code>/validar</code><code>/scorecard</code><code>/harness-architect</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s46">
+  <div class="col" style="max-width:900px;gap:14px;width:100%">
+    <span class="chip chip-green">Módulo 12 · Recursos & CTA</span>
+    <h2>O que fazer nas próximas 24 horas</h2>
+    <div class="row gap14">
+      <div class="col flex1 gap8">
+        <div class="highlight green">
+          <h3 style="color:var(--green);margin-bottom:6px">Suas 3 ações concretas</h3>
+          <ol style="padding-left:18px;display:flex;flex-direction:column;gap:7px">
+            <li style="font-size:.85rem;color:var(--text)">Clone o repo canônico e abra no Claude Code</li>
+            <li style="font-size:.85rem;color:var(--text)">Rode <code>/novo-projeto</code> no seu próximo projeto real</li>
+            <li style="font-size:.85rem;color:var(--text)">Escreva 1 rule depois da próxima falha de IA</li>
+          </ol>
+        </div>
+        <div class="card col gap6">
+          <h3 style="font-size:.85rem;color:var(--text)">Referências deste workshop</h3>
+          <p style="font-size:.79rem">@addyosmani — Agent Harness Engineering (YouMind, 798K views)</p>
+          <p style="font-size:.79rem">@sairahul1 — 27 Hidden Claude Features (YouMind, 2.9M views)</p>
+          <p style="font-size:.79rem">docs/guia/ — 9 módulos de referência (87 slides)</p>
+        </div>
+      </div>
+      <div class="col flex1 gap8">
+        <div class="vs-row" style="grid-template-columns:1fr;gap:8px">
+          <div class="vs-col claude">
+            <span class="vs-col-label">Claude Code — harness completo</span>
+            <ul>
+              <li>Hooks executáveis (shell real)</li>
+              <li>Deny list irrevogável no settings.json</li>
+              <li>Agents com tool restrictions declaradas</li>
+              <li>Context-7 MCP nativo</li>
+              <li>Status tracking multi-projeto</li>
+            </ul>
+          </div>
+        </div>
+        <div class="vs-row" style="grid-template-columns:1fr;gap:8px">
+          <div class="vs-col cursor">
+            <span class="vs-col-label">Cursor — bom ponto de entrada</span>
+            <ul>
+              <li>.cursorrules + Cursor Rules (beta)</li>
+              <li>@docs para docs de libs</li>
+              <li>Composer Agents para contexto fresco</li>
+              <li>Sem hooks executáveis nativos</li>
+            </ul>
+          </div>
+        </div>
+        <div class="highlight cyan" style="padding:12px 16px">
+          <p style="font-size:.82rem">Recomendação: comece com Cursor se já usa. Migre para Claude Code quando precisar de <strong>gates reais</strong> e deny list executável.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /slides -->
+
+<nav class="nav">
+  <button id="prev" onclick="go(-1)" disabled>&#8592; Anterior</button>
+  <span id="counter" class="slide-counter">1 / 46</span>
+  <button id="next" onclick="go(1)">Próximo &#8594;</button>
+</nav>
+
+<script>
+const total = 46;
+let cur = 1;
+const dotsEl = document.getElementById('dots');
+for (let i = 1; i <= total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => show(i);
+  dotsEl.appendChild(d);
+}
+function show(n) {
+  document.getElementById('s' + cur).classList.remove('active');
+  dotsEl.children[cur - 1].classList.remove('active');
+  cur = n;
+  document.getElementById('s' + cur).classList.add('active');
+  dotsEl.children[cur - 1].classList.add('active');
+  document.getElementById('counter').textContent = cur + ' / ' + total;
+  document.getElementById('prev').disabled = cur === 1;
+  document.getElementById('next').disabled = cur === total;
+}
+function go(d) { if (cur + d >= 1 && cur + d <= total) show(cur + d); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+});
+</script>
+
+</body>
+</html>
