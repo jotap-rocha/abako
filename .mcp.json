@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "comment": "Exige Node >=20.18.1 (undici/File). Se o Node do sistema for mais antigo, aponte 'command' para um npx de Node 20 LTS (ex.: via nvm/fnm)."
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "[POSTGRES_CONNECTION_STRING]",
+        "--access-mode=restricted"
+      ],
+      "comment": "Substitua [POSTGRES_CONNECTION_STRING] pela connection string real. access-mode=restricted garante somente leitura. Preencher após /harness-architect detectar o banco."
+    }
+  }
+}

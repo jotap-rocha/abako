@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>14 — Multi-Tenant · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .pipeline-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .82rem; color: var(--text-muted); background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; width: 100%; }
+    .pipeline-flow .step { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--text); font-size: .8rem; white-space: nowrap; }
+    .pipeline-flow .arrow { color: var(--accent); font-weight: 700; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; }
+    .badge-green { background: #064e3b; color: var(--green); }
+    .badge-red { background: #450a0a; color: var(--red); }
+    .badge-yellow { background: #451a03; color: var(--yellow); }
+    .badge-cyan { background: #0c4a6e; color: var(--accent2); }
+    ul.clean { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    ul.clean li::before { content: "→ "; color: var(--accent); font-weight: 700; }
+    .vs-divider { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: .85rem; font-weight: 600; }
+    .vs-divider::before, .vs-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="file-nav">
+  <a href="#">01 Conceitos</a>
+  <a href="#">02 Fluxo</a>
+  <a href="#">03 Harness</a>
+  <a href="#">04 Tracking</a>
+  <a href="#">05 Guiado</a>
+  <a href="#">06 Segurança</a>
+  <a href="#">07 Pipeline Arq.</a>
+  <a href="#">08 Pipeline Prat.</a>
+  <a href="#">09 Agentes SDD</a>
+  <a href="#">10 RAG Search</a>
+  <a href="#">11 LangGraph</a>
+  <a href="#">12 Observabilidade</a>
+  <a href="#">13 Auth</a>
+  <a href="14-multi-tenant.html" class="current">14 Multi-Tenant</a>
+  <a href="#">15 Deploy</a>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="slides" id="slides">
+
+  <!-- Slide 1 — Capa -->
+  <div class="slide active" id="s1">
+    <div class="col" style="align-items:center; gap:24px; max-width:820px; text-align:center;">
+      <span class="chip chip-purple">Sprint 3 · Agent Harness</span>
+      <h1 class="gradient-text">Multi-Tenant</h1>
+      <p class="big">Isolamento, RLS, JWT e vector isolation</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px;">
+        <span class="tag"><span class="dot" style="background:var(--accent);"></span>Modelos de Isolamento</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2);"></span>RLS</span>
+        <span class="tag"><span class="dot" style="background:var(--accent3);"></span>JWT</span>
+        <span class="tag"><span class="dot" style="background:var(--green);"></span>Vector Isolation</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow);"></span>Invariantes</span>
+      </div>
+      <div class="highlight cyan mt16" style="max-width:680px;">
+        <p class="big">"Isolamento multi-tenant não é uma feature — é um invariante. Qualquer query que não carregar <em>tenant_id</em> como primeiro predicado é um bug de segurança."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2 — O Problema -->
+  <div class="slide" id="s2">
+    <div class="col" style="gap:20px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">Risco Crítico</span>
+        <h2>O problema: vazamento entre tenants</h2>
+      </div>
+
+      <div class="card-grid cols2" style="gap:16px;">
+        <div class="card col" style="gap:14px; border-color:#450a0a;">
+          <h3 style="color:var(--red);">O que pode dar errado</h3>
+          <ul class="clean">
+            <li><span style="color:var(--red);">Query sem tenant_id</span> — <span style="color:var(--text-muted); font-size:.88rem;">retorna dados de todos os tenants</span></li>
+            <li><span style="color:var(--red);">Body forjado</span> — <span style="color:var(--text-muted); font-size:.88rem;">cliente envia <code>tenant_id</code> de outro tenant</span></li>
+            <li><span style="color:var(--red);">Semântica vetorial sem pre-filter</span> — <span style="color:var(--text-muted); font-size:.88rem;">documentos de tenants diferentes competem na busca</span></li>
+            <li><span style="color:var(--red);">RLS desligado</span> — <span style="color:var(--text-muted); font-size:.88rem;">política existe mas não está ativa na tabela</span></li>
+          </ul>
+        </div>
+
+        <div class="card col" style="gap:14px;">
+          <h3 style="color:var(--text);">Diagrama: sem isolamento</h3>
+          <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px; width:100%;">
+              <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">Tenant A</span>
+              <span class="arrow">→</span>
+              <span class="step">App / Query</span>
+              <span class="arrow">→</span>
+              <span class="step" style="border-color:#450a0a; color:var(--red);">sem WHERE tenant_id</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; width:100%;">
+              <span class="arrow" style="padding-left: 24px;">↓</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; width:100%;">
+              <span class="step" style="border-color:#450a0a; color:var(--red);">Dados do Tenant A</span>
+              <span class="arrow">+</span>
+              <span class="step" style="border-color:#450a0a; color:var(--red);">Dados do Tenant B</span>
+              <span class="arrow">→</span>
+              <span class="step" style="border-color:#450a0a; color:var(--red);">vê dados Tenant B</span>
+            </div>
+          </div>
+          <div class="highlight red mt8">
+            <p style="font-size:.85rem; color:var(--red); font-weight:600;">Falha crítica de segurança — vazamento de dados entre clientes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight yellow">
+        <h3 style="color:var(--yellow);">Impacto real</h3>
+        <p class="mt4">Um único endpoint sem isolamento adequado pode expor dados de todos os tenants da plataforma. LGPD, GDPR e contratos com clientes podem ser violados em uma única requisição mal-formada.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3 — Modelos de Isolamento -->
+  <div class="slide" id="s3">
+    <div class="col" style="gap:16px; max-width:1000px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Arquitetura</span>
+        <h2>Modelos de Isolamento</h2>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Modelo</th>
+            <th>Isolamento</th>
+            <th>Custo operacional</th>
+            <th>Compliance</th>
+            <th>Quando usar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Shared Schema (RLS)</td>
+            <td><span class="badge badge-yellow">Médio</span></td>
+            <td><span class="badge badge-green">Baixo</span></td>
+            <td>SOC2, ISO 27001</td>
+            <td>Startups, SaaS B2B padrão, &lt;1000 tenants</td>
+          </tr>
+          <tr>
+            <td>Schema Separation</td>
+            <td><span class="badge badge-cyan">Alto</span></td>
+            <td><span class="badge badge-yellow">Médio</span></td>
+            <td>HIPAA básico</td>
+            <td>Dados sensíveis por segmento, migração progressiva</td>
+          </tr>
+          <tr>
+            <td>DB Separation</td>
+            <td><span class="badge badge-green">Máximo</span></td>
+            <td><span class="badge badge-red">Alto</span></td>
+            <td>HIPAA, FedRAMP, contratos enterprise</td>
+            <td>Enterprise tier, compliance regulatório estrito</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="card-grid cols3 mt8">
+        <div class="card col" style="gap:8px;">
+          <h3 style="color:var(--accent3); font-size:.9rem;">Shared Schema (RLS)</h3>
+          <pre><span class="cm"># Um banco, RLS filtra</span>
+<span class="kw">class</span> <span class="fn">TenantRepo</span>:
+    <span class="kw">async def</span> <span class="fn">get_casos</span>(
+        <span class="fn">self</span>, tenant_id: str
+    ):
+        <span class="kw">await</span> conn.execute(
+            <span class="str">"SET app.tenant_id=$1"</span>,
+            tenant_id
+        )
+        <span class="kw">return await</span> conn.fetch(
+            <span class="str">"SELECT * FROM casos"</span>
+        )</pre>
+        </div>
+        <div class="card col" style="gap:8px;">
+          <h3 style="color:var(--accent2); font-size:.9rem;">Schema Separation</h3>
+          <pre><span class="cm"># Schema por tenant</span>
+<span class="kw">def</span> <span class="fn">get_schema</span>(tenant_id):
+    <span class="kw">return</span> <span class="str">f"tenant_{tenant_id}"</span>
+
+<span class="kw">async def</span> <span class="fn">query</span>(tenant_id, sql):
+    schema = <span class="fn">get_schema</span>(tenant_id)
+    <span class="kw">await</span> conn.execute(
+        <span class="str">f"SET search_path={schema}"</span>
+    )
+    <span class="kw">return await</span> conn.fetch(sql)</pre>
+        </div>
+        <div class="card col" style="gap:8px;">
+          <h3 style="color:var(--green); font-size:.9rem;">DB Separation</h3>
+          <pre><span class="cm"># Pool de conexoes por tenant</span>
+<span class="fn">pools</span>: dict[str, Pool] = {}
+
+<span class="kw">async def</span> <span class="fn">get_pool</span>(tenant_id):
+    <span class="kw">if</span> tenant_id <span class="kw">not in</span> pools:
+        pools[tenant_id] = <span class="kw">await</span>
+            <span class="fn">create_pool</span>(
+                dsn=<span class="fn">get_dsn</span>(tenant_id)
+            )
+    <span class="kw">return</span> pools[tenant_id]</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4 — RLS Setup Completo -->
+  <div class="slide" id="s4">
+    <div class="col" style="gap:16px; max-width:1000px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-green">Postgres</span>
+        <h2>RLS multi-tenant — setup completo</h2>
+      </div>
+
+      <div class="row" style="gap:16px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <pre><span class="cm">-- 1. Tabelas base</span>
+<span class="kw">CREATE TABLE</span> tenants (
+    id   UUID <span class="kw">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+    slug TEXT <span class="kw">NOT NULL UNIQUE</span>,
+    plan TEXT <span class="kw">NOT NULL DEFAULT</span> <span class="str">'starter'</span>
+);
+
+<span class="kw">CREATE TABLE</span> casos (
+    id        UUID <span class="kw">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+    tenant_id UUID <span class="kw">NOT NULL REFERENCES</span> tenants(id),
+    titulo    TEXT <span class="kw">NOT NULL</span>,
+    status    TEXT <span class="kw">NOT NULL DEFAULT</span> <span class="str">'aberto'</span>,
+    created_at TIMESTAMPTZ <span class="kw">DEFAULT</span> now()
+);
+
+<span class="cm">-- 2. Role helper — extrai tenant do JWT</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">current_tenant_id</span>()
+<span class="kw">RETURNS</span> UUID <span class="kw">AS</span> $$
+  <span class="kw">SELECT</span> current_setting(<span class="str">'app.tenant_id'</span>)::UUID
+$$ <span class="kw">LANGUAGE</span> sql STABLE;
+
+<span class="cm">-- 3. Ativar RLS</span>
+<span class="kw">ALTER TABLE</span> casos <span class="kw">ENABLE ROW LEVEL SECURITY</span>;
+<span class="kw">ALTER TABLE</span> casos <span class="kw">FORCE ROW LEVEL SECURITY</span>;</pre>
+        </div>
+
+        <div class="col flex1" style="gap:12px;">
+          <pre><span class="cm">-- 4. Políticas para todas as operações</span>
+<span class="kw">CREATE POLICY</span> casos_select <span class="kw">ON</span> casos
+  <span class="kw">FOR SELECT USING</span> (
+    tenant_id = <span class="fn">current_tenant_id</span>()
+  );
+
+<span class="kw">CREATE POLICY</span> casos_insert <span class="kw">ON</span> casos
+  <span class="kw">FOR INSERT WITH CHECK</span> (
+    tenant_id = <span class="fn">current_tenant_id</span>()
+  );
+
+<span class="kw">CREATE POLICY</span> casos_update <span class="kw">ON</span> casos
+  <span class="kw">FOR UPDATE
+  USING</span>     (tenant_id = <span class="fn">current_tenant_id</span>())
+  <span class="kw">WITH CHECK</span> (tenant_id = <span class="fn">current_tenant_id</span>());
+
+<span class="kw">CREATE POLICY</span> casos_delete <span class="kw">ON</span> casos
+  <span class="kw">FOR DELETE USING</span> (
+    tenant_id = <span class="fn">current_tenant_id</span>()
+  );
+
+<span class="cm">-- 5. Verificação</span>
+<span class="kw">SELECT</span> schemaname, tablename, rowsecurity
+<span class="kw">FROM</span> pg_tables
+<span class="kw">WHERE</span> tablename = <span class="str">'casos'</span>;
+<span class="cm">-- rowsecurity deve ser: t</span></pre>
+          <div class="highlight green mt4">
+            <p style="font-size:.82rem;"><code>FORCE ROW LEVEL SECURITY</code> garante que nem o owner da tabela burla as policies — sem exceções silenciosas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5 — tenant_id do JWT, nunca do body -->
+  <div class="slide" id="s5">
+    <div class="col" style="gap:16px; max-width:1000px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">Anti-padrão</span>
+        <h2>tenant_id do JWT, nunca do body</h2>
+      </div>
+
+      <div class="card-grid cols2" style="gap:16px;">
+        <div class="card col" style="gap:12px; border-color:#450a0a;">
+          <h3 style="color:var(--red);">Anti-padrão: body forjavel</h3>
+          <pre><span class="cm"># NUNCA FACA ISSO</span>
+<span class="kw">class</span> <span class="fn">CasoRequest</span>(BaseModel):
+    titulo: str
+    tenant_id: str  <span class="cm"># ← forjavel!</span>
+
+<span class="kw">@router</span>.post(<span class="str">"/casos"</span>)
+<span class="kw">async def</span> <span class="fn">criar_caso</span>(body: CasoRequest):
+    <span class="cm"># cliente envia qualquer tenant_id</span>
+    <span class="kw">await</span> db.<span class="fn">insert</span>(
+        tenant_id=body.tenant_id,  <span class="cm"># ← BUG</span>
+        titulo=body.titulo
+    )</pre>
+          <div class="highlight red mt4">
+            <p style="font-size:.82rem; color:var(--red);">Qualquer cliente pode inserir dados em qualquer tenant apenas alterando o JSON body.</p>
+          </div>
+        </div>
+
+        <div class="card col" style="gap:12px; border-color:#064e3b;">
+          <h3 style="color:var(--green);">Correto: tenant_id do JWT verificado</h3>
+          <pre><span class="kw">from</span> contextvars <span class="kw">import</span> ContextVar
+<span class="kw">from</span> fastapi <span class="kw">import</span> Depends, HTTPException
+<span class="kw">import</span> jwt
+
+_tenant_ctx: ContextVar[str] = ContextVar(<span class="str">"tenant_id"</span>)
+
+<span class="kw">async def</span> <span class="fn">get_tenant_id</span>(
+    authorization: str = Header(...)
+) -> str:
+    <span class="kw">try</span>:
+        token = authorization.<span class="fn">split</span>(<span class="str">" "</span>)[1]
+        payload = jwt.<span class="fn">decode</span>(
+            token,
+            settings.JWT_SECRET,
+            algorithms=[<span class="str">"HS256"</span>]
+        )
+        tenant_id = payload[<span class="str">"tenant_id"</span>]
+        _tenant_ctx.<span class="fn">set</span>(tenant_id)
+        <span class="kw">return</span> tenant_id
+    <span class="kw">except</span> Exception:
+        <span class="kw">raise</span> HTTPException(401)
+
+<span class="cm"># Uso no endpoint — tenant_id do JWT</span>
+<span class="kw">@router</span>.post(<span class="str">"/casos"</span>)
+<span class="kw">async def</span> <span class="fn">criar_caso</span>(
+    body: CasoRequest,
+    tenant_id: str = <span class="fn">Depends</span>(get_tenant_id)
+):
+    <span class="kw">await</span> db.<span class="fn">set_tenant</span>(tenant_id)
+    <span class="kw">return await</span> db.<span class="fn">insert_caso</span>(body.titulo)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6 — tenant_id como primeiro predicado -->
+  <div class="slide" id="s6">
+    <div class="col" style="gap:16px; max-width:1000px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-yellow">Performance + Segurança</span>
+        <h2>tenant_id como primeiro predicado</h2>
+      </div>
+
+      <div class="card-grid cols2" style="gap:16px;">
+        <div class="card col" style="gap:10px; border-color:#450a0a;">
+          <h3 style="color:var(--red);">Errado — ordem incorreta</h3>
+          <pre><span class="cm">-- status primeiro: ignora o índice de tenant</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> casos
+<span class="kw">WHERE</span> status = <span class="str">$1</span>          <span class="cm">-- ← predicado amplo</span>
+  <span class="kw">AND</span> tenant_id = <span class="str">$2</span>;      <span class="cm">-- ← chega tarde</span>
+
+<span class="cm">-- Resultado: Seq Scan ou Index Scan ineficiente</span>
+<span class="cm">-- Pode vazar via race condition em RLS</span></pre>
+          <div class="highlight red mt4">
+            <p style="font-size:.82rem;">O planner pode optar por um scan amplo antes de aplicar o filtro de tenant — cenário de data leak em edge cases.</p>
+          </div>
+        </div>
+
+        <div class="card col" style="gap:10px; border-color:#064e3b;">
+          <h3 style="color:var(--green);">Correto — tenant_id primeiro</h3>
+          <pre><span class="cm">-- tenant_id SEMPRE primeiro</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> casos
+<span class="kw">WHERE</span> tenant_id = <span class="str">$1</span>        <span class="cm">-- ← filtra o universo</span>
+  <span class="kw">AND</span> status = <span class="str">$2</span>           <span class="cm">-- ← refina dentro do tenant</span>
+<span class="kw">ORDER BY</span> created_at <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> 50;
+
+<span class="cm">-- Índices obrigatórios</span>
+<span class="kw">CREATE INDEX</span> ON casos (tenant_id, status);
+<span class="kw">CREATE INDEX</span> ON casos (tenant_id, created_at <span class="kw">DESC</span>);
+
+<span class="cm">-- Verificar com EXPLAIN ANALYZE</span>
+<span class="kw">EXPLAIN ANALYZE</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> casos
+<span class="kw">WHERE</span> tenant_id = <span class="str">'uuid-aqui'</span>
+  <span class="kw">AND</span> status = <span class="str">'aberto'</span>;</pre>
+        </div>
+      </div>
+
+      <div class="highlight cyan">
+        <h3 style="color:var(--accent2);">Por que a ordem importa no índice composto</h3>
+        <p class="mt4">Um índice <code>(tenant_id, status)</code> permite um <strong>Index Scan</strong> direto com <code>WHERE tenant_id=$1 AND status=$2</code>. Invertido — <code>(status, tenant_id)</code> — resulta em Index Scan em todos os tenants para aquele status, depois filtra. Com 1000 tenants, a diferença é de 1000x no volume lido.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7 — Isolamento Vetorial -->
+  <div class="slide" id="s7">
+    <div class="col" style="gap:16px; max-width:1000px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Vector Isolation</span>
+        <h2>Isolamento vetorial</h2>
+      </div>
+
+      <div class="highlight red w100">
+        <h3 style="color:var(--red);">Por que semântica não garante isolamento</h3>
+        <p class="mt4">Dois documentos de tenants diferentes podem ser <strong>semanticamente idênticos</strong> (ex.: mesma cláusula contratual, mesmo script de atendimento). O vetor de embeddings será quase igual — sem pre-filter, o tenant A recebe documentos do tenant B nos top-k resultados.</p>
+      </div>
+
+      <div class="card-grid cols2" style="gap:16px;">
+        <div class="card col" style="gap:10px; border-color:#450a0a;">
+          <h3 style="color:var(--red);">Anti-padrão: filtrar pos-busca</h3>
+          <pre><span class="cm"># NUNCA FACA ISSO</span>
+results = qdrant.<span class="fn">search</span>(
+    collection_name=<span class="str">"docs"</span>,
+    query_vector=embedding,
+    limit=20
+)
+<span class="cm"># filtrar aqui ja e tarde demais</span>
+filtered = [
+    r <span class="kw">for</span> r <span class="kw">in</span> results
+    <span class="kw">if</span> r.payload[<span class="str">"tenant_id"</span>] == tenant_id
+]
+<span class="cm"># top-k pode ter 0 resultados uteis</span>
+<span class="cm"># e ainda vaza metadados via scores</span></pre>
+        </div>
+
+        <div class="card col" style="gap:10px; border-color:#064e3b;">
+          <h3 style="color:var(--green);">Correto: pre-filter obrigatorio</h3>
+          <pre><span class="kw">from</span> qdrant_client.models <span class="kw">import</span> (
+    Filter, FieldCondition, MatchValue
+)
+
+<span class="cm"># Qdrant: pre-filter ANTES do semantico</span>
+results = qdrant.<span class="fn">search</span>(
+    collection_name=<span class="str">"docs"</span>,
+    query_vector=embedding,
+    query_filter=<span class="fn">Filter</span>(must=[
+        <span class="fn">FieldCondition</span>(
+            key=<span class="str">"tenant_id"</span>,
+            match=<span class="fn">MatchValue</span>(value=tenant_id)
+        )
+    ]),
+    limit=10
+)
+
+<span class="cm"># pgvector: tenant_id no WHERE</span>
+<span class="kw">SELECT</span> id, content,
+       embedding <span class="kw">&lt;=&gt;</span> $1 <span class="kw">AS</span> dist
+<span class="kw">FROM</span> documentos
+<span class="kw">WHERE</span> tenant_id = $2   <span class="cm">-- pre-filter</span>
+<span class="kw">ORDER BY</span> dist
+<span class="kw">LIMIT</span> 10;</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8 — Checklist de Revisão -->
+  <div class="slide" id="s8">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-yellow">Revisão de PR</span>
+        <h2>Checklist antes de qualquer PR que toque dados de tenant</h2>
+      </div>
+
+      <div class="card-grid cols2" style="gap:16px;">
+        <div class="card col" style="gap:10px;">
+          <h3 style="color:var(--accent3);">Banco de dados</h3>
+          <ul class="clean" style="gap:8px;">
+            <li><span style="color:var(--text);">Nova tabela tem <code>tenant_id UUID NOT NULL</code></span></li>
+            <li><span style="color:var(--text);"><code>ENABLE ROW LEVEL SECURITY</code> na tabela</span></li>
+            <li><span style="color:var(--text);"><code>FORCE ROW LEVEL SECURITY</code> também ativo</span></li>
+            <li><span style="color:var(--text);">Policy para SELECT com <code>USING</code></span></li>
+            <li><span style="color:var(--text);">Policy para INSERT com <code>WITH CHECK</code></span></li>
+            <li><span style="color:var(--text);">Policy para UPDATE com <code>USING + WITH CHECK</code></span></li>
+            <li><span style="color:var(--text);">Policy para DELETE com <code>USING</code></span></li>
+          </ul>
+        </div>
+
+        <div class="card col" style="gap:10px;">
+          <h3 style="color:var(--accent2);">Índices e queries</h3>
+          <ul class="clean" style="gap:8px;">
+            <li><span style="color:var(--text);">Índice composto <code>(tenant_id, ...)</code> criado</span></li>
+            <li><span style="color:var(--text);">tenant_id é o <strong>primeiro predicado</strong> em toda query</span></li>
+            <li><span style="color:var(--text);"><code>EXPLAIN ANALYZE</code> confirma Index Scan</span></li>
+            <li><span style="color:var(--text);">tenant_id extraído do JWT (não do body)</span></li>
+          </ul>
+          <h3 style="color:var(--green); margin-top:8px;">Busca vetorial</h3>
+          <ul class="clean" style="gap:8px;">
+            <li><span style="color:var(--text);">Qdrant: <code>Filter(must=[FieldCondition(...)])</code> no search</span></li>
+            <li><span style="color:var(--text);">pgvector: <code>WHERE tenant_id=$1</code> antes do ORDER BY dist</span></li>
+            <li><span style="color:var(--text);">Nenhum filtro pos-busca — pre-filter obrigatório</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight green mt4">
+        <h3 style="color:var(--green);">Regra de ouro</h3>
+        <p class="mt4">Se qualquer item deste checklist estiver desmarcado, o PR <strong>não passa para revisao</strong>. Isolamento multi-tenant não tem "parcialmente implementado".</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9 — Os 5 Invariantes -->
+  <div class="slide" id="s9">
+    <div class="col" style="gap:16px; max-width:1000px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">Invariantes</span>
+        <h2>Os 5 invariantes multi-tenant</h2>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Invariante</th>
+            <th>Proíbe</th>
+            <th>Consequência de violar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-red">MT-01</span></td>
+            <td>tenant_id é o primeiro predicado em toda query</td>
+            <td>WHERE sem tenant_id ou tenant_id não como primeiro filtro</td>
+            <td>Cross-tenant data leak, table scan em todos os tenants</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-red">MT-02</span></td>
+            <td>RLS ativo em toda tabela com dados de tenant</td>
+            <td>Tabela sem <code>ENABLE</code> + <code>FORCE ROW LEVEL SECURITY</code></td>
+            <td>Qualquer query sem SET retorna dados de todos os tenants</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-red">MT-03</span></td>
+            <td>Busca vetorial usa pre-filter de tenant_id</td>
+            <td>Filtro pos-busca ou ausência de filtro no search</td>
+            <td>Documentos de outros tenants nos top-k, vazamento semântico</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-red">MT-04</span></td>
+            <td>tenant_id sempre extraído do JWT verificado</td>
+            <td>tenant_id vindo do body, query param ou header não verificado</td>
+            <td>Tenant impersonation — cliente acessa dados de qualquer tenant</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-red">MT-05</span></td>
+            <td>Índice composto obrigatório em tabela com &gt;10k rows</td>
+            <td>Query sem índice adequado em tabela de tenant grande</td>
+            <td>Seq scan custoso, potencial timeout, DoS por tenant malicioso</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="highlight yellow mt4">
+        <p style="font-size:.88rem; color:var(--yellow); font-weight:600;">Estes invariantes são verificados pelo revisor-codigo antes de todo PR. Violação de qualquer MT-XX = PR bloqueado.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10 — O Harness para Multi-Tenant -->
+  <div class="slide" id="s10">
+    <div class="col" style="gap:16px; max-width:1000px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Agent Harness</span>
+        <h2>O harness para multi-tenant</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <div class="card col" style="gap:10px;">
+            <h3 style="color:var(--accent3);">KB: <code>kb/multi-tenant/</code></h3>
+            <ul class="clean" style="gap:6px;">
+              <li><span style="color:var(--text-muted); font-size:.88rem;"><code>index.md</code> — visão geral e links</span></li>
+              <li><span style="color:var(--text-muted); font-size:.88rem;"><code>concepts/rls-setup.md</code> — RLS completo</span></li>
+              <li><span style="color:var(--text-muted); font-size:.88rem;"><code>concepts/jwt-tenant.md</code> — extração do JWT</span></li>
+              <li><span style="color:var(--text-muted); font-size:.88rem;"><code>patterns/query-first-predicate.md</code></span></li>
+              <li><span style="color:var(--text-muted); font-size:.88rem;"><code>patterns/vector-prefilter.md</code></span></li>
+            </ul>
+          </div>
+
+          <div class="card col" style="gap:10px;">
+            <h3 style="color:var(--accent2);">Rules: <code>rules/multi-tenant.md</code></h3>
+            <pre style="font-size:.75rem;"><span class="cm"># path-scoped — carrega automaticamente</span>
+<span class="kw">paths</span>:
+  - <span class="str">"**/tenant*/**"</span>
+  - <span class="str">"**/rls/**"</span>
+  - <span class="str">"**/migrations/**"</span>
+
+<span class="kw">invariants</span>: [MT-01, MT-02, MT-03, MT-04, MT-05]
+<span class="kw">checklist</span>: definicao-de-pronto.md#multi-tenant</pre>
+          </div>
+
+          <div class="card col" style="gap:10px;">
+            <h3 style="color:var(--green);">Agent: <code>sql-architect</code></h3>
+            <p style="font-size:.85rem; color:var(--text-muted);">Subagente especializado em gerar queries com tenant_id como primeiro predicado e sugerir índices compostos. Chamado pelo revisor-codigo quando toca arquivos de query.</p>
+          </div>
+        </div>
+
+        <div class="col" style="min-width:300px; gap:12px;">
+          <h3 style="color:var(--text); font-size:1rem;">Fluxo de setup</h3>
+          <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <span class="step" style="border-color:#064e3b; color:var(--green);">1. Setup DB — tabelas + tenant_id NOT NULL</span>
+            <span class="arrow" style="padding-left:8px;">↓</span>
+            <span class="step" style="border-color:#312e81; color:var(--accent3);">2. RLS — policies para 4 operações</span>
+            <span class="arrow" style="padding-left:8px;">↓</span>
+            <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">3. JWT middleware — Depends(get_tenant_id)</span>
+            <span class="arrow" style="padding-left:8px;">↓</span>
+            <span class="step" style="border-color:#451a03; color:var(--yellow);">4. Índices compostos — (tenant_id, ...)</span>
+            <span class="arrow" style="padding-left:8px;">↓</span>
+            <span class="step" style="border-color:#312e81; color:var(--accent3);">5. Vector pre-filter — Qdrant Filter / pgvector WHERE</span>
+            <span class="arrow" style="padding-left:8px;">↓</span>
+            <span class="step" style="border-color:#064e3b; color:var(--green);">6. Checklist MT-01..05 + revisor-codigo</span>
+          </div>
+          <div class="highlight cyan mt8">
+            <h3 style="color:var(--accent2); font-size:.9rem;">Gate de qualidade</h3>
+            <p class="mt4" style="font-size:.82rem;">Antes de cada commit: <code>/validar</code> — ruff + mypy + pytest. O revisor verifica invariantes MT-01 a MT-05 via análise do diff antes de todo PR.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<nav class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 10</span>
+  <button id="next" onclick="go(1)">Proximo →</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  let cur = 0;
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => go(i - cur);
+    dotsEl.appendChild(d);
+  });
+  function go(delta) {
+    slides[cur].classList.remove('active');
+    dotsEl.children[cur].classList.remove('active');
+    cur = Math.max(0, Math.min(slides.length - 1, cur + delta));
+    slides[cur].classList.add('active');
+    dotsEl.children[cur].classList.add('active');
+    document.getElementById('counter').textContent = `${cur + 1} / ${slides.length}`;
+    document.getElementById('prev').disabled = cur === 0;
+    document.getElementById('next').disabled = cur === slides.length - 1;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  });
+</script>
+
+</body>
+</html>

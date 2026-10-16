@@ -1,0 +1,254 @@
+# Fixtures numéricas — valores INVENTADOS, sem relação com dados reais.
+# "pessoa_b" é uma pessoa genérica. Valores monetários em string decimal (nunca float).
+# Cada fixture cita as invariantes que exercita.
+versao: 1
+moeda: BRL
+fixtures:
+
+  - id: F-TRANSF-01
+    invariantes: [INV-01, INV-04]
+    descricao: Transferência entre contas tem duas pernas que somam zero e não é gasto real.
+    entrada:
+      - {conta: corrente, valor: "-300.00", tipo: transferencia, perna: saida}
+      - {conta: reserva, valor: "300.00", tipo: transferencia, perna: entrada}
+    esperado:
+      soma_pernas: "0.00"
+      gasto_real: "0.00"
+
+  - id: F-PARC-01
+    invariantes: [INV-02]
+    descricao: Última parcela absorve os centavos.
+    entrada: {compra: "100.00", parcelas: 3}
+    esperado:
+      parcelas: ["33.33", "33.33", "33.34"]
+      soma: "100.00"
+
+  - id: F-PARC-02
+    invariantes: [INV-02]
+    descricao: Parcelamento com resto maior.
+    entrada: {compra: "1000.00", parcelas: 6}
+    esperado:
+      parcelas: ["166.66", "166.66", "166.66", "166.66", "166.66", "166.70"]
+      soma: "1000.00"
+
+  - id: F-SALDO-01
+    invariantes: [INV-03, INV-23]
+    descricao: Saldo derivado a partir do snapshot e divergência com novo snapshot.
+    entrada:
+      snapshot: {data: "2026-01-10", valor: "1000.00"}
+      transacoes_posteriores:
+        - {data: "2026-01-11", tipo: debito, valor: "-50.00"}
+        - {data: "2026-01-12", tipo: receita, valor: "200.00"}
+        - {data: "2026-01-13", tipo: transferencia, valor: "-100.00"}
+      novo_snapshot: {data: "2026-01-14", valor: "1040.00"}
+    esperado:
+      saldo_derivado_em_2026_01_14: "1050.00"
+      divergencia: "10.00"
+      sinalizada_em_r4: true
+      corrigida_automaticamente: false
+
+  - id: F-SALDO-02
+    invariantes: [INV-03, INV-09]
+    descricao: Transação editada conta uma vez (versão vigente); excluída logicamente não conta.
+    entrada:
+      snapshot: {data: "2026-02-01", valor: "500.00"}
+      transacoes:
+        - {id: t1, versoes: [{valor: "-80.00"}, {valor: "-60.00"}]}
+        - {id: t2, versoes: [{valor: "-20.00"}], excluida: true}
+    esperado:
+      saldo_derivado: "440.00"
+      historico_t1: 2
+
+  - id: F-GASTO-01
+    invariantes: [INV-04, INV-05, INV-11, INV-20]
+    descricao: O gasto real do mês exclui tudo que não é consumo próprio.
+    entrada:
+      mes: "2026-03"
+      itens:
+        - {tipo: debito, valor: "120.00", pessoa: propria}
+        - {tipo: credito_parcela, valor: "80.00", pessoa: propria}
+        - {tipo: credito_parcela, valor: "50.00", pessoa: pessoa_b}
+        - {tipo: pagamento_fatura, valor: "900.00"}
+        - {tipo: transferencia, valor: "300.00"}
+        - {tipo: investimento, valor: "200.00"}
+        - {tipo: repasse, valor: "50.00"}
+        - {tipo: rendimento, valor: "10.00"}
+        - {tipo: debito, valor: "40.00", conta: beneficio}
+    esperado:
+      gasto_real: "200.00"
+
+  - id: F-LIM-01
+    invariantes: [INV-06, INV-26]
+    descricao: Limite usado pelo valor total da compra, incluindo terceiros e parcelas futuras.
+    entrada:
+      linha: {limite: "5000.00"}
+      compras:
+        - {cartao: X, total: "1200.00", parcelas: 4, pessoa: propria}
+        - {cartao: Y, total: "300.00", parcelas: 1, pessoa: pessoa_b}
+    esperado:
+      limite_usado: "1500.00"
+      limite_disponivel: "3500.00"
+
+  - id: F-FAT-01
+    invariantes: [INV-07, INV-10, INV-26]
+    descricao: Total da fatura = própria + terceiros; a receber por pessoa abatido pelo repasse.
+    entrada:
+      fatura: {competencia: "2026-04"}
+      itens:
+        - {valor: "600.00", pessoa: propria}
+        - {valor: "400.00", pessoa: pessoa_b}
+      repasses: [{pessoa: pessoa_b, valor: "250.00"}]
+    esperado:
+      fatura_total: "1000.00"
+      fatura_propria: "600.00"
+      a_receber_pessoa_b: "150.00"
+
+  - id: F-EST-01
+    invariantes: [INV-08, INV-06]
+    descricao: Estorno integral (nenhuma parcela paga).
+    entrada:
+      compra: {total: "400.00", parcelas: 4, pagas: 0}
+      estorno: integral
+    esperado:
+      limite_devolvido: "400.00"
+      reduz_fatura_aberta: "100.00"
+      movimento_em_conta_corrente: "0.00"
+      liquido_da_compra: "0.00"
+
+  - id: F-EST-02
+    invariantes: [INV-08, INV-06]
+    descricao: Estorno com 1 parcela já paga; paga vira crédito na próxima fatura aberta.
+    entrada:
+      compra: {total: "400.00", parcelas: 4, pagas: 1}
+      estorno: apos_pagamento_parcial
+    esperado:
+      limite_devolvido: "300.00"
+      credito_proxima_fatura_aberta: "100.00"
+      movimento_em_conta_corrente: "0.00"
+      liquido_da_compra: "0.00"
+
+  - id: F-RES-01
+    invariantes: [INV-12, INV-17]
+    descricao: Níveis da reserva nos cortes de 50% e 100%. Meta = 12000.00.
+    entrada: {meta: "12000.00"}
+    casos:
+      - {saldo: "3000.00", nivel: critica, falta: "9000.00"}
+      - {saldo: "5999.99", nivel: critica}
+      - {saldo: "6000.00", nivel: atencao}
+      - {saldo: "11999.99", nivel: atencao}
+      - {saldo: "12000.00", nivel: saudavel, falta: "0.00"}
+    aporte_mensal_ate_data_alvo:
+      saldo: "3000.00"
+      meses_ate_alvo: 6
+      aporte: "1500.00"
+
+  - id: F-RES-02
+    invariantes: [INV-12]
+    descricao: Cobertura em meses.
+    entrada: {saldo_reserva: "9000.00", gasto_essencial: "3000.00"}
+    esperado: {cobertura_meses: "3.00", meta_meses: 3, nivel: saudavel}
+
+  - id: F-R2-01
+    invariantes: [INV-18, INV-19]
+    descricao: Sobra do R2 positiva.
+    entrada:
+      hoje: "2026-05-10"
+      horizonte_dias: 10
+      saldos_correntes: "5000.00"
+      receita_recorrente_pendente: "3000.00"
+      fixos_pendentes: "2500.00"
+      fatura_propria_no_horizonte: "4200.00"
+    esperado: {disponivel: "8000.00", compromissos: "6700.00", sobra: "1300.00", alerta: false}
+
+  - id: F-R2-02
+    invariantes: [INV-18, INV-19]
+    descricao: Sobra do R2 negativa dispara alerta.
+    entrada:
+      saldos_correntes: "5000.00"
+      receita_recorrente_pendente: "3000.00"
+      fixos_pendentes: "2500.00"
+      fatura_propria_no_horizonte: "6000.00"
+    esperado: {disponivel: "8000.00", compromissos: "8500.00", sobra: "-500.00", alerta: true}
+
+  - id: F-R2-03
+    invariantes: [INV-18, INV-26]
+    descricao: Terceiros e crédito do vale não entram na sobra.
+    entrada:
+      saldos_correntes: "5000.00"
+      receita_recorrente_pendente: "3000.00"
+      fixos_pendentes: "2500.00"
+      fatura_total_no_horizonte: "5000.00"
+      fatura_terceiros: "800.00"
+      credito_vale_no_mes: "1000.00"
+    esperado:
+      fatura_propria: "4200.00"
+      sobra: "1300.00"
+      exibicao_fatura: "total 5000.00 = propria 4200.00 + terceiros 800.00"
+
+  - id: F-R2-04
+    invariantes: [INV-19]
+    descricao: Ocorrência vinculada a transação sai do cálculo; vencida e não vinculada vai à lista separada.
+    entrada:
+      hoje: "2026-05-10"
+      ocorrencias:
+        - {nome: fixo_a, data: "2026-05-05", valor: "400.00", vinculada: false}
+        - {nome: fixo_b, data: "2026-05-12", valor: "300.00", vinculada: true}
+        - {nome: fixo_c, data: "2026-05-15", valor: "200.00", vinculada: false}
+        - {nome: fixo_d, data: "2026-05-25", valor: "999.00", vinculada: false}
+    esperado:
+      compromissos_fixos: "200.00"
+      vencidas_nao_vinculadas: ["fixo_a"]
+
+  - id: F-VALE-01
+    invariantes: [INV-21, INV-22]
+    descricao: Alocação por bolso a partir do crédito do mês.
+    entrada: {credito_mes: "1000.00", base_trabalho: "200.00"}
+    esperado: {trabalho: "200.00", pessoal: "800.00"}
+
+  - id: F-VALE-02
+    invariantes: [INV-21, INV-25]
+    descricao: Sobra sem estouro.
+    entrada:
+      credito_mes: "1000.00"
+      base_trabalho: "200.00"
+      consumo: {trabalho: "150.00", pessoal: "700.00"}
+    esperado:
+      resta: {trabalho: "50.00", pessoal: "100.00"}
+      sobra: "150.00"
+
+  - id: F-VALE-03
+    invariantes: [INV-25]
+    descricao: Estouro em um bolso não é compensado pela sobra do outro.
+    entrada:
+      credito_mes: "1000.00"
+      base_trabalho: "200.00"
+      consumo: {trabalho: "250.00", pessoal: "700.00"}
+    esperado:
+      resta: {trabalho: "-50.00", pessoal: "100.00"}
+      sobra: "100.00"
+      alerta_trabalho: true
+
+  - id: F-VALE-04
+    invariantes: [INV-21, INV-25]
+    descricao: Decisão de destino soma na alocação do mês seguinte; não move saldo; sem decisão, sem ajuste.
+    entrada:
+      mes_1: {credito: "1000.00", base_trabalho: "200.00", sobra: "150.00", decisao: pessoal}
+      mes_2: {credito: "1000.00", base_trabalho: "200.00"}
+    esperado:
+      alocacao_mes_2: {trabalho: "200.00", pessoal: "950.00"}
+      variacao_saldo_pela_decisao: "0.00"
+    variante_sem_decisao:
+      alocacao_mes_2: {trabalho: "200.00", pessoal: "800.00"}
+
+  - id: F-VALE-05
+    invariantes: [INV-22, INV-24]
+    descricao: Saldo do vale acumula como saldo derivado normal; receita total = caixa + vale.
+    entrada:
+      saldo_inicial_snapshot: "100.00"
+      credito_mes: "1000.00"
+      consumo_total: "850.00"
+      receita_caixa: "5000.00"
+    esperado:
+      saldo_derivado: "250.00"
+      receita_total: "6000.00"
+      tela_principal_mostra: "5000.00"

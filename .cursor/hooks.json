@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/agent_policies_before_shell.sh",
+        "description": "agent-policies guard (deny/ask/allow)"
+      }
+    ]
+  },
+  "active_families": [
+    "shell",
+    "docker",
+    "git",
+    "sql-cli",
+    "databricks-cli",
+    "terraform",
+    "k8s"
+  ],
+  "policy_source": "agent-policies.yaml"
+}

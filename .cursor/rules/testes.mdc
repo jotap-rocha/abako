@@ -1,0 +1,20 @@
+---
+description: Padrão de testes do sisfin (pytest, Hypothesis, Vitest, Playwright)
+globs: ["tests/**", "fixtures/**", "**/test_*.py", "**/*.test.ts", "**/*.test.tsx"]
+alwaysApply: false
+---
+
+# Testes
+
+A suíte é o gate: comando único `check` (ADR 021). O revisor externo só recebe entrega com `check` verde.
+
+- **pytest** para SQL e backend; **Hypothesis** (inclui `RuleBasedStateMachine`) para invariantes numéricas; **Vitest + React Testing Library** para componentes; **Playwright** para poucas jornadas.
+- **Nome:** `test_*.py`; um arquivo por unidade testada.
+- **NUNCA** comite teste comentado, `skip` sem motivo escrito ou `assert True`. Um teste desligado em silêncio passa no gate sem proteger nada.
+- **Rastreabilidade:** toda invariante (`tests/contracts/invariantes.yaml`) e todo critério (`tests/contracts/criterios.yaml`) tem teste. Preencha o campo `teste` ao implementar; o script de rastreabilidade falha se faltar algum.
+- **Fixtures** em `fixtures/numericos.yaml` são inventadas e anônimas, e os valores esperados foram calculados à mão. Teste que recalcula o esperado com a mesma fórmula do código é tautologia e não vale.
+- **Banco:** só o `tst`, vazio e descartável. A suíte **aborta** se a conexão não for a de teste (ADR 014, 021). Nunca teste contra `prd` ou dado real.
+- **Sem mock do banco:** a regra está no SQL; teste contra um Postgres `tst` real.
+- **Offline e determinístico:** nada de rede externa em teste.
+- **Cada bug corrigido vira um teste de regressão.**
+- **Papéis e hooks:** teste que `app` não faz `UPDATE/DELETE` nas tabelas de versão e que o gitleaks barra um segredo falso.

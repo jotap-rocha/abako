@@ -1,0 +1,11 @@
+# Exemplo de manifesto — seed evidence-gate
+
+task_id: "example"
+criteria:
+  ac-smoke:
+    id: ac-smoke
+    command: "python3 -c \"print('evidence-gate-ok')\""
+    test_paths:
+      - tests/evidence_gate/test_contract.py
+    exit_code: 0
+    log_path: logs/example/ac-smoke.log

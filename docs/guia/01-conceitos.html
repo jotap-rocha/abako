@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>01 — Conceitos · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div class="file-nav">
+  <a href="01-conceitos.html" class="current">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="slides" id="slides">
+
+  <!-- S1: CAPA -->
+  <div class="slide active" id="s1">
+    <div class="center col gap8" style="max-width:700px">
+      <span class="chip chip-purple">Agent Harness Method · 01/09</span>
+      <h1 class="mt8">Conceitos <span class="gradient-text">fundamentais</span></h1>
+      <p class="big mt16">O vocabulário do método: o que é harness, skill, agent, KB, gate e DoD — e por que cada peça existe.</p>
+      <div class="mt24" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <span class="tag"><span class="dot" style="background:var(--accent)"></span>Harness</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2)"></span>Skills</span>
+        <span class="tag"><span class="dot" style="background:var(--accent3)"></span>Agents</span>
+        <span class="tag"><span class="dot" style="background:var(--green)"></span>KBs</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow)"></span>Gates</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2: O PROBLEMA SEM HARNESS -->
+  <div class="slide" id="s2">
+    <div class="col gap16 w100" style="max-width:900px">
+      <div>
+        <span class="chip chip-red">O Problema</span>
+        <h2 class="mt8">Dev sem harness: <span class="gradient-text">caos garantido</span></h2>
+      </div>
+      <div class="card-grid cols3">
+        <div class="card col gap8">
+          <h3 style="color:var(--red)">Sem memória</h3>
+          <p>Cada sessão começa do zero. O agente não sabe o que já foi decidido, qual é a stack, quais são os limites.</p>
+        </div>
+        <div class="card col gap8">
+          <h3 style="color:var(--yellow)">Sem limites</h3>
+          <p>Sem guardrails, o LLM pode executar <code>rm -rf</code>, <code>DROP TABLE</code> em produção, ou logar PII sem mascaramento.</p>
+        </div>
+        <div class="card col gap8">
+          <h3 style="color:var(--accent3)">Sem gate</h3>
+          <p>Código gerado não é testado. Mypy nunca é rodado. Sessão encerra com vermelho e ninguém sabe.</p>
+        </div>
+      </div>
+      <div class="highlight red">
+        <p><strong style="color:var(--text)">Consequência real:</strong> o agente é poderoso mas não tem julgamento. Sem contexto, sem limites, sem gate — ele vai errar de formas caras.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3: O QUE É AGENT HARNESS -->
+  <div class="slide" id="s3">
+    <div class="col gap16 w100" style="max-width:950px">
+      <div>
+        <span class="chip chip-purple">Definição</span>
+        <h2 class="mt8">Agent Harness: o <span class="gradient-text">ambiente que governa</span> o agente</h2>
+      </div>
+      <div class="row">
+        <div class="flex1 col gap12">
+          <div class="highlight">
+            <p><strong style="color:var(--text)">Código do produto</strong> — o que você está construindo (FastAPI, pipeline, chatbot). Vive em <code>backend/</code>, <code>src/</code>, <code>frontend/</code>.</p>
+          </div>
+          <div class="highlight cyan">
+            <p><strong style="color:var(--text)">Agent Harness</strong> — o ambiente que governa como o Claude age. Vive em <code>.claude/</code>. Não é o produto — é o meta-ambiente.</p>
+          </div>
+        </div>
+        <div class="flex1">
+          <div class="card">
+            <p class="muted" style="margin-bottom:8px">O .claude/ contém:</p>
+            <table>
+              <tr><td><code>CLAUDE.md</code></td><td>Fatos duráveis do projeto</td></tr>
+              <tr><td><code>rules/</code></td><td>Comportamento por área</td></tr>
+              <tr><td><code>settings.json</code></td><td>Permissões + hooks automáticos</td></tr>
+              <tr><td><code>agents/</code></td><td>Especialistas de contexto fresco</td></tr>
+              <tr><td><code>skills/</code></td><td>Procedimentos pontuais</td></tr>
+              <tr><td><code>kb/</code></td><td>Base de conhecimento interna</td></tr>
+              <tr><td><code>.mcp.json</code></td><td>Ferramentas externas (MCP)</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4: VOCABULÁRIO -->
+  <div class="slide" id="s4">
+    <div class="col gap16 w100" style="max-width:950px">
+      <div>
+        <span class="chip chip-purple">Vocabulário</span>
+        <h2 class="mt8">As peças do <span class="gradient-text">harness</span></h2>
+      </div>
+      <table>
+        <thead><tr><th>Peça</th><th>O que é</th><th>Onde vive</th><th>Quando é lido</th></tr></thead>
+        <tbody>
+          <tr><td>CLAUDE.md</td><td>Índice de fatos duráveis — stack, invariantes, onde fica o quê</td><td>raiz/</td><td>TODA sessão</td></tr>
+          <tr><td>Rule</td><td>Comportamento de uma área (path-scoped ou global)</td><td>.claude/rules/</td><td>Ao tocar a área</td></tr>
+          <tr><td>Hook</td><td>Comando shell disparado por evento (PostToolUse, Stop)</td><td>settings.json</td><td>Automático</td></tr>
+          <tr><td>MCP</td><td>Ferramenta externa (Postgres, Qdrant, Context-7)</td><td>.mcp.json</td><td>Quando invocada</td></tr>
+          <tr><td>Skill</td><td>Procedimento pontual invocado sob demanda</td><td>.claude/skills/</td><td>Quando chamado</td></tr>
+          <tr><td>Agent</td><td>Especialista com contexto fresco e tools específicas</td><td>.claude/agents/</td><td>Quando despachado</td></tr>
+          <tr><td>KB</td><td>Documentação interna de domínio ou stack</td><td>.claude/kb/</td><td>Quando referenciado</td></tr>
+          <tr><td>Gate</td><td>Barreira de qualidade (ruff+mypy+pytest) — não comite vermelho</td><td>settings.json</td><td>Hook Stop</td></tr>
+          <tr><td>DoD</td><td>Definição de Pronto — o que conta como "entregue"</td><td>rules/definicao-de-pronto.md</td><td>TODA sessão</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- S5: SKILLS -->
+  <div class="slide" id="s5">
+    <div class="col gap16 w100" style="max-width:950px">
+      <div>
+        <span class="chip chip-cyan">Skills</span>
+        <h2 class="mt8">Skills: <span class="gradient-text">procedimentos reutilizáveis</span></h2>
+      </div>
+      <div class="row gap16">
+        <div class="flex1 col gap12">
+          <div class="card col gap8">
+            <h3 style="color:var(--accent2)">O que é uma skill?</h3>
+            <p>Arquivo <code>SKILL.md</code> com instruções passo a passo. O Claude lê e executa como um playbook. Invocado com <code>/nome-da-skill</code>.</p>
+          </div>
+          <div class="card col gap8">
+            <h3>Skills de workflow (neste canônico)</h3>
+            <p style="font-size:.85rem">
+              <code>/grill-me</code> · <code>/grill-with-docs</code> · <code>/handoff</code><br>
+              <code>/harness-architect</code> · <code>/to-issues</code> · <code>/to-prd</code><br>
+              <code>/to-tasks</code> · <code>/write-a-skill</code>
+            </p>
+          </div>
+        </div>
+        <div class="flex1 col gap12">
+          <div class="card col gap8">
+            <h3>Como instalar skills de stack?</h3>
+            <p>Via <code>skills-lock.json</code> na raiz:</p>
+            <pre>{
+  <span class="str">"version"</span>: <span class="str">"1"</span>,
+  <span class="str">"skills"</span>: {
+    <span class="str">"fastapi-templates"</span>: {
+      <span class="str">"source"</span>: <span class="str">"github.com/anthropics/anthropic-skills"</span>,
+      <span class="str">"sourceType"</span>: <span class="str">"github"</span>,
+      <span class="str">"skillPath"</span>: <span class="str">"fastapi-templates"</span>,
+      <span class="str">"computedHash"</span>: <span class="str">""</span>
+    }
+  }
+}</pre>
+          </div>
+          <div class="highlight yellow">
+            <p style="font-size:.85rem"><strong style="color:var(--text)">Caveman</strong> — skill da comunidade que comprime o output do Claude para estilo conciso/primitivo. Economiza tokens quando você não precisa de explicações longas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6: AGENTS -->
+  <div class="slide" id="s6">
+    <div class="col gap16 w100" style="max-width:950px">
+      <div>
+        <span class="chip chip-purple">Agents</span>
+        <h2 class="mt8">Agentes: <span class="gradient-text">especialistas com contexto fresco</span></h2>
+      </div>
+      <div class="row gap16">
+        <div class="flex1 col gap12">
+          <div class="card col gap8">
+            <h3 style="color:var(--accent3)">O que é um agente?</h3>
+            <p>Subagente com contexto fresco. O Claude Code "despacha" para ele quando o trigger no <code>description:</code> combina. Não vê a conversa anterior — começa limpo.</p>
+          </div>
+          <div class="card col gap8">
+            <h3>Exemplo: revisor-codigo</h3>
+            <pre><span class="str">---
+name: revisor-codigo
+description: >-
+  Revisor soft do diff. Use após implementar
+  uma fatia, antes de commitar.
+  Dispare com "revisa esse diff".
+tools: Read, Grep, Glob, Bash
+color: yellow
+---</span></pre>
+          </div>
+        </div>
+        <div class="flex1 col gap12">
+          <div class="card col gap8">
+            <h3>Agentes universais do canônico</h3>
+            <table style="font-size:.82rem">
+              <tr><td><code>revisor-codigo</code></td><td>Revisão soft</td></tr>
+              <tr><td><code>kb-architect</code></td><td>Cria/atualiza KBs</td></tr>
+              <tr><td><code>agent-creator</code></td><td>Cria novos agentes</td></tr>
+              <tr><td><code>harness-brainstorm</code></td><td>Ideia + SI + tipo</td></tr>
+              <tr><td><code>harness-define</code></td><td>Requisitos</td></tr>
+              <tr><td><code>harness-design</code></td><td>PRD + harness</td></tr>
+              <tr><td><code>harness-build</code></td><td>Implementa tasks</td></tr>
+              <tr><td><code>harness-ship</code></td><td>Scorecard + retro</td></tr>
+              <tr><td><code>harness-iterate</code></td><td>Atualiza com cascata</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7: SKILLS VS AGENTS -->
+  <div class="slide" id="s7">
+    <div class="col gap16 w100" style="max-width:900px">
+      <div>
+        <span class="chip chip-yellow">Comparação</span>
+        <h2 class="mt8">Skills <span class="gradient-text">vs</span> Agents — quando usar cada um?</h2>
+      </div>
+      <table>
+        <thead><tr><th></th><th>Skill</th><th>Agent</th></tr></thead>
+        <tbody>
+          <tr><td>Natureza</td><td>Procedimento / playbook</td><td>Especialista autônomo com tools</td></tr>
+          <tr><td>Contexto</td><td>Vê a conversa atual</td><td>Contexto fresco — não vê o histórico</td></tr>
+          <tr><td>Persistência</td><td>Executa e retorna</td><td>Executa tarefas complexas multi-step</td></tr>
+          <tr><td>Tools</td><td>Usa as ferramentas do Claude principal</td><td>Tem seu próprio subconjunto de tools</td></tr>
+          <tr><td>Ativação</td><td><code>/nome-skill</code> explícito</td><td>Trigger no <code>description:</code> (proativo)</td></tr>
+          <tr><td>Exemplos</td><td><code>/to-prd</code>, <code>/grill-me</code>, <code>/handoff</code></td><td><code>revisor-codigo</code>, <code>harness-build</code>, <code>kb-architect</code></td></tr>
+        </tbody>
+      </table>
+      <div class="card-grid cols2 mt8">
+        <div class="highlight">
+          <p style="font-size:.85rem"><strong style="color:var(--text)">Use skill quando:</strong> a tarefa é um procedimento bem definido com passos fixos. Ex: gerar PRD seguindo um template.</p>
+        </div>
+        <div class="highlight cyan">
+          <p style="font-size:.85rem"><strong style="color:var(--text)">Use agent quando:</strong> precisa de especialista isolado, contexto fresco, ou tasks que rodam em paralelo / com tools específicas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S8: KBs E MCP CONTEXT-7 -->
+  <div class="slide" id="s8">
+    <div class="col gap16 w100" style="max-width:950px">
+      <div>
+        <span class="chip chip-green">Knowledge Base</span>
+        <h2 class="mt8">KBs e MCP Context-7: <span class="gradient-text">memória técnica do projeto</span></h2>
+      </div>
+      <div class="row gap16">
+        <div class="flex1 col gap12">
+          <div class="card col gap8">
+            <h3 style="color:var(--green)">KBs locais (.claude/kb/)</h3>
+            <p>Documentação interna do domínio ou stack. Criada uma vez, referenciada em toda sessão. Exemplo do workshop:</p>
+            <pre>.claude/kb/
+├── pipeline/     ← Medallion, contratos, lineage
+├── fastapi/      ← routers, middleware, padrões
+└── sisfraude/    ← glossário de fraud detection</pre>
+            <p style="font-size:.82rem">Crie com: <strong>kb-architect</strong> (agente)</p>
+          </div>
+        </div>
+        <div class="flex1 col gap12">
+          <div class="card col gap8">
+            <h3 style="color:var(--accent2)">MCP Context-7</h3>
+            <p>Acesso a docs <strong>oficiais</strong> de bibliotecas externas em runtime. Sem alucinação de API.</p>
+            <pre><span class="cm"># .mcp.json</span>
+{
+  <span class="str">"context7"</span>: {
+    <span class="str">"command"</span>: <span class="str">"npx"</span>,
+    <span class="str">"args"</span>: [<span class="str">"-y"</span>, <span class="str">"@upstash/context7-mcp"</span>]
+  }
+}</pre>
+            <p style="font-size:.82rem">O <strong>kb-architect</strong> usa Context-7 para criar e atualizar KBs com docs atuais.</p>
+          </div>
+          <div class="highlight cyan">
+            <p style="font-size:.83rem"><strong style="color:var(--text)">Regra de ouro:</strong> KB local = docs do domínio (glossário, regras de negócio). Context-7 = docs da biblioteca (API oficial). Nunca inverter.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9: PRINCÍPIOS -->
+  <div class="slide" id="s9">
+    <div class="col gap16 w100" style="max-width:900px">
+      <div>
+        <span class="chip chip-green">Princípios</span>
+        <h2 class="mt8">O que faz o método <span class="gradient-text">funcionar</span></h2>
+      </div>
+      <div class="card-grid cols3">
+        <div class="card col gap8">
+          <h3 style="color:var(--accent)">Alinhar antes de gerar</h3>
+          <p>Ideia → grill → PRD → harness → tasks. Nenhuma linha de código antes de resolver o "porquê".</p>
+        </div>
+        <div class="card col gap8">
+          <h3 style="color:var(--yellow)">Gates hard</h3>
+          <p>Hook <code>Stop</code> bloqueia a sessão com vermelho. Não comite, não encerra, sem gate verde.</p>
+        </div>
+        <div class="card col gap8">
+          <h3 style="color:var(--green)">Invariantes como lei</h3>
+          <p>O que está em <code>CLAUDE.md</code> como invariante nunca é flexibilizado. Sem exceção, sem "só dessa vez".</p>
+        </div>
+        <div class="card col gap8">
+          <h3 style="color:var(--accent2)">Erro vira sinal</h3>
+          <p>Bug escapado → teste de regressão. Gate falhou → corrija, não silencie. Cada erro endurece o harness.</p>
+        </div>
+        <div class="card col gap8">
+          <h3 style="color:var(--accent3)">SI desde o início</h3>
+          <p>SI assessment no passo 0. Não como checklist de compliance — como guardrail real que previne acidentes.</p>
+        </div>
+        <div class="card col gap8">
+          <h3 style="color:var(--text)">Harness dinâmico</h3>
+          <p>Começa mínimo. O <code>/harness-architect</code> gera o que é necessário para o projeto específico durante o workflow.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<div class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 9</span>
+  <button id="next" onclick="go(1)">Próximo →</button>
+</div>
+
+<script>
+  const total = 9;
+  let cur = 1;
+  const dotsEl = document.getElementById('dots');
+  for (let i = 1; i <= total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 1 ? ' active' : '');
+    d.onclick = () => show(i);
+    dotsEl.appendChild(d);
+  }
+  function show(n) {
+    document.getElementById('s' + cur).classList.remove('active');
+    dotsEl.children[cur - 1].classList.remove('active');
+    cur = n;
+    document.getElementById('s' + cur).classList.add('active');
+    dotsEl.children[cur - 1].classList.add('active');
+    document.getElementById('counter').textContent = cur + ' / ' + total;
+    document.getElementById('prev').disabled = cur === 1;
+    document.getElementById('next').disabled = cur === total;
+  }
+  function go(d) { if (cur + d >= 1 && cur + d <= total) show(cur + d); }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+  });
+</script>
+</body>
+</html>

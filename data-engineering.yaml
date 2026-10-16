@@ -1,0 +1,239 @@
+# data-engineering.yaml — fonte normativa do kernel de conformidade DE
+#
+# Schema Loop 1 + Loop 2 + pacote E (aditivo):
+#   version: versão MAJOR do contrato
+#   profiles.<id>: descrição e pacotes habilitados
+#   packages.<A|B|C|D|E>: aplicabilidade, severidade padrão e regras
+#   packages.*.rules.<id>: classificação e metadata para explain
+#
+# Loop 2: perfis databricks-* habilitam A+D. Pacote D (databricks-cloud) tem
+# applicability condicional por sinal SDP/DLT/DAB. Perfil databricks-multi é a
+# união semântica SDP+DLT resolvida pelo detector do canonical-data-check.
+# SI destrutivo/secrets permanece no pacote A (cloud sempre inclui A).
+#
+# Pacote E (keyvault-cloud): ortogonal ao perfil DE — o engine injeta E quando
+# marker secret_store ou auto-detect vault aplica; DE-A001 permanece no pacote A.
+#
+# IDs e severidades são estáveis. Checks executáveis consomem estas definições
+# sem duplicar classificação e metadata normativa no código.
+
+version: 1
+
+profiles:
+  spark-yarn-airflow:
+    description: Perfil piloto para pipelines Spark em YARN com orquestração Airflow opcional
+    packages:
+      - A
+      - B
+      - C
+  databricks-sdp-medallion:
+    description: Perfil Databricks SDP medallion (greenfield / example sdp-min); sempre Universal A + pacote D
+    packages:
+      - A
+      - D
+  databricks-dlt-legacy:
+    description: Perfil Databricks DLT legacy (greenfield / example dlt-min); sempre Universal A + pacote D
+    packages:
+      - A
+      - D
+  databricks-multi:
+    description: >
+      União semântica de sinais SDP e DLT no mesmo tree — habilita A+D;
+      a resolução efetiva e a união de checks executáveis são aplicadas pelo
+      detector; neste YAML fica a norma do perfil
+    packages:
+      - A
+      - D
+
+packages:
+  A:
+    description: Controles universais para qualquer pipeline de dados
+    applicability: universal
+    severity: blocker
+    rules:
+      DE-A001:
+        category: security
+        severity: blocker
+        applicability: universal
+        title: Secrets não podem ser versionados
+        explanation: Credenciais, tokens e connection strings devem vir de variável de ambiente ou secret manager
+        remediation: Remova o valor do repositório, rotacione a credencial e use um provedor seguro
+      DE-A002:
+        category: production-safety
+        severity: blocker
+        applicability: universal
+        title: Operações destrutivas exigem gate explícito
+        explanation: DELETE, DROP, TRUNCATE e alterações destrutivas em produção precisam de aprovação humana e ADR
+        remediation: Adicione o gate humano, documente a decisão e mantenha produção somente leitura por padrão
+      DE-A003:
+        category: project-layout
+        severity: blocker
+        applicability: universal
+        title: Layout mínimo do pipeline deve existir
+        explanation: O projeto precisa declarar configuração, código de pipeline ou jobs e testes automatizados
+        remediation: Crie config, pipelines ou src/jobs e tests conforme o layout adotado
+      DE-A004:
+        category: observability
+        severity: blocker
+        applicability: universal
+        title: Run ID e logging devem ser declarados
+        explanation: Execuções precisam de correlação por run_id e logs estruturados sem PII
+        remediation: Declare run_id no contexto de execução e configure logging estruturado com mascaramento
+      DE-A005:
+        category: ownership
+        severity: blocker
+        applicability: universal
+        title: Owner do pipeline deve ser declarado
+        explanation: Cada pipeline precisa de responsável identificável para operação e incidentes
+        remediation: Declare o time owner em metadata versionada do projeto
+
+  B:
+    description: Controles obrigatórios do perfil spark-yarn-airflow
+    applicability: profile
+    severity: blocker
+    rules:
+      DE-B001:
+        category: data-architecture
+        severity: blocker
+        applicability: spark-yarn-airflow
+        title: Camadas de dados devem ser explícitas
+        explanation: O pipeline deve separar landing e processed ou usar camadas medalhão equivalentes
+        remediation: Declare as camadas, seus contratos e a direção permitida do fluxo
+      DE-B002:
+        category: sql-quality
+        severity: blocker
+        applicability: spark-yarn-airflow
+        title: Transformações não podem usar SELECT star
+        explanation: Seleção implícita de todas as colunas fragiliza contratos e propaga schema drift
+        remediation: Liste explicitamente as colunas consumidas e produzidas pela transformação
+      DE-B003:
+        category: data-contract
+        severity: blocker
+        applicability: spark-yarn-airflow
+        title: Contrato de dados mínimo deve ser versionado
+        explanation: Entradas e saídas precisam de schema e versão auditáveis no repositório
+        remediation: Adicione contrato versionado com campos, tipos, nulabilidade e versão
+
+  C:
+    description: Controles condicionais quando Airflow ou DAG for detectado
+    applicability: conditional
+    severity: blocker
+    rules:
+      DE-C001:
+        category: orchestration
+        severity: blocker
+        applicability: airflow-dag-present
+        title: DAG deve declarar tags
+        explanation: Tags tornam ownership, domínio e operação da DAG pesquisáveis
+        remediation: Adicione tags de domínio e owner à definição da DAG
+      DE-C002:
+        category: orchestration
+        severity: blocker
+        applicability: airflow-dag-present
+        title: DAG deve separar pré carga e pós processamento
+        explanation: A ordem pré carga, carga e pós processamento torna dependências e falhas observáveis
+        remediation: Modele tarefas explícitas para preparação, carga e validação posterior
+      DE-C003:
+        category: spark-configuration
+        severity: blocker
+        applicability: airflow-dag-present
+        title: Spark submit deve referenciar configuração versionada
+        explanation: Parâmetros operacionais do Spark não devem ficar dispersos ou hardcoded na DAG
+        remediation: Centralize parâmetros em config/spark.conf e referencie o arquivo no submit
+
+  D:
+    description: >
+      Pacote databricks-cloud — controles condicionais SDP/DLT/DAB/UC no filesystem
+      (sem API live); SI secrets/destrutivo herda do pacote A
+    applicability: conditional
+    severity: blocker
+    rules:
+      DE-D001:
+        category: dab-layout
+        severity: blocker
+        applicability: databricks-dab-present
+        title: Bundle ou job Databricks deve declarar layout e identidade de execução
+        explanation: >
+          Projetos Databricks precisam de artefato DAB/job versionado (ex. databricks.yml
+          ou bundle) com owner ou run identity auditável no repositório
+        remediation: >
+          Adicione o bundle/job YAML e declare owner ou service principal de execução
+          no manifesto versionado
+      DE-D002:
+        category: sdp-medallion
+        severity: blocker
+        applicability: sdp-signal-present
+        title: Pipeline SDP deve declarar camadas medallion
+        explanation: >
+          Sinais SDP exigem paths ou pipelines que separem bronze/silver/gold (ou
+          equivalente medallion) de forma explícita no repositório
+        remediation: Declare as camadas SDP, contratos e direção permitida do fluxo
+      DE-D003:
+        category: dlt-quarantine
+        severity: blocker
+        applicability: dlt-signal-present
+        title: Pipeline DLT deve declarar quarentena
+        explanation: >
+          Pipelines DLT com expectations precisam de destino de quarentena versionado
+          para registros que falham qualidade
+        remediation: Declare a política e o destino de quarentena no pipeline DLT
+      DE-D004:
+        category: schema-rescue
+        severity: blocker
+        applicability: databricks-cloud
+        title: Schema rescue policy deve estar documentada
+        explanation: >
+          Drift de schema em cloud exige política explícita (fail vs quarantine) no
+          repositório, auditável sem workspace live
+        remediation: Versionar a policy de schema rescue e referenciá-la no pipeline
+      DE-D005:
+        category: unity-catalog-fs
+        severity: blocker
+        applicability: databricks-cloud
+        title: Grants e linhagem UC devem existir no filesystem
+        explanation: >
+          Políticas de grants e linhagem do Unity Catalog devem estar em arquivos
+          versionados (YAML/SQL/md); o CI do canônico não consulta UC API
+        remediation: Adicione artefatos de grants/linhagem no repositório e mantenha-os atualizados
+
+  E:
+    description: >
+      Pacote keyvault-cloud — wiring facade/map/consumidores no filesystem
+      (sem API live); literais de secret permanecem no pacote A (DE-A001)
+    applicability: conditional
+    severity: blocker
+    rules:
+      DE-E001:
+        category: secret-facade
+        severity: blocker
+        applicability: keyvault-cloud
+        title: Facade / ponto único de resolução de secret
+        explanation: >
+          Quando vault cloud aplica (marker secret_store ou auto-detect), o projeto
+          precisa de um módulo facade versionado (ex. key_oci / key_azure /
+          secrets_facade) como único ponto de integração com o SDK
+        remediation: >
+          Crie o facade canônico (scaffold cloud-secrets) e faça consumidores
+          chamarem apenas get_secret/resolve_secret — sem SDK vault direto
+      DE-E002:
+        category: secret-map
+        severity: blocker
+        applicability: keyvault-cloud
+        title: Map de secrets contém só IDs/URIs (não valores)
+        explanation: >
+          O mapa versionado de secrets deve referenciar apenas OCIDs, URIs de
+          Key Vault ou placeholders — nunca o valor do secret
+        remediation: >
+          Substitua literais por OCID/URI/placeholder no secrets_map e resolva
+          o valor só em runtime via facade
+      DE-E003:
+        category: secret-consumers
+        severity: blocker
+        applicability: keyvault-cloud
+        title: Consumidores não importam SDK OCI/Azure Vault diretamente
+        explanation: >
+          Fora do facade, código de pipeline/jobs não deve importar oci.secrets
+          nem azure.keyvault — o ponto único de integração é o facade
+        remediation: >
+          Remova imports de SDK vault dos consumidores e use o facade; em multi,
+          a união cobre OCI e Azure

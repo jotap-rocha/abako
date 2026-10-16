@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10 — RAG, LEDGER e Busca Híbrida · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .pipeline-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .82rem; color: var(--text-muted); background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; width: 100%; }
+    .pipeline-flow .step { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--text); font-size: .8rem; white-space: nowrap; }
+    .pipeline-flow .arrow { color: var(--accent); font-weight: 700; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; }
+    .badge-green { background: #064e3b; color: var(--green); }
+    .badge-red { background: #450a0a; color: var(--red); }
+    .badge-yellow { background: #451a03; color: var(--yellow); }
+    .badge-cyan { background: #0c4a6e; color: var(--accent2); }
+    ul.clean { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    ul.clean li::before { content: "→ "; color: var(--accent); font-weight: 700; }
+    .vs-divider { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: .85rem; font-weight: 600; }
+    .vs-divider::before, .vs-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+  <a href="10-rag-search.html" class="current">10 RAG Search</a>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="slides" id="slides">
+
+  <!-- Slide 1 — Capa -->
+  <div class="slide active" id="s1">
+    <div class="col" style="align-items:center; gap:24px; max-width:820px; text-align:center;">
+      <span class="chip chip-purple">Agent Harness Method · 10/10</span>
+      <h1 class="gradient-text">RAG, LEDGER e Busca Híbrida</h1>
+      <p class="big">Recuperação de informação: quando vetorial, quando exato, quando híbrido</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px;">
+        <span class="tag"><span class="dot" style="background:var(--accent);"></span>RAG</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2);"></span>LEDGER</span>
+        <span class="tag"><span class="dot" style="background:var(--accent3);"></span>Vetorial</span>
+        <span class="tag"><span class="dot" style="background:var(--green);"></span>BM25</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow);"></span>Híbrido</span>
+      </div>
+      <div class="highlight cyan mt16" style="max-width:680px;">
+        <p class="big">"O modelo não leu o manual da empresa. Você precisa levar o contexto até ele — e a forma como você faz isso determina a qualidade da resposta."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2 — O problema: LLM não sabe de docs privados -->
+  <div class="slide" id="s2">
+    <div class="col" style="gap:20px; max-width:900px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">O Problema</span>
+        <h2>LLM não sabe de documentos privados</h2>
+      </div>
+
+      <div class="highlight red">
+        <h3 style="color:var(--red);">LLM treinado ate Ago 2025</h3>
+        <p class="mt4">Nao sabe de manuais internos, politicas atualizadas, dados da empresa, nem do que aconteceu ontem.</p>
+      </div>
+
+      <div class="card-grid cols3">
+        <div class="card col" style="gap:10px; border-color:#312e81;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.4rem;">🌐</span>
+            <h3 style="color:var(--accent3);">MCP</h3>
+          </div>
+          <p style="font-size:.85rem;">Web publica, docs de bibliotecas</p>
+          <div style="margin-top:4px;">
+            <code>Context-7</code>
+            <code style="margin-left:4px;">Exa</code>
+          </div>
+          <p class="muted" style="font-size:.78rem; margin-top:6px;">FastAPI docs, NumPy, LangChain — sempre atualizados via MCP, nao indexe no Qdrant.</p>
+        </div>
+        <div class="card col" style="gap:10px; border-color:#0c4a6e;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.4rem;">📄</span>
+            <h3 style="color:var(--accent2);">RAG</h3>
+          </div>
+          <p style="font-size:.85rem;">Docs privados, textos narrativos</p>
+          <div style="margin-top:4px;">
+            <code>Qdrant vetorial</code>
+          </div>
+          <p class="muted" style="font-size:.78rem; margin-top:6px;">Politicas internas, manuais, FAQs, e-mails de suporte — texto em que o <em>significado</em> importa.</p>
+        </div>
+        <div class="card col" style="gap:10px; border-color:#064e3b;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:1.4rem;">🗄️</span>
+            <h3 style="color:var(--green);">LEDGER</h3>
+          </div>
+          <p style="font-size:.85rem;">Dados exatos, fatos estruturados</p>
+          <div style="margin-top:4px;">
+            <code>SQL / KV</code>
+          </div>
+          <p class="muted" style="font-size:.78rem; margin-top:6px;">Precos, IDs, saldos, prazos — respostas unicas que nao toleram alucinacao semantica.</p>
+        </div>
+      </div>
+
+      <div class="highlight yellow">
+        <h3 style="color:var(--yellow);">Regra de ouro</h3>
+        <p class="mt4">Escolha o canal antes de codificar. Canal errado = resposta errada mesmo com modelo perfeito.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3 — Mapa de retrieval -->
+  <div class="slide" id="s3">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Mapa de Retrieval</span>
+        <h2>Quando usar cada canal</h2>
+      </div>
+      <div style="overflow-x:auto; width:100%;">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo de Informacao</th>
+              <th>Exemplo</th>
+              <th>Canal</th>
+              <th>Por que</th>
+              <th>Anti-padrao</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Documento narrativo privado</td>
+              <td style="color:var(--text-muted);">"politica de cancelamento"</td>
+              <td><span class="badge badge-cyan">RAG (Qdrant)</span></td>
+              <td style="color:var(--text-muted);">Busca por significado</td>
+              <td style="color:var(--red); font-size:.8rem;">Indexar no MCP</td>
+            </tr>
+            <tr>
+              <td>Dado exato</td>
+              <td style="color:var(--text-muted);">Preco, ID, CPF, saldo</td>
+              <td><span class="badge badge-green">LEDGER (SQL/KV)</span></td>
+              <td style="color:var(--text-muted);">Resposta unica e verificavel</td>
+              <td style="color:var(--red); font-size:.8rem;">Indexar no vetor</td>
+            </tr>
+            <tr>
+              <td>Documentacao de biblioteca</td>
+              <td style="color:var(--text-muted);">FastAPI docs, LangChain</td>
+              <td><span class="badge badge-yellow">MCP (Context-7)</span></td>
+              <td style="color:var(--text-muted);">Sempre atualizado</td>
+              <td style="color:var(--red); font-size:.8rem;">Indexar no Qdrant</td>
+            </tr>
+            <tr>
+              <td>Misto (narrativa + dado)</td>
+              <td style="color:var(--text-muted);">"politica + percentual vigente"</td>
+              <td><span class="badge" style="background:#1a1d27; color:var(--accent3); border:1px solid #312e81;">Hibrido RAG+LEDGER</span></td>
+              <td style="color:var(--text-muted);">Two-query pattern</td>
+              <td style="color:var(--red); font-size:.8rem;">Confiar so no RAG</td>
+            </tr>
+            <tr>
+              <td>Termos tecnicos + linguagem natural</td>
+              <td style="color:var(--text-muted);">"parafuso M8 aco inox"</td>
+              <td><span class="badge" style="background:#1a1d27; color:var(--accent3); border:1px solid #312e81;">Hibrido dense+BM25</span></td>
+              <td style="color:var(--text-muted);">BM25 acerta codigo exato</td>
+              <td style="color:var(--red); font-size:.8rem;">Pure semantic</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4 — Banco vetorial: o que É e o que NÃO É -->
+  <div class="slide" id="s4">
+    <div class="col" style="gap:16px; max-width:940px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Banco Vetorial</span>
+        <h2>O que VAI e o que NAO VAI no vetor</h2>
+      </div>
+      <div class="row">
+        <div class="flex1 highlight green">
+          <h3 style="color:var(--green);">Vai no vetor</h3>
+          <ul class="clean mt8">
+            <li>Narrativas, manuais, politicas internas</li>
+            <li>E-mails de suporte e atendimento</li>
+            <li>Transcricoes de calls e reunioes</li>
+            <li>FAQs em texto corrido</li>
+            <li>Descricoes de produto (texto longo)</li>
+            <li>Artigos, relatorios, documentos PDF</li>
+          </ul>
+          <p class="muted mt8">Textos em que a <strong>proximidade semantica</strong> e o criterio de busca.</p>
+        </div>
+        <div class="flex1 highlight red">
+          <h3 style="color:var(--red);">NUNCA vai no vetor</h3>
+          <ul class="clean mt8">
+            <li>IDs, precos, CPF, CNPJ</li>
+            <li>Datas, timestamps, periodos</li>
+            <li>Saldos, contadores, quantidades</li>
+            <li>Status enums (ativo/inativo)</li>
+            <li>Tokens de autenticacao</li>
+            <li>Versoes de software (v2.3.1)</li>
+          </ul>
+          <p class="muted mt8">Dados exatos precisam de <strong>busca exata</strong> — SQL retorna o certo; vetor retorna o "parecido".</p>
+        </div>
+      </div>
+      <div class="row" style="gap:12px; align-items:stretch;">
+        <div class="flex1">
+          <pre><span class="cm"># ERRADO: preco no vetor</span>
+<span class="fn">chunks</span> = qdrant.<span class="fn">search</span>(
+    query_vector=<span class="fn">embed</span>(<span class="str">"R$ 149,90"</span>),  <span class="cm"># semantica de numero = ruido</span>
+    limit=<span class="kw">5</span>
+)
+<span class="cm"># resultado: produtos "parecidos semanticamente" — nao o preco exato</span></pre>
+        </div>
+        <div style="display:flex; align-items:center; padding:0 4px;">
+          <div class="vs-divider" style="flex-direction:column; height:100%;">
+            <div style="flex:1; width:1px; background:var(--border);"></div>
+            <span style="writing-mode:vertical-rl; font-size:.78rem; color:var(--text-muted); padding:6px 0;">vs</span>
+            <div style="flex:1; width:1px; background:var(--border);"></div>
+          </div>
+        </div>
+        <div class="flex1">
+          <pre><span class="cm"># CORRETO: preco no LEDGER</span>
+<span class="fn">row</span> = cursor.<span class="fn">execute</span>(
+    <span class="str">"SELECT preco FROM produtos WHERE sku = %s"</span>,
+    [sku]
+).<span class="fn">fetchone</span>()
+<span class="cm"># resultado: R$ 149,90 — exato, verificavel, auditavel</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5 — Arquitetura RAG: ingestão + query -->
+  <div class="slide" id="s5">
+    <div class="col" style="gap:16px; max-width:920px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Arquitetura RAG</span>
+        <h2>Pipeline de ingestao e pipeline de query</h2>
+      </div>
+
+      <div class="card col" style="gap:10px;">
+        <h3 style="color:var(--text-muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.06em;">INGESTAO (offline — seed/, nunca no runtime)</h3>
+        <div class="pipeline-flow">
+          <span class="step">Fonte</span><span class="arrow">→</span>
+          <span class="step">Loader</span><span class="arrow">→</span>
+          <span class="step">Chunker ≤512 tok</span><span class="arrow">→</span>
+          <span class="step">Embedder</span><span class="arrow">→</span>
+          <span class="step" style="border-color:var(--accent2);">Qdrant + Metadata</span>
+        </div>
+        <p class="muted" style="font-size:.8rem;">Metadata obrigatoria: <code>source</code> · <code>section</code> · <code>date</code> · <code>type</code> · <code>tenant_id</code> · <code>content_hash</code></p>
+      </div>
+
+      <div class="card col" style="gap:10px;">
+        <h3 style="color:var(--text-muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.06em;">QUERY (runtime — backend/agent/)</h3>
+        <div class="pipeline-flow">
+          <span class="step">Pergunta</span><span class="arrow">→</span>
+          <span class="step" style="border-color:var(--accent3);">[Clean/Expand?]</span><span class="arrow">→</span>
+          <span class="step">Embed</span><span class="arrow">→</span>
+          <span class="step">Pre-filter</span><span class="arrow">→</span>
+          <span class="step">Search</span><span class="arrow">→</span>
+          <span class="step" style="border-color:var(--accent3);">[Rerank?]</span><span class="arrow">→</span>
+          <span class="step">Context</span><span class="arrow">→</span>
+          <span class="step">LLM</span><span class="arrow">→</span>
+          <span class="step" style="border-color:var(--green);">Resposta + Fontes</span>
+        </div>
+      </div>
+
+      <div class="card-grid cols3" style="font-size:.82rem;">
+        <div class="card col" style="gap:8px;">
+          <span class="chip chip-purple">Chunking</span>
+          <p class="muted">Recursive text splitter. Alvo: <strong style="color:var(--text);">256–512 tokens</strong>. Overlap: 10% do chunk. Nunca quebre sentencas no meio.</p>
+        </div>
+        <div class="card col" style="gap:8px;">
+          <span class="chip chip-cyan">Embedding</span>
+          <p class="muted"><code>text-embedding-3-large</code> — 3072d, qualidade maxima. Mesmo modelo em ingestao e query (invariante absoluto).</p>
+        </div>
+        <div class="card col" style="gap:8px;">
+          <span class="chip chip-green">Pre-filter</span>
+          <p class="muted"><code>tenant_id</code> obrigatorio. Nunca retorne dados de outro tenant por proximidade semantica — isso e uma falha de seguranca.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6 — O padrão LEDGER -->
+  <div class="slide" id="s6">
+    <div class="col" style="gap:16px; max-width:920px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-green">Padrao LEDGER</span>
+        <h2>Busca exata: o livro-razao do agente</h2>
+      </div>
+
+      <div class="highlight cyan">
+        <p class="big">"LEDGER = livro-razao. Cada entrada e precisa, unica, verificavel. Voce nao pergunta 'o que e parecido com R$ 149,90' — voce pergunta 'qual e o preco do SKU-42'."</p>
+      </div>
+
+      <div class="row" style="gap:16px;">
+        <div class="flex1">
+          <table>
+            <thead>
+              <tr><th>Situacao</th><th>Use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Preco, saldo, quantidade</td><td><span class="badge badge-green">SQL</span></td></tr>
+              <tr><td>Configuracao de sistema</td><td><span class="badge badge-green">SQL / KV</span></td></tr>
+              <tr><td>Status de pedido por ID</td><td><span class="badge badge-green">SQL</span></td></tr>
+              <tr><td>Cache de resposta cara</td><td><span class="badge badge-cyan">Redis KV</span></td></tr>
+              <tr><td>Feature flags</td><td><span class="badge badge-cyan">Redis KV</span></td></tr>
+              <tr><td>Prazo de politica vigente</td><td><span class="badge badge-green">SQL</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex1 col" style="gap:10px;">
+          <h3 style="color:var(--text-muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.06em;">Two-query pattern</h3>
+          <pre><span class="cm"># Pergunta: "politica de devolucao e qual o prazo?"</span>
+
+<span class="cm"># Step 1: RAG → narrativa</span>
+<span class="fn">chunks</span> = qdrant.<span class="fn">search</span>(
+    query_vector=<span class="fn">embed</span>(<span class="str">"politica devolucao"</span>),
+    query_filter=<span class="fn">Filter</span>(must=[<span class="fn">FieldCondition</span>(...)])
+)
+
+<span class="cm"># Step 2: LEDGER → dado exato</span>
+<span class="fn">prazo</span> = cursor.<span class="fn">execute</span>(
+    <span class="str">"SELECT prazo_dias FROM config WHERE tipo=%s"</span>,
+    [<span class="str">"devolucao"</span>]
+).<span class="fn">fetchone</span>()
+
+<span class="cm"># Step 3: LLM combina com grounding obrigatorio</span>
+<span class="fn">resposta</span> = llm.<span class="fn">invoke</span>({
+    <span class="str">"narrativa"</span>: chunks,
+    <span class="str">"prazo_exato"</span>: prazo[<span class="str">"prazo_dias"</span>]
+})</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7 — Busca híbrida: semântica + BM25 -->
+  <div class="slide" id="s7">
+    <div class="col" style="gap:16px; max-width:920px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Busca Hibrida</span>
+        <h2>Dense + BM25: semantica e exatidao lexical</h2>
+      </div>
+
+      <div class="row" style="gap:16px;">
+        <div class="highlight red flex1">
+          <h3 style="color:var(--red);">Pure semantic falha para...</h3>
+          <ul class="clean mt8" style="font-size:.9rem;">
+            <li>Siglas e codigos: <code>M8</code>, <code>SKU-4291</code></li>
+            <li>Nomes proprios e marcas</li>
+            <li>Versoes e numeros de release</li>
+            <li>Termos tecnicos raros no corpus</li>
+          </ul>
+        </div>
+        <div class="highlight green flex1">
+          <h3 style="color:var(--green);">Hibrido resolve porque...</h3>
+          <ul class="clean mt8" style="font-size:.9rem;">
+            <li>BM25 acerta tokens exatos: <code>M8</code> → docs com "M8"</li>
+            <li>Dense captura sinonimos e contexto</li>
+            <li>RRF funde os rankings sem tunar pesos</li>
+            <li>Melhor recall em vocabularios tecnicos</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight cyan">
+        <h3 style="color:var(--accent2);">RRF — Reciprocal Rank Fusion</h3>
+        <p class="mt4"><code>score(d) = 1/(k + rank_dense(d)) + 1/(k + rank_bm25(d))</code> — onde <code>k=60</code> e o padrao. Nao exige calibrar pesos; documentos bem ranqueados em ambos sobem naturalmente.</p>
+      </div>
+
+      <div class="row" style="gap:16px;">
+        <div class="flex1">
+          <pre><span class="cm"># Qdrant sparse + dense (simplificado)</span>
+<span class="fn">results</span> = client.<span class="fn">query_points</span>(
+    collection_name=<span class="str">"produtos"</span>,
+    prefetch=[
+        <span class="fn">Prefetch</span>(query=dense_vector, using=<span class="str">"dense"</span>, limit=<span class="kw">20</span>),
+        <span class="fn">Prefetch</span>(query=sparse_vector, using=<span class="str">"sparse"</span>, limit=<span class="kw">20</span>),
+    ],
+    query=<span class="fn">FusionQuery</span>(fusion=<span class="fn">Fusion</span>.<span class="fn">RRF</span>),
+    limit=<span class="kw">5</span>,
+)</pre>
+        </div>
+        <div class="flex1">
+          <table>
+            <thead><tr><th>Cenario</th><th>Abordagem</th></tr></thead>
+            <tbody>
+              <tr><td>Busca em linguagem natural</td><td>Pure dense</td></tr>
+              <tr><td>Codigos, siglas, SKUs</td><td>Pure BM25</td></tr>
+              <tr><td>Misto (texto + termos tecnicos)</td><td>Hibrido RRF</td></tr>
+              <tr><td>Multiling, corpus diverso</td><td>Hibrido RRF</td></tr>
+              <tr><td>FAQ curtos e diretos</td><td>Pure dense</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8 — Chunking e embedding -->
+  <div class="slide" id="s8">
+    <div class="col" style="gap:16px; max-width:940px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Chunking &amp; Embedding</span>
+        <h2>As escolhas que determinam a qualidade do retrieval</h2>
+      </div>
+
+      <div class="row" style="gap:16px; align-items:flex-start;">
+        <div class="flex1">
+          <table>
+            <thead>
+              <tr><th>Estrategia</th><th>Quando usar</th><th>Tamanho</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Fixed-size</td><td>Texto homogeneo, PDFs simples</td><td>512 tok</td></tr>
+              <tr><td>Recursive</td><td>Padrao seguro para a maioria</td><td>256–512 tok</td></tr>
+              <tr><td>Document-aware (Markdown)</td><td>Docs estruturados por headers</td><td>Por secao</td></tr>
+              <tr><td>Semantic</td><td>Corpus de alta variancia semantica</td><td>Variavel</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex1">
+          <table>
+            <thead>
+              <tr><th>Modelo</th><th>Dimensoes</th><th>Indicado para</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>text-embedding-3-large</code></td><td>3072d</td><td>Qualidade maxima, producao</td></tr>
+              <tr><td><code>text-embedding-3-small</code></td><td>1536d</td><td>Custo reduzido, prototipo</td></tr>
+              <tr><td>fastembed local</td><td>384–1024d</td><td>Sem custo de API, offline</td></tr>
+              <tr><td>Cohere embed-v3</td><td>1024d</td><td>Multilingue, docs formais</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="highlight yellow">
+        <h3 style="color:var(--yellow);">Invariante absoluto</h3>
+        <p class="mt4">Use <strong>exatamente o mesmo modelo</strong> na ingestao e na query. Modelos diferentes geram espacos vetoriais incompativeis — a busca retorna lixo sem erro aparente. Registre o modelo no metadata de cada colecao.</p>
+      </div>
+
+      <div class="card-grid cols2" style="font-size:.85rem;">
+        <div class="card col" style="gap:8px;">
+          <h3>Overlap entre chunks</h3>
+          <p class="muted">Use 10% do tamanho do chunk como overlap (ex.: 512 tok → 50 tok de overlap). Garante que frases na fronteira entre chunks sejam recuperadas por ambos.</p>
+        </div>
+        <div class="card col" style="gap:8px;">
+          <h3>Metadata e filtros</h3>
+          <p class="muted">Indexe os campos de filtro (<code>tenant_id</code>, <code>type</code>, <code>date</code>) como payload indexes no Qdrant. Pre-filtragem e ordens de magnitude mais rapida que pos-filtragem.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9 — Técnicas avançadas -->
+  <div class="slide" id="s9">
+    <div class="col" style="gap:16px; max-width:920px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Tecnicas Avancadas</span>
+        <h2>HyDE, Reranking e Multi-Query</h2>
+      </div>
+
+      <div class="card-grid cols3">
+        <div class="card col" style="gap:10px;">
+          <span class="chip chip-cyan">HyDE</span>
+          <h3>Hypothetical Document Embedding</h3>
+          <p class="muted" style="font-size:.85rem;">Query curta → LLM gera resposta hipotetica → embeda a resposta (nao a query). O espaco vetorial da resposta e mais proximo dos documentos reais.</p>
+          <div class="highlight cyan" style="padding:10px 14px; margin-top:4px;">
+            <p style="font-size:.8rem; color:var(--text-muted);"><strong style="color:var(--accent2);">Use quando:</strong> queries informais, colecao formal/tecnica<br><strong style="color:var(--accent2);">Custo:</strong> +1 LLM call (~300ms)</p>
+          </div>
+        </div>
+        <div class="card col" style="gap:10px;">
+          <span class="chip chip-green">Reranking</span>
+          <h3>Cross-Encoder pos-retrieval</h3>
+          <p class="muted" style="font-size:.85rem;">Top-20 candidatos → Cohere/cross-encoder → Top-3 precisos. O reranker ve query e documento juntos — muito mais preciso que cosseno.</p>
+          <div class="highlight green" style="padding:10px 14px; margin-top:4px;">
+            <p style="font-size:.8rem; color:var(--text-muted);"><strong style="color:var(--green);">Use quando:</strong> colecao &gt; 10k docs<br><strong style="color:var(--green);">Tools:</strong> <code>rerank-multilingual-v3.0</code>, cross-encoder local</p>
+          </div>
+        </div>
+        <div class="card col" style="gap:10px;">
+          <span class="chip chip-yellow">Multi-Query</span>
+          <h3>Query Expansion</h3>
+          <p class="muted" style="font-size:.85rem;">1 pergunta → LLM gera 3 reformulacoes → 3 buscas paralelas → RRF merge. Cobertura muito maior com vocabulario diverso.</p>
+          <div class="highlight yellow" style="padding:10px 14px; margin-top:4px;">
+            <p style="font-size:.8rem; color:var(--text-muted);"><strong style="color:var(--yellow);">Use quando:</strong> query ambigua, vocabulario diverso<br><strong style="color:var(--yellow);">Custo:</strong> +1 LLM call + 2 searches extras</p>
+          </div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Situacao</th><th>Tecnica recomendada</th><th>Custo adicional</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Query curta, docs longos e formais</td><td>HyDE</td><td>+1 LLM call</td></tr>
+          <tr><td>Colecao grande (&gt;10k docs), precisao critica</td><td>Reranking</td><td>+Cohere API call</td></tr>
+          <tr><td>Query ambigua ou vocabulario variado</td><td>Multi-Query</td><td>+1 LLM + 2 searches</td></tr>
+          <tr><td>Baseline / latencia critica</td><td>Pure dense (sem tecnicas)</td><td>Nenhum</td></tr>
+          <tr><td>Maximo recall + precisao</td><td>Multi-Query + Hibrido + Rerank</td><td>Alto — use com criterio</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Slide 10 — O harness para RAG -->
+  <div class="slide" id="s10">
+    <div class="col" style="gap:16px; max-width:940px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Harness para RAG</span>
+        <h2>O que <code>/harness-architect</code> gera para projetos com RAG</h2>
+      </div>
+
+      <div class="card-grid cols4" style="font-size:.82rem;">
+        <div class="card col" style="gap:10px; border-color:#312e81;">
+          <span class="chip chip-purple" style="width:fit-content;">Rules</span>
+          <h3>10 invariantes RAG</h3>
+          <ul class="clean" style="font-size:.78rem;">
+            <li>RAG-01: vetor = texto narrativo</li>
+            <li>RAG-02: LEDGER = dado exato</li>
+            <li>RAG-03: pre-filter tenant_id</li>
+            <li>RAG-04: grounding obrigatorio</li>
+            <li>RAG-05: grafo deterministico</li>
+            <li>RAG-06: chunks ≤512 tok</li>
+            <li>RAG-07: metadata schema fixo</li>
+            <li>RAG-08: tenant isolation</li>
+            <li>RAG-09: reranking &gt;10k docs</li>
+            <li>RAG-10: HyDE se query ambigua</li>
+          </ul>
+          <code style="font-size:.72rem;">rules/rag.md</code>
+        </div>
+        <div class="card col" style="gap:10px; border-color:#0c4a6e;">
+          <span class="chip chip-cyan" style="width:fit-content;">Agents</span>
+          <h3>2 subagentes</h3>
+          <div class="col" style="gap:8px; margin-top:4px;">
+            <div class="highlight cyan" style="padding:8px 12px;">
+              <p style="font-size:.78rem; color:var(--text-muted);"><strong style="color:var(--accent2);">rag-architect</strong><br>Design completo: colecoes, schemas, pipelines, estrategia hibrida</p>
+            </div>
+            <div class="highlight cyan" style="padding:8px 12px;">
+              <p style="font-size:.78rem; color:var(--text-muted);"><strong style="color:var(--accent2);">search-strategy-advisor</strong><br>Qual canal rapidamente: RAG vs LEDGER vs MCP vs Hibrido</p>
+            </div>
+          </div>
+        </div>
+        <div class="card col" style="gap:10px; border-color:#064e3b;">
+          <span class="chip chip-green" style="width:fit-content;">Skills</span>
+          <h3>2 skills</h3>
+          <div class="col" style="gap:8px; margin-top:4px;">
+            <div class="highlight green" style="padding:8px 12px;">
+              <p style="font-size:.78rem; color:var(--text-muted);"><strong style="color:var(--green);">/create-rag-pipeline</strong><br>Gera codigo completo: chunker, embedder, indexador, search tool com pre-filter</p>
+            </div>
+            <div class="highlight green" style="padding:8px 12px;">
+              <p style="font-size:.78rem; color:var(--text-muted);"><strong style="color:var(--green);">/search-strategy-check</strong><br>Checklist rapido: canal certo? metadata completo? grounding presente?</p>
+            </div>
+          </div>
+        </div>
+        <div class="card col" style="gap:10px; border-color:#451a03;">
+          <span class="chip chip-yellow" style="width:fit-content;">KB</span>
+          <h3>13 arquivos de conhecimento</h3>
+          <ul class="clean" style="font-size:.78rem;">
+            <li>rag/concepts/ (8 arquivos)</li>
+            <li>rag/patterns/ (5 padroes)</li>
+          </ul>
+          <p class="muted" style="font-size:.75rem; margin-top:8px;">Conceitos: vetorial, BM25, RRF, HyDE, reranking, two-query, chunking, metadata schema</p>
+          <p class="muted" style="font-size:.75rem;">Padroes: tenant-isolation, grounding-obrigatorio, ledger-pattern, hybrid-search, multi-query</p>
+        </div>
+      </div>
+
+      <div class="highlight green">
+        <h3 style="color:var(--green);">Por que regras valem mais que documentacao</h3>
+        <p class="mt4">A regra <strong>RAG-01</strong> impede que o agente coloque preco no vetor antes de codificar. A regra <strong>RAG-03</strong> garante que tenant isolation nunca dependa de semantica — e portanto nunca vaza entre tenants por similaridade. <strong>Boas regras eliminam classes inteiras de erro antes que acontecam.</strong> Documentacao descreve o passado; regras governam o futuro.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<nav class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 10</span>
+  <button id="next" onclick="go(1)">Proximo →</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  let cur = 0;
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => go(i - cur);
+    dotsEl.appendChild(d);
+  });
+  function go(delta) {
+    slides[cur].classList.remove('active');
+    dotsEl.children[cur].classList.remove('active');
+    cur = Math.max(0, Math.min(slides.length - 1, cur + delta));
+    slides[cur].classList.add('active');
+    dotsEl.children[cur].classList.add('active');
+    document.getElementById('counter').textContent = `${cur + 1} / ${slides.length}`;
+    document.getElementById('prev').disabled = cur === 0;
+    document.getElementById('next').disabled = cur === slides.length - 1;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>02 — O Fluxo Completo · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .flow { display: flex; align-items: stretch; gap: 0; width: 100%; margin-top: 8px; }
+    .flow-step { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 14px; position: relative; display: flex; flex-direction: column; gap: 6px; }
+    .flow-step + .flow-step { margin-left: -1px; border-radius: 0; }
+    .flow-step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .flow-step:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
+    .flow-arrow { display: flex; align-items: center; color: var(--accent); font-size: 1.4rem; padding: 0 4px; flex-shrink: 0; }
+    .step-num { font-size: 1.8rem; font-weight: 800; color: var(--border); line-height: 1; }
+    .step-title { font-size: .9rem; font-weight: 700; color: var(--text); }
+    .step-desc  { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .si-thread { position: relative; background: linear-gradient(90deg, #312e81 0%, #0c4a6e 100%); border: 1px solid var(--accent); border-radius: 6px; padding: 6px 14px; font-size: .75rem; font-weight: 700; color: var(--accent3); letter-spacing: .04em; text-align: center; }
+    .cycle-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; display: flex; flex-direction: column; gap: 6px; position: relative; }
+    .cycle-arrow { color: var(--accent); font-size: 1.2rem; text-align: center; line-height: 1; }
+    .gate-badge { display: inline-flex; align-items: center; gap: 6px; background: #064e3b; border: 1px solid var(--green); border-radius: 6px; padding: 4px 10px; font-size: .75rem; font-weight: 700; color: var(--green); }
+    .block-badge { display: inline-flex; align-items: center; gap: 6px; background: #450a0a; border: 1px solid var(--red); border-radius: 6px; padding: 4px 10px; font-size: .75rem; font-weight: 700; color: var(--red); }
+  </style>
+</head>
+<body>
+<div id="dots" class="dots"></div>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html" class="current">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+</div>
+
+<div class="slides">
+
+  <!-- SLIDE 1: CAPA -->
+  <div class="slide active" id="s1">
+    <div class="col center gap8" style="max-width:720px">
+      <span class="chip chip-purple">Agent Harness Method · 02/09</span>
+      <h1 class="mt8">O Fluxo <span class="gradient-text">Completo</span></h1>
+      <p class="big mt16">6 fases do início ao ship — da ideia crua à entrega com evidência mensurável.</p>
+      <div class="row mt24" style="justify-content:center;flex-wrap:wrap;gap:10px">
+        <span class="tag"><span class="dot" style="background:var(--accent3)"></span>Ideia → SI</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2)"></span>Grill</span>
+        <span class="tag"><span class="dot" style="background:var(--green)"></span>PRD</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow)"></span>Harness</span>
+        <span class="tag"><span class="dot" style="background:var(--accent)"></span>Tasks</span>
+        <span class="tag"><span class="dot" style="background:var(--red)"></span>Ship</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: VISÃO GERAL -->
+  <div class="slide" id="s2">
+    <div class="col w100" style="max-width:960px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-cyan">Visão Geral</span>
+        <h2>6 fases em sequência</h2>
+      </div>
+
+      <div class="flow">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-title">/novo-projeto</div>
+          <div class="step-desc">Ideia + SI assessment + tipo de projeto</div>
+        </div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-title">/grill-me → harness-define</div>
+          <div class="step-desc">Entrevista e estrutura requisitos</div>
+        </div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-title">/to-prd</div>
+          <div class="step-desc">Gera PRD.md com escopo e critérios testáveis</div>
+        </div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-title">/harness-architect</div>
+          <div class="step-desc">Gera o .claude/ específico do projeto</div>
+        </div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-step">
+          <div class="step-num">5</div>
+          <div class="step-title">/to-tasks ou /to-issues</div>
+          <div class="step-desc">Cria backlog de tasks</div>
+        </div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-step">
+          <div class="step-num">6</div>
+          <div class="step-title">harness-build → harness-ship</div>
+          <div class="step-desc">Implementa, gates, encerra</div>
+        </div>
+      </div>
+
+      <div class="si-thread w100">
+        THREAD DE SI — atravessa todas as fases: assessment na fase 1, aplicado nas regras do harness, checado no gate e no revisor, arquivado no ship
+      </div>
+
+      <div class="highlight cyan">
+        <p>Cada fase grava artefato em <code>.claude/projetos/{slug}/</code> — o STATUS.md sempre reflete em qual fase o projeto está.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: /NOVO-PROJETO -->
+  <div class="slide" id="s3">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-purple">Fase 1</span>
+        <h2>O ponto de entrada — <code>/novo-projeto</code></h2>
+        <p>Primeira coisa a rodar em qualquer projeto. Orquestra o onboarding e garante que o contexto certo seja capturado antes de qualquer código.</p>
+      </div>
+
+      <div class="card-grid cols3">
+        <div class="card">
+          <h3 style="color:var(--accent3)">Pergunta 1</h3>
+          <p class="mt8">"Qual é a ideia?" — descrição livre em linguagem natural. Sem template, sem formato obrigatório.</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--accent2)">Pergunta 2 — SI Assessment</h3>
+          <p class="mt8">Classsifica o nível de segurança da informação: <strong style="color:var(--green)">a</strong> = público · <strong style="color:var(--yellow)">b</strong> = interno · <strong style="color:var(--yellow)">c</strong> = confidencial · <strong style="color:var(--red)">d</strong> = restrito</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--green)">Pergunta 3 — Tipo</h3>
+          <p class="mt8"><code>app</code> · <code>pipeline-local</code> · <code>pipeline-cloud</code> · <code>outro</code> — determina qual conjunto de regras e KBs o harness-architect vai gerar.</p>
+        </div>
+      </div>
+
+      <div class="highlight green">
+        <h3 style="color:var(--green)">Artefatos criados</h3>
+        <div class="row mt8 gap16" style="flex-wrap:wrap">
+          <code>.claude/projetos/{slug}/STATUS.md</code>
+          <span style="color:var(--text-muted)">—</span>
+          <code>.claude/projetos/{slug}/00-ideia.md</code>
+        </div>
+        <p class="mt8">O STATUS.md é o dashboard do projeto: fase atual, checklist de fases, nível SI. Todos os agentes harness-* o atualizam ao final da sua execução.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: /GRILL-ME -->
+  <div class="slide" id="s4">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-cyan">Fase 2</span>
+        <h2>Entrevista implacável — <code>/grill-me</code></h2>
+        <p>O skill que interroga a ideia até que nenhuma ambiguidade sobreviva. Sem grill, a PRD fica vaga. Com grill, os critérios de aceite se escrevem sozinhos.</p>
+      </div>
+
+      <div class="card-grid cols2">
+        <div class="card">
+          <h3 style="color:var(--accent2)">Como funciona</h3>
+          <ul style="margin-top:10px;padding-left:18px;display:flex;flex-direction:column;gap:8px">
+            <li>Lê o <code>00-ideia.md</code> gerado pelo /novo-projeto</li>
+            <li>Faz perguntas de desambiguação em série — não segue em frente sem resposta</li>
+            <li>Para projetos <code>pipeline-*</code>, o <code>harness-define</code> aplica 10 perguntas obrigatórias de pipeline antes de encerrar</li>
+            <li>Resultado salvo em <code>01-grill.md</code></li>
+          </ul>
+        </div>
+        <div class="col gap8">
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2)">Exemplo de pergunta de grill</h3>
+            <p class="mt8 big" style="font-style:italic;color:var(--text)">"Você disse 'relatório diário'. Quem consome esse relatório — um humano ou um sistema downstream? Se humano: qual é o formato esperado (PDF, email, dashboard)? Se sistema: qual é o contrato de schema?"</p>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow)">Pipeline: 10 perguntas extras</h3>
+            <p class="mt4">Fonte dos dados, frequência, volume estimado, SLA de latência, idempotência, schema evolution, destino, orquestrador, observabilidade, rollback.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight green">
+        <p>O <code>harness-define</code> consolida as respostas do grill e grava <code>01-grill.md</code> — a matéria-prima do PRD.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: /TO-PRD -->
+  <div class="slide" id="s5">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-green">Fase 3</span>
+        <h2>O PRD — especificação que não gera dúvida</h2>
+        <p>Gerado pelo <code>/to-prd</code> a partir do <code>01-grill.md</code>. Salvo em <code>02-prd.md</code>. Tudo que vai para tasks precisa estar aqui — se não está no PRD, não existe como task.</p>
+      </div>
+
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent3)">Problem Statement</h3>
+            <p class="mt4">O que dói hoje? Para quem? Qual a consequência de não resolver?</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--accent2)">Solution</h3>
+            <p class="mt4">O que vamos construir. Escopo fechado — não "melhorar", mas "implementar X com comportamento Y".</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--green)">User Stories + Critérios Testáveis</h3>
+            <p class="mt4">Cada story tem critérios de aceite verificáveis. "Responde em SSE", não "ser rápido". O que não é verificável não entra.</p>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--yellow)">Out of Scope</h3>
+            <p class="mt4">Explícito sobre o que NÃO será construído nessa iteração. Evita scope creep silencioso.</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--red)">SI Considerations</h3>
+            <p class="mt4">Baseado no nível SI do assessment. Nível d = requisitos de segurança vão para critérios de aceite obrigatórios.</p>
+          </div>
+          <div class="highlight cyan">
+            <p>O PRD é o único documento que o <code>/to-tasks</code> lê para gerar tasks. PRD ruim = tasks ambíguas = gate vermelho.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: HARNESS DINÂMICO -->
+  <div class="slide" id="s6">
+    <div class="col w100" style="max-width:960px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-purple">Fase 4</span>
+        <h2>O canônico começa mínimo — <code>/harness-architect</code> gera o resto</h2>
+      </div>
+
+      <div class="card-grid cols2">
+        <div class="card">
+          <h3 style="color:var(--text-muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em">O que o canônico tem desde o clone zero</h3>
+          <ul style="margin-top:12px;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px">
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0">✓</span><span style="color:var(--text-muted)">Regras de SI (<code>seguranca.md</code>) — carregam sempre</span></li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0">✓</span><span style="color:var(--text-muted)">Skills de workflow (grill, prd, tasks, ship, handoff)</span></li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0">✓</span><span style="color:var(--text-muted)">9 agentes universais (revisor-codigo, harness-define, harness-build, harness-ship, ...)</span></li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0">✓</span><span style="color:var(--text-muted)">Gate Stop hook (ruff + mypy + pytest)</span></li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0">✓</span><span style="color:var(--text-muted)">Definição de pronto (<code>definicao-de-pronto.md</code>)</span></li>
+          </ul>
+        </div>
+        <div class="card" style="border-color:var(--accent)">
+          <h3 style="color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em">O que o /harness-architect gera para o projeto</h3>
+          <ul style="margin-top:12px;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px">
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--accent);flex-shrink:0">+</span><span style="color:var(--text-muted)">Agentes de domínio (<code>agents/domain-expert.md</code>)</span></li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--accent);flex-shrink:0">+</span><span style="color:var(--text-muted)">KBs de stack (<code>kb/fastapi/</code>, <code>kb/langgraph/</code>)</span></li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--accent);flex-shrink:0">+</span><span style="color:var(--text-muted)">Regras de stack path-scoped (<code>rules/agente.md</code>)</span></li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--accent);flex-shrink:0">+</span><span style="color:var(--text-muted)">.mcp.json real com connection string preenchida</span></li>
+            <li style="display:flex;gap:8px;align-items:flex-start"><span style="color:var(--accent);flex-shrink:0">+</span><span style="color:var(--text-muted)">CLAUDE.md preenchido com stack, layout, invariantes</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight yellow">
+        <h3 style="color:var(--yellow)">Para projetos pipeline-*</h3>
+        <p class="mt4">O /harness-architect também gera: <code>rules/pipeline.md</code>, <code>rules/schema-evolution.md</code>, agente <code>pipeline-architect</code>, KB de orquestrador escolhido (Airflow/Dagster/DLT), e perguntas de pipeline embutidas no harness-define.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: /TO-TASKS VS /TO-ISSUES -->
+  <div class="slide" id="s7">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-yellow">Fase 5</span>
+        <h2>Backlog local ou GitHub?</h2>
+        <p><code>/to-tasks</code> vs <code>/to-issues</code> — ambos leem o PRD e geram tasks com os mesmos campos obrigatórios.</p>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Critério</th>
+              <th>/to-tasks</th>
+              <th>/to-issues</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Onde vive</td><td>Arquivos <code>.md</code> em <code>tasks/</code></td><td>GitHub Issues com label <code>ready-for-agent</code></td></tr>
+            <tr><td>Status</td><td>Atualizado no próprio arquivo (frontmatter)</td><td>Label trocada na issue (open/closed + labels)</td></tr>
+            <tr><td>Visibilidade</td><td>Local — só quem tem o repo</td><td>GitHub — times distribuídos, stakeholders</td></tr>
+            <tr><td>Rastreabilidade</td><td><code>tasks/README.md</code> como índice</td><td>GitHub Projects board automático</td></tr>
+            <tr><td>Quando usar</td><td>Solo dev, projetos internos, protótipos</td><td>Times, projetos abertos, aprovação humana</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-grid cols2">
+        <div class="highlight green">
+          <h3 style="color:var(--green)">Campos obrigatórios em toda task</h3>
+          <ul style="margin-top:8px;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+            <li>Status (not-started / in-progress / done)</li>
+            <li>Blocked by (task-NN ou vazio)</li>
+            <li>O que construir (descrição fechada)</li>
+            <li>Critérios de aceite testáveis</li>
+          </ul>
+        </div>
+        <div class="highlight cyan">
+          <h3 style="color:var(--accent2)">Índice</h3>
+          <p class="mt4">Independente do método, <code>04-tasks-index.md</code> é salvo em <code>.claude/projetos/{slug}/</code> com o sumário de todas as tasks e seus status iniciais.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: HARNESS-BUILD -->
+  <div class="slide" id="s8">
+    <div class="col w100" style="max-width:940px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-purple">Fase 6a</span>
+        <h2>O loop de implementação — <code>harness-build</code></h2>
+        <p>Agente que executa as tasks uma a uma, com gate e revisor obrigatórios antes de fechar cada uma.</p>
+      </div>
+
+      <div class="col gap8 w100">
+        <div class="cycle-box">
+          <h3 style="color:var(--accent2)">1. Ler task</h3>
+          <p class="mt4">Lê a task atual, verifica bloqueadores. Se blocked by ≠ done, pula para próxima task desbloqueada.</p>
+        </div>
+        <div class="cycle-arrow">↓</div>
+        <div class="card-grid cols2">
+          <div class="cycle-box">
+            <h3 style="color:var(--accent)">2. Implementar</h3>
+            <p class="mt4">Código + testes unitários. Nada de scope creep — só o que está na task.</p>
+          </div>
+          <div class="cycle-box">
+            <h3 style="color:var(--yellow)">3. Gate <code>/validar</code></h3>
+            <p class="mt4">ruff check + mypy + pytest — <span class="gate-badge">verde</span> para continuar. Se <span class="block-badge">vermelho</span>, corrige e tenta de novo. Tentativas registradas em <code>metrics/entregas.jsonl</code>.</p>
+          </div>
+        </div>
+        <div class="cycle-arrow">↓</div>
+        <div class="card-grid cols2">
+          <div class="cycle-box">
+            <h3 style="color:var(--accent3)">4. Revisor <code>revisor-codigo</code></h3>
+            <p class="mt4">Subagente analisa o diff contra as rules. Veredito: <span class="gate-badge">aprovado</span> ou <span class="gate-badge" style="background:#064e3b">c/ ressalvas</span>. Se <span class="block-badge">bloqueado</span>, não fecha a task — corrige e repete gate + revisor.</p>
+          </div>
+          <div class="cycle-box">
+            <h3 style="color:var(--green)">5. Commit + fecha task</h3>
+            <p class="mt4">Commit no formato <code>feat(task-NN): titulo</code>. Task marcada como <code>done</code>. Uma linha JSON appended em <code>metrics/entregas.jsonl</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight red">
+        <p><strong style="color:var(--red)">Gate e revisor são OBRIGATORIOS</strong> — task só fecha com ambos verdes. Não há atalho.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: HARNESS-SHIP -->
+  <div class="slide" id="s9">
+    <div class="col w100" style="max-width:900px;gap:18px">
+      <div class="col gap8">
+        <span class="chip chip-green">Fase 6b · Encerramento</span>
+        <h2>Encerrar com evidência — <code>harness-ship</code></h2>
+        <p>Quando todas as tasks estão <code>done</code>, o harness-ship fecha o projeto com retrospectiva mensurável e artefatos arquivados.</p>
+      </div>
+
+      <div class="card-grid cols2">
+        <div class="col gap8">
+          <div class="card">
+            <h3 style="color:var(--accent)">/scorecard</h3>
+            <p class="mt4">Lê <code>metrics/entregas.jsonl</code> e exibe: tasks entregues, taxa de autonomia, mediana de tentativas no gate, distribuição de vereditos do revisor.</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--accent2)">05-retro.md</h3>
+            <p class="mt4">Escrito pelo harness-ship. Contém métricas da entrega, decisões tomadas (com link para ADRs), o que funcionou, o que não funcionou, próximos passos recomendados.</p>
+          </div>
+        </div>
+        <div class="col gap8">
+          <div class="highlight green">
+            <h3 style="color:var(--green)">STATUS.md fechado</h3>
+            <p class="mt4">Fase marcada como "shipped" com data. Projeto arquivado — não aparece mais na lista de projetos ativos.</p>
+          </div>
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2)">ADRs arquivados</h3>
+            <p class="mt4">Decisões técnicas contestáveis registradas em <code>docs/adr/</code> durante o build são referenciadas na retro. Ficam no repo para consulta futura.</p>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow)">O que NÃO é o ship</h3>
+            <p class="mt4">Não é deploy em produção (isso é CI/CD). Não é apresentação para stakeholders. É o encerramento do ciclo do agente — evidência de entrega, não celebração.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 9</span>
+  <button id="next" onclick="go(1)">Próximo →</button>
+</div>
+
+<script>
+const total = 9;
+let cur = 1;
+const dotsEl = document.getElementById('dots');
+for (let i = 1; i <= total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => show(i);
+  dotsEl.appendChild(d);
+}
+function show(n) {
+  document.getElementById('s' + cur).classList.remove('active');
+  dotsEl.children[cur - 1].classList.remove('active');
+  cur = n;
+  document.getElementById('s' + cur).classList.add('active');
+  dotsEl.children[cur - 1].classList.add('active');
+  document.getElementById('counter').textContent = cur + ' / ' + total;
+  document.getElementById('prev').disabled = cur === 1;
+  document.getElementById('next').disabled = cur === total;
+}
+function go(d) { if (cur + d >= 1 && cur + d <= total) show(cur + d); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(-1);
+});
+</script>
+</body>
+</html>

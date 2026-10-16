@@ -1,0 +1,5 @@
+# Waivers pontuais do kernel DE (seed).
+# Campos obrigatórios para silenciar blocker: rule_id, owner, expiry (YYYY-MM-DD).
+# Sem owner/expiry, ou com expiry no passado, o waiver NÃO silencia.
+# Runtime path no alvo: .harness/data-check/waivers.yaml
+waivers: []

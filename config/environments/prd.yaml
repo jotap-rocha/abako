@@ -1,0 +1,35 @@
+# Ambiente PRD — Databricks workspace de produção
+environment: prd
+
+# Databricks
+workspace_url: "[DATABRICKS_HOST_PRD]"    # ex: https://adb-yyy-prd.azuredatabricks.net
+cluster_id: "[DATABRICKS_CLUSTER_ID_PRD]"
+
+# Unity Catalog
+catalog: "prd_catalog"
+schema_bronze: "bronze"
+schema_silver: "silver"
+schema_gold: "gold"
+schema_quarantine: "bronze"
+table_quarantine: "quarantine"
+
+# Volume para arquivos raw
+volume_raw: "/Volumes/prd_catalog/raw/landing"
+
+# Schema evolution — em PRD, qualquer mudança não-aditiva vai para quarantine e notifica
+schema_evolution_strategy: quarantine
+
+# Notificações obrigatórias em PRD
+notifications_enabled: true
+owner_email: "[PIPELINE_OWNER_EMAIL]"
+slack_webhook_url: "[SLACK_WEBHOOK_URL]"
+
+# Logging
+log_level: WARNING    # PRD: apenas WARNING e acima para reduzir volume
+log_format: json
+
+# Qualidade — threshold mais restrito em PRD
+quarantine_rate_threshold_pct: 0.5    # 0.5% já alerta em produção
+
+# Databricks Jobs
+job_name: "[NOME_DO_PROJETO]_pipeline_prd"

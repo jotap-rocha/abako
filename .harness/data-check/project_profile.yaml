@@ -1,0 +1,6 @@
+# Perfil normativo do projeto-filho (seed para install-harness — Task 15).
+# Runtime path no alvo: .harness/data-check/project_profile.yaml
+#
+# secret_store (opcional, ortogonal ao profile): oci | azure | multi
+# — override do auto-detect de vault; ver SCHEMA.md
+profile: spark-yarn-airflow

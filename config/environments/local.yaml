@@ -1,0 +1,32 @@
+# Ambiente local — PySpark local mode (sem Unity Catalog)
+environment: local
+
+# Spark local
+spark_master: "local[*]"
+spark_app_name: "[NOME_DO_PROJETO]"
+
+# Caminhos locais (sem catalog Unity)
+data_root: "data"
+path_raw: "data/raw"
+path_bronze: "data/bronze"
+path_silver: "data/silver"
+path_gold: "data/gold"
+path_quarantine: "data/quarantine"
+
+# Schema evolution
+schema_evolution_strategy: quarantine   # quarantine | merge | fail
+
+# Notificações (desabilitadas local)
+notifications_enabled: false
+owner_email: ""
+slack_webhook_url: ""
+
+# Logging
+log_level: DEBUG
+log_format: json    # json | pretty
+
+# Qualidade
+quarantine_rate_threshold_pct: 1.0   # acima disso → alerta
+
+# Airflow (se on-premises)
+airflow_dag_id: "[NOME_DO_PROJETO]_pipeline"

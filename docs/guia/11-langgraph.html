@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>11 — LangGraph Determinístico · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .pipeline-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .82rem; color: var(--text-muted); background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; width: 100%; }
+    .pipeline-flow .step { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--text); font-size: .8rem; white-space: nowrap; }
+    .pipeline-flow .arrow { color: var(--accent); font-weight: 700; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; }
+    .badge-green { background: #064e3b; color: var(--green); }
+    .badge-red { background: #450a0a; color: var(--red); }
+    .badge-yellow { background: #451a03; color: var(--yellow); }
+    .badge-cyan { background: #0c4a6e; color: var(--accent2); }
+    ul.clean { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    ul.clean li::before { content: "→ "; color: var(--accent); font-weight: 700; }
+    .vs-divider { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: .85rem; font-weight: 600; }
+    .vs-divider::before, .vs-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="file-nav">
+  <a href="01-conceitos.html">01 Conceitos</a>
+  <a href="02-fluxo.html">02 Fluxo</a>
+  <a href="03-harness.html">03 Harness</a>
+  <a href="04-tracking.html">04 Tracking</a>
+  <a href="05-fluxo-guiado.html">05 Guiado</a>
+  <a href="06-seguranca.html">06 Segurança</a>
+  <a href="07-pipeline-arquitetura.html">07 Pipeline Arq.</a>
+  <a href="08-pipeline-praticas.html">08 Pipeline Prat.</a>
+  <a href="09-agentes-sdd.html">09 Agentes SDD</a>
+  <a href="10-rag-search.html">10 RAG Search</a>
+  <a href="11-langgraph.html" class="current">11 LangGraph</a>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="slides" id="slides">
+
+  <!-- Slide 1 — Capa -->
+  <div class="slide active" id="s1">
+    <div class="col" style="align-items:center; gap:24px; max-width:820px; text-align:center;">
+      <span class="chip chip-purple">Sprint 1 · Agent Harness</span>
+      <h1 class="gradient-text">LangGraph Determinístico</h1>
+      <p class="big">Grafos, state, tools e human-in-the-loop</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px;">
+        <span class="tag"><span class="dot" style="background:var(--accent);"></span>StateGraph</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2);"></span>Roteamento</span>
+        <span class="tag"><span class="dot" style="background:var(--accent3);"></span>Tools</span>
+        <span class="tag"><span class="dot" style="background:var(--green);"></span>Grounding</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow);"></span>Human-in-the-loop</span>
+      </div>
+      <div class="highlight cyan mt16" style="max-width:680px;">
+        <p class="big">"O LLM decide <em>o que</em> fazer dentro de um nó. O grafo decide <em>para onde</em> ir. Nunca confunda as duas responsabilidades."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2 — O problema -->
+  <div class="slide" id="s2">
+    <div class="col" style="gap:20px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">O Problema</span>
+        <h2>Por que não usar ReAct livre?</h2>
+      </div>
+
+      <div class="card-grid cols2" style="gap:16px;">
+        <div class="card col" style="gap:12px; border-color:#450a0a;">
+          <h3 style="color:var(--red);">ReAct livre — loop LLM</h3>
+          <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; width:100%;">
+              <span class="step" style="background:#1a0a0a; border-color:#450a0a; color:var(--red);">LLM raciocina</span>
+              <span class="arrow">→</span>
+              <span class="step" style="background:#1a0a0a; border-color:#450a0a; color:var(--red);">chama tool</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; width:100%;">
+              <span class="step" style="background:#1a0a0a; border-color:#450a0a; color:var(--red);">observa resultado</span>
+              <span class="arrow">→</span>
+              <span class="step" style="background:#1a0a0a; border-color:#450a0a; color:var(--red);">LLM raciocina...</span>
+            </div>
+            <p class="muted" style="font-size:.78rem; margin-top:4px;">Loop continua ate o LLM decidir parar — ou nao parar.</p>
+          </div>
+          <ul class="clean" style="margin-top:4px;">
+            <li><span style="color:var(--red);">Nao-determinismo:</span> <span style="color:var(--text-muted); font-size:.88rem;">mesma entrada, caminhos diferentes</span></li>
+            <li><span style="color:var(--red);">Loop infinito:</span> <span style="color:var(--text-muted); font-size:.88rem;">sem limite de iteracoes garantido</span></li>
+            <li><span style="color:var(--red);">Custo imprevisivel:</span> <span style="color:var(--text-muted); font-size:.88rem;">tokens ilimitados por run</span></li>
+            <li><span style="color:var(--red);">Dificil auditar:</span> <span style="color:var(--text-muted); font-size:.88rem;">trace nao reflete logica do produto</span></li>
+          </ul>
+        </div>
+
+        <div class="card col" style="gap:12px; border-color:#064e3b;">
+          <h3 style="color:var(--green);">Grafo Determinístico</h3>
+          <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; width:100%;">
+              <span class="step">entrada</span>
+              <span class="arrow">→</span>
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">[classify]</span>
+              <span class="arrow">→</span>
+              <span class="step" style="border-color:#2e3250; color:var(--accent2);">route()</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; width:100%;">
+              <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">[run_sql]</span>
+              <span style="color:var(--text-muted);">ou</span>
+              <span class="step" style="border-color:#064e3b; color:var(--green);">[search]</span>
+              <span class="arrow">→</span>
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">[generate]</span>
+              <span class="arrow">→</span>
+              <span class="step">END</span>
+            </div>
+          </div>
+          <ul class="clean" style="margin-top:4px;">
+            <li><span style="color:var(--green);">Determinístico:</span> <span style="color:var(--text-muted); font-size:.88rem;">logica de rota em codigo puro</span></li>
+            <li><span style="color:var(--green);">Sem loop:</span> <span style="color:var(--text-muted); font-size:.88rem;">cada nó executa uma vez</span></li>
+            <li><span style="color:var(--green);">Custo previsivel:</span> <span style="color:var(--text-muted); font-size:.88rem;">N chamadas LLM por design</span></li>
+            <li><span style="color:var(--green);">Auditavel:</span> <span style="color:var(--text-muted); font-size:.88rem;">trace reflete o grafo exatamente</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight yellow">
+        <h3 style="color:var(--yellow);">Regra LG-01</h3>
+        <p class="mt4">O LLM decide <strong>dentro</strong> de um no. O codigo decide <strong>qual no vem a seguir</strong>. A fronteira entre os dois é o invariante mais importante do sistema.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3 — Anatomia do grafo -->
+  <div class="slide" id="s3">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Anatomia</span>
+        <h2>Estrutura de um StateGraph</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <pre><span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, END
+
+<span class="cm"># 1. Instanciar com o schema de state</span>
+graph = <span class="fn">StateGraph</span>(AgentState)
+
+<span class="cm"># 2. Registrar nos</span>
+graph.<span class="fn">add_node</span>(<span class="str">"classify"</span>, classify_node)
+graph.<span class="fn">add_node</span>(<span class="str">"run_sql"</span>,  run_sql_node)
+graph.<span class="fn">add_node</span>(<span class="str">"search"</span>,   search_node)
+graph.<span class="fn">add_node</span>(<span class="str">"generate"</span>, generate_node)
+
+<span class="cm"># 3. Entry point</span>
+graph.<span class="fn">set_entry_point</span>(<span class="str">"classify"</span>)
+
+<span class="cm"># 4. Edge condicional (logica no codigo)</span>
+graph.<span class="fn">add_conditional_edges</span>(
+    <span class="str">"classify"</span>, route, INTENT_MAP
+)
+
+<span class="cm"># 5. Edges diretas para o final</span>
+graph.<span class="fn">add_edge</span>(<span class="str">"run_sql"</span>,  <span class="str">"generate"</span>)
+graph.<span class="fn">add_edge</span>(<span class="str">"search"</span>,   <span class="str">"generate"</span>)
+graph.<span class="fn">add_edge</span>(<span class="str">"generate"</span>, END)
+
+<span class="cm"># 6. Compilar (valida o grafo)</span>
+app = graph.<span class="fn">compile</span>()</pre>
+        </div>
+
+        <div class="col" style="gap:10px; min-width:260px;">
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.95rem;">Fluxo de execucao</h3>
+            <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:6px; background:transparent; border:none; padding:8px 0 0 0;">
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">entrada do usuario</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">[classify] — LLM</span>
+              <span class="arrow" style="padding-left:8px;">↓ route()</span>
+              <div style="display:flex; gap:8px;">
+                <span class="step" style="border-color:#0c4a6e; color:var(--accent2); font-size:.75rem;">[run_sql]</span>
+                <span style="color:var(--text-muted); font-size:.8rem;">|</span>
+                <span class="step" style="border-color:#064e3b; color:var(--green); font-size:.75rem;">[search]</span>
+              </div>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">[generate] — LLM</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step">END</span>
+            </div>
+          </div>
+          <div class="card" style="gap:8px;">
+            <h3 style="font-size:.9rem;">Conceitos-chave</h3>
+            <p class="muted" style="font-size:.82rem;"><code>add_node</code> — registra funcao Python como no</p>
+            <p class="muted" style="font-size:.82rem;"><code>add_edge</code> — transicao direta (sempre)</p>
+            <p class="muted" style="font-size:.82rem;"><code>add_conditional_edges</code> — rota por codigo</p>
+            <p class="muted" style="font-size:.82rem;"><code>compile()</code> — valida e retorna runnable</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4 — State schema -->
+  <div class="slide" id="s4">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">State Schema</span>
+        <h2>TypedDict tipado com reducers</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="kw">from</span> typing <span class="kw">import</span> Annotated, Literal
+<span class="kw">from</span> typing_extensions <span class="kw">import</span> TypedDict
+<span class="kw">from</span> langgraph.graph.message <span class="kw">import</span> add_messages
+<span class="kw">from</span> langchain_core.messages <span class="kw">import</span> BaseMessage
+
+<span class="kw">class</span> <span class="fn">AgentState</span>(TypedDict):
+    <span class="cm"># reducer: lista acumula, nao substitui</span>
+    messages: Annotated[list[BaseMessage], add_messages]
+
+    <span class="cm"># campo simples: substitui a cada nos</span>
+    intent:   Literal[<span class="str">"sql"</span>, <span class="str">"search"</span>, <span class="str">"hybrid"</span>]
+    query:    str
+    sources:  list[dict]   <span class="cm"># grounding obrigatorio</span>
+    answer:   str</pre>
+
+          <div class="highlight red" style="margin-top:4px;">
+            <h3 style="color:var(--red); font-size:.9rem;">Anti-padrao</h3>
+            <p class="mt4" style="font-size:.85rem;">Nao use <code>dict</code> genérico como state. Sem TypedDict voce perde type-check, autocompletion e a garantia de que todos os nos concordam com o contrato.</p>
+          </div>
+        </div>
+
+        <div class="col" style="min-width:300px; gap:10px;">
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Campo</th>
+                  <th>Tipo</th>
+                  <th>Quem preenche</th>
+                  <th>Razao</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>messages</td>
+                  <td style="color:var(--accent3);">list + reducer</td>
+                  <td style="color:var(--text-muted);">todos os nos</td>
+                  <td style="color:var(--text-muted);">historico acumulado</td>
+                </tr>
+                <tr>
+                  <td>intent</td>
+                  <td style="color:var(--accent3);">Literal</td>
+                  <td style="color:var(--text-muted);">classify</td>
+                  <td style="color:var(--text-muted);">entrada do router</td>
+                </tr>
+                <tr>
+                  <td>query</td>
+                  <td style="color:var(--accent3);">str</td>
+                  <td style="color:var(--text-muted);">entrada</td>
+                  <td style="color:var(--text-muted);">pergunta normalizada</td>
+                </tr>
+                <tr>
+                  <td>sources</td>
+                  <td style="color:var(--accent3);">list[dict]</td>
+                  <td style="color:var(--text-muted);">run_sql / search</td>
+                  <td style="color:var(--text-muted);">grounding obrigatorio</td>
+                </tr>
+                <tr>
+                  <td>answer</td>
+                  <td style="color:var(--accent3);">str</td>
+                  <td style="color:var(--text-muted);">generate</td>
+                  <td style="color:var(--text-muted);">resposta final</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="highlight green" style="margin-top:4px;">
+            <h3 style="color:var(--green); font-size:.9rem;">Reducers</h3>
+            <p class="mt4" style="font-size:.85rem;"><code>add_messages</code> acumula o historico em vez de substituir. Campos sem reducer sao sobrescritos a cada atualizacao — comportamento padrao e correto para intent/query/answer.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5 — Roteamento determinístico -->
+  <div class="slide" id="s5">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Roteamento</span>
+        <h2>O LLM classifica. O código decide.</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="cm"># Mapa de intencoes — imutavel, em codigo</span>
+INTENT_ROUTING = {
+    <span class="str">"sql"</span>:    <span class="str">"run_sql"</span>,
+    <span class="str">"search"</span>: <span class="str">"search"</span>,
+    <span class="str">"hybrid"</span>: <span class="str">"run_sql"</span>,   <span class="cm"># sql primeiro</span>
+}
+
+<span class="cm"># Funcao de rota: codigo puro, sem I/O</span>
+<span class="kw">def</span> <span class="fn">route</span>(state: AgentState) -> str:
+    intent = state[<span class="str">"intent"</span>]
+    <span class="kw">return</span> INTENT_ROUTING.get(intent, <span class="str">"search"</span>)
+
+<span class="cm"># Mapa de nos para add_conditional_edges</span>
+INTENT_MAP = {
+    <span class="str">"run_sql"</span>: <span class="str">"run_sql"</span>,
+    <span class="str">"search"</span>:  <span class="str">"search"</span>,
+}
+
+<span class="cm"># Ligacao no grafo</span>
+graph.<span class="fn">add_conditional_edges</span>(
+    <span class="str">"classify"</span>,   <span class="cm"># no de origem</span>
+    route,         <span class="cm"># funcao que retorna chave</span>
+    INTENT_MAP,    <span class="cm"># mapa chave → no destino</span>
+)</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.95rem;">Separacao de responsabilidades</h3>
+            <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+              <div class="card" style="border-color:#312e81; padding:12px 16px;">
+                <p style="font-size:.82rem; color:var(--accent3); font-weight:600;">LLM (no classify)</p>
+                <p class="muted" style="font-size:.8rem; margin-top:4px;">Le a query e escreve <code>"sql"</code>, <code>"search"</code> ou <code>"hybrid"</code> no state</p>
+              </div>
+              <div style="text-align:center; color:var(--accent); font-weight:700; font-size:1.2rem;">↓</div>
+              <div class="card" style="border-color:#0c4a6e; padding:12px 16px;">
+                <p style="font-size:.82rem; color:var(--accent2); font-weight:600;">Codigo (route)</p>
+                <p class="muted" style="font-size:.8rem; margin-top:4px;">Le o campo do state e retorna o nome do no. Sem LLM. Sem I/O. Determinístico.</p>
+              </div>
+            </div>
+          </div>
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow); font-size:.9rem;">Anti-padrao</h3>
+            <p class="mt4" style="font-size:.82rem;">Nao deixe o LLM retornar <em>qual funcao chamar</em> como string livre. Um enum tipado (Literal) com mapa de codigo e auditavel e seguro.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6 — Design de tools -->
+  <div class="slide" id="s6">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-green">Design de Tools</span>
+        <h2>Tools parametrizadas por nó — factory pattern</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="cm"># Factory: parametros fixos fechados no closure</span>
+<span class="kw">def</span> <span class="fn">make_sql_tool</span>(
+    engine, allowlist: set[str], limit: int = 500, timeout: int = 10
+):
+    <span class="kw">async def</span> <span class="fn">run_sql</span>(query: str, table: str) -> list[dict]:
+        <span class="kw">if</span> table <span class="kw">not in</span> allowlist:
+            <span class="kw">raise</span> ValueError(<span class="str">f"tabela nao permitida: {table}"</span>)
+        safe = <span class="str">f"SELECT * FROM negocio.{table} WHERE {query} LIMIT {limit}"</span>
+        <span class="kw">async with</span> asyncio.<span class="fn">timeout</span>(timeout):
+            <span class="kw">return await</span> engine.<span class="fn">fetch_all</span>(safe)
+    <span class="kw">return</span> run_sql
+
+<span class="cm"># Factory: pre-filtro de tenant antes do semantico</span>
+<span class="kw">def</span> <span class="fn">make_search_tool</span>(qdrant, collection: str, tenant_id: str):
+    <span class="kw">async def</span> <span class="fn">search</span>(query_vector: list[float], k: int = 5) -> list[dict]:
+        <span class="cm"># PRIMEIRO filtro exato, DEPOIS semantico</span>
+        filt = Filter(must=[FieldCondition(
+            key=<span class="str">"tenant_id"</span>, match=MatchValue(value=tenant_id)
+        )])
+        <span class="kw">return await</span> qdrant.<span class="fn">search</span>(collection, query_vector, limit=k, query_filter=filt)
+    <span class="kw">return</span> search</pre>
+        </div>
+
+        <div class="col" style="min-width:300px; gap:10px;">
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tool</th>
+                  <th>Params fixos</th>
+                  <th>Params da query</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>run_sql</td>
+                  <td style="color:var(--text-muted); font-size:.82rem;">engine, allowlist, limit, timeout</td>
+                  <td style="color:var(--text-muted); font-size:.82rem;">query, table</td>
+                </tr>
+                <tr>
+                  <td>search</td>
+                  <td style="color:var(--text-muted); font-size:.82rem;">qdrant, collection, tenant_id</td>
+                  <td style="color:var(--text-muted); font-size:.82rem;">query_vector, k</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.9rem;">Por que factory?</h3>
+            <p class="mt4" style="font-size:.82rem;">Parametros de seguranca (allowlist, tenant, limit) ficam fechados no closure — o LLM nao pode sobrescreve-los. Ele so passa os parametros da query. <strong>Surface de ataque minima.</strong></p>
+          </div>
+          <div class="highlight red">
+            <h3 style="color:var(--red); font-size:.9rem;">Anti-padrao</h3>
+            <p class="mt4" style="font-size:.82rem;">Nunca deixe o LLM montar o SQL livre. Sempre allowlist de tabelas + LIMIT + timeout no closure.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7 — Human-in-the-loop -->
+  <div class="slide" id="s7">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-yellow">Human-in-the-loop</span>
+        <h2>interrupt_before + MemorySaver</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="kw">from</span> langgraph.checkpoint.memory <span class="kw">import</span> MemorySaver
+<span class="kw">from</span> langgraph.graph <span class="kw">import</span> StateGraph, END
+
+checkpointer = <span class="fn">MemorySaver</span>()
+
+app = graph.<span class="fn">compile</span>(
+    checkpointer=checkpointer,
+    interrupt_before=[<span class="str">"execute"</span>],  <span class="cm"># pausa ANTES do no</span>
+)
+
+<span class="cm"># 1. Invocar — pausa antes de "execute"</span>
+config = {<span class="str">"configurable"</span>: {<span class="str">"thread_id"</span>: <span class="str">"run-42"</span>}}
+state = app.<span class="fn">invoke</span>({<span class="str">"query"</span>: query}, config)
+
+<span class="cm"># 2. Mostrar plano para aprovacao humana</span>
+plan = state[<span class="str">"plan"</span>]
+print(<span class="str">f"Plano: {plan}"</span>)
+
+<span class="cm"># 3. Usuario aprova (ou rejeita)</span>
+approved = <span class="fn">input</span>(<span class="str">"Aprovar? (s/n): "</span>) == <span class="str">"s"</span>
+
+<span class="cm"># 4. Retomar — None continua do checkpoint</span>
+<span class="kw">if</span> approved:
+    result = app.<span class="fn">invoke</span>(<span class="kw">None</span>, config)  <span class="cm"># retoma</span>
+<span class="kw">else</span>:
+    app.<span class="fn">update_state</span>(config, {<span class="str">"cancelled"</span>: <span class="kw">True</span>})</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow); font-size:.95rem;">Quando usar</h3>
+            <ul class="clean" style="margin-top:8px;">
+              <li style="font-size:.85rem;">Acoes irreversiveis (write, send)</li>
+              <li style="font-size:.85rem;">Execute em banco de dados</li>
+              <li style="font-size:.85rem;">Envio de e-mail ou notificacao</li>
+              <li style="font-size:.85rem;">Operacoes financeiras</li>
+              <li style="font-size:.85rem;">Deploy em producao</li>
+            </ul>
+          </div>
+          <div class="card col" style="gap:8px;">
+            <h3 style="font-size:.9rem; color:var(--accent2);">Fluxo</h3>
+            <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:5px; background:transparent; border:none; padding:4px 0;">
+              <span class="step">invoke(input)</span>
+              <span class="arrow" style="padding-left:8px;">↓ pausa</span>
+              <span class="step" style="border-color:#451a03; color:var(--yellow);">get_state → mostra plano</span>
+              <span class="arrow" style="padding-left:8px;">↓ humano decide</span>
+              <span class="step" style="border-color:#064e3b; color:var(--green);">invoke(None) → retoma</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step">END</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8 — Grounding obrigatório -->
+  <div class="slide" id="s8">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">Grounding</span>
+        <h2>Toda resposta cita fontes — sem exceção</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="cm"># No generate: fontes sempre no state</span>
+<span class="kw">def</span> <span class="fn">generate_node</span>(state: AgentState) -> dict:
+    sources = state[<span class="str">"sources"</span>]
+    <span class="kw">if not</span> sources:
+        <span class="kw">raise</span> ValueError(<span class="str">"LG-04: sources vazio — grounding faltando"</span>)
+
+    context = <span class="str">"\n\n"</span>.<span class="fn">join</span>(
+        <span class="str">f"[{i+1}] {s['content']}"</span> <span class="kw">for</span> i, s <span class="kw">in</span> <span class="fn">enumerate</span>(sources)
+    )
+
+    prompt = <span class="fn">ChatPromptTemplate</span>.<span class="fn">from_messages</span>([
+        (<span class="str">"system"</span>, <span class="str">"""Voce e um assistente analitico.
+Responda APENAS com informacoes do contexto abaixo.
+Se a informacao nao estiver no contexto, diga
+'Nao encontrei essa informacao nas fontes disponíveis.'
+Nao invente dados, numeros ou fatos.
+
+Contexto:
+{context}"""</span>),
+        (<span class="str">"human"</span>, <span class="str">"{query}"</span>),
+    ])
+    answer = llm.<span class="fn">invoke</span>(prompt.<span class="fn">format</span>(context=context, query=state[<span class="str">"query"</span>]))
+    <span class="kw">return</span> {<span class="str">"answer"</span>: answer.content, <span class="str">"sources"</span>: sources}</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="highlight red">
+            <h3 style="color:var(--red); font-size:.95rem;">Invariante LG-04</h3>
+            <p class="mt4" style="font-size:.85rem;"><code>sources</code> nao pode ser vazio ao entrar no no <code>generate</code>. Gere excecao em vez de deixar o LLM inventar.</p>
+          </div>
+          <div class="card col" style="gap:8px;">
+            <h3 style="font-size:.9rem;">Consequencias</h3>
+            <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+              <div style="display:flex; gap:8px; align-items:flex-start;">
+                <span class="badge badge-red" style="font-size:.75rem; padding:3px 8px;">sem grounding</span>
+                <p style="font-size:.82rem;">Alucinacao nao auditavel — impossivel rastrear erro</p>
+              </div>
+              <div style="display:flex; gap:8px; align-items:flex-start;">
+                <span class="badge badge-green" style="font-size:.75rem; padding:3px 8px;">com grounding</span>
+                <p style="font-size:.82rem;">Resposta tracavel — cada afirmacao ligada a fonte</p>
+              </div>
+            </div>
+          </div>
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.9rem;">Campos obrigatorios em sources</h3>
+            <p class="mt4" style="font-size:.82rem;"><code>content</code> — texto da fonte<br/><code>origin</code> — tabela ou colecao<br/><code>score</code> — relevancia (search) ou confianca (sql)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9 — Os 5 invariantes -->
+  <div class="slide" id="s9">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">Invariantes</span>
+        <h2>LG-01 a LG-05 — regras que nunca quebram</h2>
+      </div>
+
+      <div style="overflow-x:auto; width:100%;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Regra</th>
+              <th>O que proibe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-red" style="font-size:.75rem; padding:3px 8px;">LG-01</span></td>
+              <td>Grafo determinístico</td>
+              <td style="color:var(--text-muted); font-size:.85rem;">O LLM decide dentro de nos. O codigo decide qual no vem a seguir.</td>
+              <td style="color:var(--red); font-size:.82rem;">ReAct livre, loop LLM sem limite, LLM escolhendo proximo no por nome</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-cyan" style="font-size:.75rem; padding:3px 8px;">LG-02</span></td>
+              <td>TypedDict</td>
+              <td style="color:var(--text-muted); font-size:.85rem;">State schema tipado com TypedDict. Reducers declarados explicitamente.</td>
+              <td style="color:var(--red); font-size:.82rem;"><code>dict</code> genérico, campos sem tipo, reducers implicitos</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green" style="font-size:.75rem; padding:3px 8px;">LG-03</span></td>
+              <td>Tools parametrizadas</td>
+              <td style="color:var(--text-muted); font-size:.85rem;">Parametros de seguranca fechados no closure via factory. LLM passa apenas params da query.</td>
+              <td style="color:var(--red); font-size:.82rem;">SQL livre, sem allowlist, sem LIMIT, sem timeout</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red" style="font-size:.75rem; padding:3px 8px;">LG-04</span></td>
+              <td>Grounding</td>
+              <td style="color:var(--text-muted); font-size:.85rem;"><code>sources</code> obrigatorio e nao-vazio ao entrar em generate. Prompt anti-alucinacao.</td>
+              <td style="color:var(--red); font-size:.82rem;">Resposta sem fonte, prescrição sem evidencia, sources como lista vazia</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-yellow" style="font-size:.75rem; padding:3px 8px;">LG-05</span></td>
+              <td>Interrupt real</td>
+              <td style="color:var(--text-muted); font-size:.85rem;"><code>interrupt_before</code> + MemorySaver para acoes irreversiveis. Retomada via <code>invoke(None)</code>.</td>
+              <td style="color:var(--red); font-size:.82rem;">Simular pause com condicional, human-in-loop sem checkpoint, resumo sem thread_id</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight cyan" style="margin-top:4px;">
+        <h3 style="color:var(--accent2); font-size:.9rem;">Referencias</h3>
+        <p class="mt4" style="font-size:.85rem;">Regras detalhadas: <code>.claude/rules/langgraph.md</code> (path-scoped, carrega ao tocar <code>backend/agent/</code>). Conceitos e padroes: <code>.claude/kb/langgraph/</code> (index + 4 concepts + 4 patterns).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10 — O harness para LangGraph -->
+  <div class="slide" id="s10">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Agent Harness</span>
+        <h2>O que o harness gera para projetos LangGraph</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <div class="card col" style="gap:10px; border-color:#312e81;">
+            <h3 style="color:var(--accent3);">Ao rodar <code>/harness-architect</code></h3>
+            <ul class="clean">
+              <li style="font-size:.85rem;"><code>rules/langgraph.md</code> — path-scoped em <code>backend/agent/</code>, carrega so ao tocar a area</li>
+              <li style="font-size:.85rem;"><code>kb/langgraph/index.md</code> — indice da base de conhecimento</li>
+              <li style="font-size:.85rem;"><code>kb/langgraph/concepts/</code> — 4 arquivos: state, nodes, edges, checkpointing</li>
+              <li style="font-size:.85rem;"><code>kb/langgraph/patterns/</code> — 4 arquivos: routing, tools, grounding, hitl</li>
+            </ul>
+          </div>
+
+          <div class="card col" style="gap:10px; border-color:#0c4a6e;">
+            <h3 style="color:var(--accent2);">Agentes disponiveis</h3>
+            <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span class="badge badge-cyan" style="font-size:.75rem; min-width:120px;">rag-architect</span>
+                <p style="font-size:.82rem;">Projeta colecoes Qdrant, pipeline de embedding e busca hibrida</p>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span class="badge badge-cyan" style="font-size:.75rem; min-width:120px;">prompt-engineer</span>
+                <p style="font-size:.82rem;">Otimiza prompts de classify e generate, anti-alucinacao</p>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span class="badge badge-cyan" style="font-size:.75rem; min-width:120px;">sql-architect</span>
+                <p style="font-size:.82rem;">Projeta allowlist, schema RO e queries seguras para run_sql</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.95rem;">Fluxo recomendado</h3>
+            <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:6px; background:transparent; border:none; padding:8px 0 0 0;">
+              <span class="step" style="border-color:#064e3b; color:var(--green);">/brainstorm — explorar o problema</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">/grill — validar premissas</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">/to-prd — capturar requisitos</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#451a03; color:var(--yellow);">/harness-architect — gerar KB + rules</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#064e3b; color:var(--green);">/build com gate /validar</span>
+            </div>
+          </div>
+          <div class="highlight cyan" style="margin-top:4px;">
+            <h3 style="color:var(--accent2); font-size:.9rem;">Gate de qualidade</h3>
+            <p class="mt4" style="font-size:.82rem;">Antes de cada commit: <code>/validar</code> — ruff + mypy + pytest. O gate verifica invariantes LG-01 a LG-05 via testes de integracao do grafo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<nav class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 10</span>
+  <button id="next" onclick="go(1)">Proximo →</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  let cur = 0;
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => go(i - cur);
+    dotsEl.appendChild(d);
+  });
+  function go(delta) {
+    slides[cur].classList.remove('active');
+    dotsEl.children[cur].classList.remove('active');
+    cur = Math.max(0, Math.min(slides.length - 1, cur + delta));
+    slides[cur].classList.add('active');
+    dotsEl.children[cur].classList.add('active');
+    document.getElementById('counter').textContent = `${cur + 1} / ${slides.length}`;
+    document.getElementById('prev').disabled = cur === 0;
+    document.getElementById('next').disabled = cur === slides.length - 1;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  });
+</script>
+
+</body>
+</html>

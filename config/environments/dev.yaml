@@ -1,0 +1,35 @@
+# Ambiente DEV — Databricks workspace de desenvolvimento
+environment: dev
+
+# Databricks
+workspace_url: "[DATABRICKS_HOST_DEV]"    # ex: https://adb-xxx-dev.azuredatabricks.net
+cluster_id: "[DATABRICKS_CLUSTER_ID_DEV]"
+
+# Unity Catalog
+catalog: "dev_catalog"
+schema_bronze: "bronze"
+schema_silver: "silver"
+schema_gold: "gold"
+schema_quarantine: "bronze"    # quarantine table fica no mesmo schema do bronze
+table_quarantine: "quarantine"
+
+# Volume para arquivos raw (Unity Catalog Volume)
+volume_raw: "/Volumes/dev_catalog/raw/landing"
+
+# Schema evolution
+schema_evolution_strategy: quarantine   # quarantine | merge | fail
+
+# Notificações
+notifications_enabled: true
+owner_email: "[PIPELINE_OWNER_EMAIL]"
+slack_webhook_url: "[SLACK_WEBHOOK_URL]"
+
+# Logging
+log_level: INFO
+log_format: json
+
+# Qualidade
+quarantine_rate_threshold_pct: 1.0
+
+# Databricks Jobs (para agendamento cloud)
+job_name: "[NOME_DO_PROJETO]_pipeline_dev"

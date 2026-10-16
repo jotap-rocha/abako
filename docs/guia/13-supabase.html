@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>12 — Supabase · Agent Harness Method</title>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #222636; --border: #2e3250;
+      --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
+      --green: #34d399; --yellow: #fbbf24; --red: #f87171;
+      --text: #e2e8f0; --text-muted: #94a3b8; --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100vw; }
+    .slides { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 48px 64px; animation: fadeIn .35s ease; }
+    .slide.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .nav { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; z-index: 100; }
+    .nav button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: .85rem; font-weight: 600; transition: opacity .2s; }
+    .nav button:hover { opacity: .85; } .nav button:disabled { opacity: .3; cursor: default; }
+    .slide-counter { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+    .dots { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background .2s, transform .2s; }
+    .dot.active { background: var(--accent); transform: scale(1.4); }
+    h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
+    h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+    h3 { font-size: 1.15rem; font-weight: 600; }
+    p, li { font-size: 1rem; line-height: 1.7; color: var(--text-muted); }
+    .big { font-size: 1.2rem; color: var(--text); }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    .chip { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .chip-purple { background: #312e81; color: var(--accent3); }
+    .chip-cyan   { background: #0c4a6e; color: var(--accent2); }
+    .chip-green  { background: #064e3b; color: var(--green); }
+    .chip-yellow { background: #451a03; color: var(--yellow); }
+    .chip-red    { background: #450a0a; color: var(--red); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+    .card-grid { display: grid; gap: 16px; width: 100%; }
+    .card-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .card-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .highlight { border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; width: 100%; }
+    .highlight.green  { border-color: var(--green); }
+    .highlight.yellow { border-color: var(--yellow); }
+    .highlight.cyan   { border-color: var(--accent2); }
+    .highlight.red    { border-color: var(--red); }
+    pre { background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-size: .82rem; color: #c4c9e0; font-family: 'Cascadia Code', 'Fira Code', monospace; overflow-x: auto; line-height: 1.6; }
+    .kw { color: #c792ea; } .str { color: #c3e88d; } .cm { color: #546e7a; } .fn { color: #82aaff; }
+    .tag { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; }
+    .tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .gradient-text { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .w100 { width: 100%; } .row { display: flex; gap: 16px; align-items: flex-start; width: 100%; } .col { display: flex; flex-direction: column; gap: 12px; }
+    .flex1 { flex: 1; } .center { text-align: center; }
+    .mt4{margin-top:4px} .mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+    .gap8{gap:8px} .gap16{gap:16px}
+    table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    th { text-align: left; padding: 8px 14px; background: var(--surface2); color: var(--text-muted); font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; }
+    td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--text-muted); }
+    td:first-child { color: var(--text); font-weight: 500; }
+    code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-size: .82em; font-family: 'Cascadia Code', monospace; color: var(--accent2); }
+    .file-nav { position: fixed; top: 52px; right: 24px; display: flex; flex-direction: column; gap: 4px; z-index: 99; }
+    .file-nav a { font-size: .72rem; color: var(--text-muted); text-decoration: none; padding: 3px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); }
+    .file-nav a:hover { color: var(--accent2); border-color: var(--accent); }
+    .file-nav a.current { color: var(--accent); border-color: var(--accent); }
+    .pipeline-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: .82rem; color: var(--text-muted); background: #0d0f16; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; width: 100%; }
+    .pipeline-flow .step { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--text); font-size: .8rem; white-space: nowrap; }
+    .pipeline-flow .arrow { color: var(--accent); font-weight: 700; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; }
+    .badge-green { background: #064e3b; color: var(--green); }
+    .badge-red { background: #450a0a; color: var(--red); }
+    .badge-yellow { background: #451a03; color: var(--yellow); }
+    .badge-cyan { background: #0c4a6e; color: var(--accent2); }
+    ul.clean { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    ul.clean li::before { content: "→ "; color: var(--accent); font-weight: 700; }
+    .vs-divider { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: .85rem; font-weight: 600; }
+    .vs-divider::before, .vs-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="file-nav">
+  <a href="#">01 Conceitos</a>
+  <a href="#">02 Fluxo</a>
+  <a href="#">03 Harness</a>
+  <a href="#">04 Tracking</a>
+  <a href="#">05 Guiado</a>
+  <a href="#">06 Segurança</a>
+  <a href="#">07 Pipeline Arq.</a>
+  <a href="#">08 Pipeline Prat.</a>
+  <a href="#">09 Agentes SDD</a>
+  <a href="#">10 RAG Search</a>
+  <a href="#">11 LangGraph</a>
+  <a href="#" class="current">12 Supabase</a>
+  <a href="#">13</a>
+  <a href="#">14</a>
+  <a href="#">15</a>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="slides" id="slides">
+
+  <!-- Slide 1 — Capa -->
+  <div class="slide active" id="s1">
+    <div class="col" style="align-items:center; gap:24px; max-width:820px; text-align:center;">
+      <span class="chip chip-green">Sprint 2 · Agent Harness</span>
+      <h1 class="gradient-text">Supabase</h1>
+      <p class="big">Auth, RLS, Edge Functions, pgvector e Realtime</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px;">
+        <span class="tag"><span class="dot" style="background:var(--accent);"></span>Auth JWT</span>
+        <span class="tag"><span class="dot" style="background:var(--accent2);"></span>RLS</span>
+        <span class="tag"><span class="dot" style="background:var(--accent3);"></span>Edge Functions</span>
+        <span class="tag"><span class="dot" style="background:var(--green);"></span>pgvector</span>
+        <span class="tag"><span class="dot" style="background:var(--yellow);"></span>Realtime</span>
+      </div>
+      <div class="highlight cyan mt16" style="max-width:680px;">
+        <p class="big">"Supabase não é uma abstração sobre Postgres — <em>é</em> Postgres, com Auth, RLS e APIs geradas ao redor."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2 — Por que Supabase -->
+  <div class="slide" id="s2">
+    <div class="col" style="gap:16px; max-width:980px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Fundamentos</span>
+        <h2>Por que Supabase</h2>
+      </div>
+
+      <div class="card-grid cols2" style="gap:16px;">
+        <div class="col" style="gap:10px;">
+          <div class="card col" style="gap:8px; border-color:#312e81;">
+            <h3 style="color:var(--accent3);">O que torna Supabase diferente</h3>
+            <ul class="clean" style="margin-top:4px;">
+              <li style="font-size:.88rem;"><strong style="color:var(--text);">Postgres como core</strong> — não é abstração; você acessa SQL direto</li>
+              <li style="font-size:.88rem;"><strong style="color:var(--text);">Auth embutido</strong> — JWT assinado, magic link, OAuth; sem servidor extra</li>
+              <li style="font-size:.88rem;"><strong style="color:var(--text);">RLS no banco</strong> — políticas executam dentro do Postgres, não na app</li>
+              <li style="font-size:.88rem;"><strong style="color:var(--text);">Edge Functions</strong> — Deno, deploy em segundos, co-localizado com o banco</li>
+              <li style="font-size:.88rem;"><strong style="color:var(--text);">pgvector nativo</strong> — RAG sem infra separada; HNSW integrado</li>
+              <li style="font-size:.88rem;"><strong style="color:var(--text);">Realtime</strong> — subscriptions via WebSocket sobre mudanças na tabela</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col" style="gap:10px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Aspecto</th>
+                <th style="color:var(--green);">Supabase</th>
+                <th>Backend próprio</th>
+                <th>Firebase</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Banco</td>
+                <td style="color:var(--green);">Postgres SQL</td>
+                <td style="color:var(--text-muted);">Qualquer</td>
+                <td style="color:var(--text-muted);">Firestore (NoSQL)</td>
+              </tr>
+              <tr>
+                <td>Auth</td>
+                <td style="color:var(--green);">Embutido + JWT</td>
+                <td style="color:var(--text-muted);">Implementar</td>
+                <td style="color:var(--green);">Embutido</td>
+              </tr>
+              <tr>
+                <td>Segurança</td>
+                <td style="color:var(--green);">RLS no banco</td>
+                <td style="color:var(--text-muted);">Middleware app</td>
+                <td style="color:var(--text-muted);">Rules no cliente</td>
+              </tr>
+              <tr>
+                <td>Vetores</td>
+                <td style="color:var(--green);">pgvector nativo</td>
+                <td style="color:var(--text-muted);">Qdrant / Pinecone</td>
+                <td style="color:var(--red);">Não</td>
+              </tr>
+              <tr>
+                <td>SQL</td>
+                <td style="color:var(--green);">Sim, completo</td>
+                <td style="color:var(--green);">Sim</td>
+                <td style="color:var(--red);">Não</td>
+              </tr>
+              <tr>
+                <td>Open source</td>
+                <td style="color:var(--green);">Sim</td>
+                <td style="color:var(--green);">Sim</td>
+                <td style="color:var(--red);">Não</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="highlight green">
+        <h3 style="color:var(--green);">Quando escolher Supabase</h3>
+        <p class="mt4">Projetos com autenticação + dados relacionais + necessidade de RAG onde você quer Postgres real sem operar infra. Se você já tem FastAPI com Postgres separado, Supabase pode ser a camada de Auth + pgvector sem substituir o backend.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3 — Auth -->
+  <div class="slide" id="s3">
+    <div class="col" style="gap:16px; max-width:980px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Autenticação</span>
+        <h2>Auth — magic link e OAuth</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <div class="pipeline-flow" style="width:100%; gap:8px;">
+            <span class="step">usuário entra email</span>
+            <span class="arrow">→</span>
+            <span class="step" style="border-color:#312e81; color:var(--accent3);">magic link enviado</span>
+            <span class="arrow">→</span>
+            <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">confirm URL</span>
+            <span class="arrow">→</span>
+            <span class="step" style="border-color:#064e3b; color:var(--green);">session JWT</span>
+          </div>
+
+          <pre><span class="kw">import</span> { createClient } <span class="kw">from</span> <span class="str">'@supabase/supabase-js'</span>
+
+<span class="kw">const</span> supabase = <span class="fn">createClient</span>(url, anonKey)
+
+<span class="cm">// Magic link — sem senha</span>
+<span class="kw">const</span> { error } = <span class="kw">await</span> supabase.auth.<span class="fn">signInWithOtp</span>({
+  email: <span class="str">'user@example.com'</span>,
+  options: { emailRedirectTo: <span class="str">'https://app.com/auth/callback'</span> }
+})
+
+<span class="cm">// OAuth — GitHub, Google, etc.</span>
+<span class="kw">await</span> supabase.auth.<span class="fn">signInWithOAuth</span>({
+  provider: <span class="str">'github'</span>,
+  options: { redirectTo: <span class="str">'https://app.com/auth/callback'</span> }
+})
+
+<span class="cm">// Claims customizados via hook no banco (pg function)</span>
+<span class="cm">-- supabase_auth_admin.custom_access_token_hook(event jsonb)</span>
+<span class="cm">-- adiciona app_metadata ao JWT</span></pre>
+        </div>
+
+        <div class="col" style="min-width:260px; gap:12px;">
+          <div class="card col" style="gap:8px; border-color:#064e3b;">
+            <h3 style="color:var(--green); font-size:.95rem;">JWT gerado pelo Supabase</h3>
+            <p class="muted" style="font-size:.82rem;">Contém: <code>sub</code> (user_id), <code>role</code>, <code>email</code>, <code>app_metadata</code>, <code>user_metadata</code>, <code>aud</code>, <code>exp</code>.</p>
+            <p class="muted" style="font-size:.82rem;">Disponível no banco via <code>auth.uid()</code> e <code>auth.jwt()</code> — usados nas políticas RLS.</p>
+          </div>
+
+          <div class="highlight red">
+            <h3 style="color:var(--red); font-size:.9rem;">Anti-padroes</h3>
+            <ul class="clean" style="margin-top:6px;">
+              <li style="font-size:.82rem; color:var(--red);">Nunca confiar no <code>user_id</code> do body da request</li>
+              <li style="font-size:.82rem; color:var(--red);">Nunca usar <code>service_role</code> key no frontend</li>
+              <li style="font-size:.82rem; color:var(--red);">Nunca armazenar o JWT em localStorage sem HttpOnly cookie</li>
+              <li style="font-size:.82rem; color:var(--red);">Nunca verificar JWT somente no cliente</li>
+            </ul>
+          </div>
+
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.9rem;">Session do lado servidor</h3>
+            <p class="mt4" style="font-size:.82rem;">Em Server Components / API routes: use <code>createServerClient</code> com cookies. O JWT é verificado server-side antes de qualquer query.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4 — RLS -->
+  <div class="slide" id="s4">
+    <div class="col" style="gap:16px; max-width:980px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-yellow">Segurança</span>
+        <h2>RLS — Row Level Security</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <div class="highlight yellow">
+            <h3 style="color:var(--yellow);">O que é RLS</h3>
+            <p class="mt4" style="font-size:.88rem;">Política executada <strong>dentro do Postgres</strong> antes de retornar qualquer linha. Não importa se o ataque bypassa a app — o banco bloqueia na camada de dado.</p>
+          </div>
+
+          <pre><span class="cm">-- 1. Habilitar RLS na tabela</span>
+<span class="kw">ALTER TABLE</span> posts <span class="kw">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="cm">-- 2. Política de leitura: só o dono vê seus posts</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"owner_read"</span>
+  <span class="kw">ON</span> posts <span class="kw">FOR SELECT</span>
+  <span class="kw">USING</span> (user_id = <span class="fn">auth.uid</span>());
+
+<span class="cm">-- 3. Política de escrita: só o dono escreve</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"owner_insert"</span>
+  <span class="kw">ON</span> posts <span class="kw">FOR INSERT</span>
+  <span class="kw">WITH CHECK</span> (user_id = <span class="fn">auth.uid</span>());
+
+<span class="cm">-- auth.uid()  → UUID do usuário autenticado</span>
+<span class="cm">-- auth.jwt()  → payload completo do JWT</span>
+<span class="cm">-- auth.role() → 'anon' | 'authenticated' | custom</span></pre>
+        </div>
+
+        <div class="col" style="min-width:300px; gap:12px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Operação</th>
+                <th>Política</th>
+                <th>Quem vê</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>SELECT</td>
+                <td><code>USING</code></td>
+                <td style="color:var(--text-muted);">Filtra linhas retornadas</td>
+              </tr>
+              <tr>
+                <td>INSERT</td>
+                <td><code>WITH CHECK</code></td>
+                <td style="color:var(--text-muted);">Valida linha antes de inserir</td>
+              </tr>
+              <tr>
+                <td>UPDATE</td>
+                <td><code>USING + WITH CHECK</code></td>
+                <td style="color:var(--text-muted);">Filtra alvo + valida novo valor</td>
+              </tr>
+              <tr>
+                <td>DELETE</td>
+                <td><code>USING</code></td>
+                <td style="color:var(--text-muted);">Filtra linhas que podem ser deletadas</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="card col" style="gap:8px; border-color:#451a03;">
+            <h3 style="color:var(--yellow); font-size:.9rem;">auth.uid() vs auth.jwt()</h3>
+            <p class="muted" style="font-size:.82rem;"><code>auth.uid()</code> — UUID do user. Mais rápido, preferido para comparar com FK.</p>
+            <p class="muted" style="font-size:.82rem;"><code>auth.jwt()</code> — payload completo. Use para claims customizados como <code>org_id</code>, <code>role</code>.</p>
+            <p style="color:var(--red); font-size:.78rem; margin-top:4px;">Sem policy + RLS habilitado = nenhuma linha retornada (deny-by-default).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5 — Padroes RLS -->
+  <div class="slide" id="s5">
+    <div class="col" style="gap:16px; max-width:980px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-yellow">Padroes RLS</span>
+        <h2>4 padrões prontos para uso</h2>
+      </div>
+
+      <div class="card-grid cols2" style="gap:14px;">
+        <div class="card col" style="gap:8px; border-color:#312e81;">
+          <h3 style="color:var(--accent3); font-size:.95rem;">1 — Pessoal (só dono)</h3>
+          <pre style="font-size:.78rem; padding:10px 14px;"><span class="cm">-- User vê só seus próprios registros</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"personal"</span> <span class="kw">ON</span> notes
+  <span class="kw">FOR ALL USING</span> (user_id = <span class="fn">auth.uid</span>())
+  <span class="kw">WITH CHECK</span> (user_id = <span class="fn">auth.uid</span>());</pre>
+        </div>
+
+        <div class="card col" style="gap:8px; border-color:#0c4a6e;">
+          <h3 style="color:var(--accent2); font-size:.95rem;">2 — Multi-tenant (org_members)</h3>
+          <pre style="font-size:.78rem; padding:10px 14px;"><span class="cm">-- User vê dados da sua organização</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"tenant"</span> <span class="kw">ON</span> documents
+  <span class="kw">FOR SELECT USING</span> (
+    org_id <span class="kw">IN</span> (
+      <span class="kw">SELECT</span> org_id <span class="kw">FROM</span> org_members
+      <span class="kw">WHERE</span> user_id = <span class="fn">auth.uid</span>()
+    )
+  );</pre>
+        </div>
+
+        <div class="card col" style="gap:8px; border-color:#064e3b;">
+          <h3 style="color:var(--green); font-size:.95rem;">3 — Público (todos leem)</h3>
+          <pre style="font-size:.78rem; padding:10px 14px;"><span class="cm">-- Qualquer usuário (anon inclusive) lê</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"public_read"</span> <span class="kw">ON</span> products
+  <span class="kw">FOR SELECT</span>
+  <span class="kw">USING</span> (<span class="kw">true</span>);
+
+<span class="cm">-- Só autenticado escreve</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"auth_write"</span> <span class="kw">ON</span> products
+  <span class="kw">FOR INSERT</span>
+  <span class="kw">WITH CHECK</span> (<span class="fn">auth.role</span>() = <span class="str">'authenticated'</span>);</pre>
+        </div>
+
+        <div class="card col" style="gap:8px; border-color:#451a03;">
+          <h3 style="color:var(--yellow); font-size:.95rem;">4 — Compartilhado (owner + invited)</h3>
+          <pre style="font-size:.78rem; padding:10px 14px;"><span class="cm">-- Dono ou convidado explícito lê</span>
+<span class="kw">CREATE POLICY</span> <span class="str">"shared"</span> <span class="kw">ON</span> workspaces
+  <span class="kw">FOR SELECT USING</span> (
+    owner_id = <span class="fn">auth.uid</span>()
+    <span class="kw">OR</span> <span class="fn">auth.uid</span>() = <span class="kw">ANY</span>(invited_ids)
+  );</pre>
+        </div>
+      </div>
+
+      <div class="highlight cyan" style="margin-top:4px;">
+        <h3 style="color:var(--accent2); font-size:.9rem;">Verificar políticas ativas</h3>
+        <pre style="font-size:.8rem; padding:8px 14px; margin-top:8px;"><span class="kw">SELECT</span> tablename, policyname, cmd, qual, with_check
+<span class="kw">FROM</span> pg_policies
+<span class="kw">WHERE</span> schemaname = <span class="str">'public'</span>
+<span class="kw">ORDER BY</span> tablename, policyname;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6 — Edge Functions -->
+  <div class="slide" id="s6">
+    <div class="col" style="gap:16px; max-width:980px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Serverless</span>
+        <h2>Edge Functions — quando usar</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <div class="card-grid cols2" style="gap:10px;">
+            <div class="card col" style="gap:6px; border-color:#064e3b; padding:14px 16px;">
+              <h3 style="color:var(--green); font-size:.88rem;">Use Edge Function quando...</h3>
+              <ul class="clean" style="margin-top:4px;">
+                <li style="font-size:.82rem;">Webhook com verificação de assinatura (Stripe, GitHub)</li>
+                <li style="font-size:.82rem;">Operação que precisa de secret não exposto ao cliente</li>
+                <li style="font-size:.82rem;">CORS customizado para domínio específico</li>
+                <li style="font-size:.82rem;">Proxy de API externa (OpenAI, SendGrid)</li>
+                <li style="font-size:.82rem;">Trigger pós-insert com lógica complexa</li>
+              </ul>
+            </div>
+            <div class="card col" style="gap:6px; border-color:#450a0a; padding:14px 16px;">
+              <h3 style="color:var(--red); font-size:.88rem;">Prefira FastAPI/backend quando...</h3>
+              <ul class="clean" style="margin-top:4px;">
+                <li style="font-size:.82rem;">Lógica de negócio complexa com testes unitários</li>
+                <li style="font-size:.82rem;">Processamento CPU-intensivo ou streaming</li>
+                <li style="font-size:.82rem;">Dependências Python/pip (Deno não suporta)</li>
+                <li style="font-size:.82rem;">Grafo LangGraph — mantém no backend próprio</li>
+              </ul>
+            </div>
+          </div>
+
+          <pre><span class="cm">// supabase/functions/webhook-handler/index.ts</span>
+<span class="kw">import</span> { serve } <span class="kw">from</span> <span class="str">"https://deno.land/std/http/server.ts"</span>
+<span class="kw">import</span> { createClient } <span class="kw">from</span> <span class="str">'https://esm.sh/@supabase/supabase-js'</span>
+
+<span class="fn">serve</span>(<span class="kw">async</span> (req) => {
+  <span class="kw">const</span> secret = Deno.env.<span class="fn">get</span>(<span class="str">'WEBHOOK_SECRET'</span>)   <span class="cm">// env seguro</span>
+  <span class="kw">const</span> sig = req.headers.<span class="fn">get</span>(<span class="str">'x-signature'</span>)
+  <span class="kw">if</span> (!<span class="fn">verifySignature</span>(sig, secret)) {
+    <span class="kw">return new</span> <span class="fn">Response</span>(<span class="str">'Unauthorized'</span>, { status: <span class="str">401</span> })
+  }
+  <span class="cm">// processar payload...</span>
+  <span class="kw">return new</span> <span class="fn">Response</span>(<span class="str">'OK'</span>, { status: <span class="str">200</span> })
+})</pre>
+        </div>
+
+        <div class="col" style="min-width:240px; gap:12px;">
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.9rem;">Deploy</h3>
+            <pre style="font-size:.78rem; padding:8px 12px; margin-top:8px; background:transparent; border:none;"><span class="cm"># Setup local</span>
+supabase functions new my-fn
+
+<span class="cm"># Testar local</span>
+supabase functions serve my-fn
+
+<span class="cm"># Deploy</span>
+supabase functions deploy my-fn
+
+<span class="cm"># Env vars no deploy</span>
+supabase secrets set \
+  WEBHOOK_SECRET=xxx</pre>
+          </div>
+
+          <div class="card col" style="gap:8px; border-color:#312e81; padding:14px 16px;">
+            <h3 style="color:var(--accent3); font-size:.88rem;">Runtime: Deno</h3>
+            <p class="muted" style="font-size:.8rem;">TypeScript nativo, sem <code>node_modules</code>. Imports via URL ou <code>esm.sh</code>. Cold start ~300ms. Timeout padrão 150s.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7 — pgvector -->
+  <div class="slide" id="s7">
+    <div class="col" style="gap:16px; max-width:980px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-green">RAG</span>
+        <h2>pgvector — RAG sobre Supabase</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:10px;">
+          <pre><span class="cm">-- 1. Habilitar extensão</span>
+<span class="kw">CREATE EXTENSION IF NOT EXISTS</span> vector;
+
+<span class="cm">-- 2. Tabela com coluna de vetor (1536d = ada-002)</span>
+<span class="kw">CREATE TABLE</span> documents (
+  id        uuid <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+  content   text,
+  embedding vector(<span class="str">1536</span>),
+  metadata  jsonb,
+  user_id   uuid <span class="kw">REFERENCES</span> auth.users
+);
+
+<span class="cm">-- 3. Índice HNSW (busca aproximada, rápido)</span>
+<span class="kw">CREATE INDEX ON</span> documents
+  <span class="kw">USING</span> hnsw (embedding vector_cosine_ops);
+
+<span class="cm">-- 4. Função match_documents para RPC</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">match_documents</span>(
+  query_embedding vector(<span class="str">1536</span>),
+  match_threshold float,
+  match_count     int
+) <span class="kw">RETURNS TABLE</span>(id uuid, content text, similarity float)
+<span class="kw">AS</span> $$
+  <span class="kw">SELECT</span> id, content,
+    <span class="str">1</span> - (embedding &lt;=&gt; query_embedding) <span class="kw">AS</span> similarity
+  <span class="kw">FROM</span> documents
+  <span class="kw">WHERE</span> <span class="str">1</span> - (embedding &lt;=&gt; query_embedding) &gt; match_threshold
+  <span class="kw">ORDER BY</span> embedding &lt;=&gt; query_embedding
+  <span class="kw">LIMIT</span> match_count;
+$$ <span class="kw">LANGUAGE</span> sql;</pre>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <table>
+            <thead>
+              <tr><th>Critério</th><th style="color:var(--green);">pgvector</th><th>Qdrant</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Setup</td><td style="color:var(--green);">Zero infra extra</td><td style="color:var(--text-muted);">Container separado</td></tr>
+              <tr><td>RLS</td><td style="color:var(--green);">Nativo (Postgres)</td><td style="color:var(--text-muted);">Payload filter</td></tr>
+              <tr><td>Escala</td><td style="color:var(--text-muted);">&lt; 1M vetores</td><td style="color:var(--green);">100M+ vetores</td></tr>
+              <tr><td>Joins SQL</td><td style="color:var(--green);">Sim</td><td style="color:var(--red);">Não</td></tr>
+              <tr><td>HNSW</td><td style="color:var(--green);">Sim (v0.5+)</td><td style="color:var(--green);">Sim</td></tr>
+            </tbody>
+          </table>
+
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.9rem;">RLS em tabela de vetores</h3>
+            <p class="mt4" style="font-size:.82rem;">Aplique RLS em <code>documents</code> exatamente como em qualquer tabela. A busca vetorial respeita as políticas — usuário nunca vê chunks de outro tenant.</p>
+          </div>
+
+          <div class="pipeline-flow" style="width:100%; gap:6px; flex-wrap:nowrap;">
+            <span class="step" style="font-size:.75rem;">embed query</span>
+            <span class="arrow">→</span>
+            <span class="step" style="font-size:.75rem; border-color:#312e81; color:var(--accent3);">match_documents()</span>
+            <span class="arrow">→</span>
+            <span class="step" style="font-size:.75rem; border-color:#064e3b; color:var(--green);">chunks + RLS</span>
+            <span class="arrow">→</span>
+            <span class="step" style="font-size:.75rem;">LLM generate</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8 — Realtime -->
+  <div class="slide" id="s8">
+    <div class="col" style="gap:16px; max-width:980px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-cyan">Realtime</span>
+        <h2>Realtime — subscriptions e presença</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <pre><span class="cm">// Subscription com filtro de tabela + evento</span>
+<span class="kw">const</span> channel = supabase
+  .<span class="fn">channel</span>(<span class="str">'messages-room'</span>)
+  .<span class="fn">on</span>(<span class="str">'postgres_changes'</span>, {
+    event:  <span class="str">'INSERT'</span>,         <span class="cm">// INSERT | UPDATE | DELETE | *</span>
+    schema: <span class="str">'public'</span>,
+    table:  <span class="str">'messages'</span>,
+    filter: <span class="str">`room_id=eq.${roomId}`</span>
+  }, (payload) => {
+    <span class="fn">setMessages</span>(prev => [...prev, payload.new])
+  })
+  .<span class="fn">subscribe</span>()
+
+<span class="cm">// Presence — quem está online</span>
+<span class="kw">await</span> channel.<span class="fn">track</span>({ user_id: userId, status: <span class="str">'online'</span> })
+channel.<span class="fn">on</span>(<span class="str">'presence'</span>, { event: <span class="str">'sync'</span> }, () => {
+  <span class="kw">const</span> state = channel.<span class="fn">presenceState</span>()
+  <span class="fn">setOnlineUsers</span>(Object.<span class="fn">keys</span>(state))
+})
+
+<span class="cm">// Broadcast — mensagem sem persistência</span>
+channel.<span class="fn">on</span>(<span class="str">'broadcast'</span>, { event: <span class="str">'typing'</span> }, ({ payload }) => {
+  <span class="fn">showTypingIndicator</span>(payload.user_id)
+})</pre>
+
+          <pre><span class="cm">// Hook React reutilizável</span>
+<span class="kw">function</span> <span class="fn">useRealtimeSubscription</span>(table, filter, onInsert) {
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">const</span> ch = supabase.<span class="fn">channel</span>(<span class="str">`rt-${table}`</span>)
+      .<span class="fn">on</span>(<span class="str">'postgres_changes'</span>,
+        { event: <span class="str">'INSERT'</span>, schema: <span class="str">'public'</span>, table, filter },
+        ({ new: row }) => <span class="fn">onInsert</span>(row))
+      .<span class="fn">subscribe</span>()
+    <span class="kw">return</span> () => supabase.<span class="fn">removeChannel</span>(ch)
+  }, [table, filter])
+}</pre>
+        </div>
+
+        <div class="col" style="min-width:260px; gap:12px;">
+          <div class="card col" style="gap:8px; border-color:#0c4a6e; padding:14px 16px;">
+            <h3 style="color:var(--accent2); font-size:.9rem;">3 modos Realtime</h3>
+            <p class="muted" style="font-size:.8rem;"><strong style="color:var(--text);">Postgres Changes</strong> — escuta mudanças em tabelas. Requer RLS habilitado na tabela.</p>
+            <p class="muted" style="font-size:.8rem;"><strong style="color:var(--text);">Presence</strong> — rastreia estado de usuarios conectados. Key/value efêmero.</p>
+            <p class="muted" style="font-size:.8rem;"><strong style="color:var(--text);">Broadcast</strong> — mensagens sem persistência. Latência baixa, sem gravar no banco.</p>
+          </div>
+
+          <div class="highlight red">
+            <h3 style="color:var(--red); font-size:.9rem;">Limitacoes</h3>
+            <ul class="clean" style="margin-top:6px;">
+              <li style="font-size:.82rem; color:var(--red);">Nao usar para &gt; 1000 clientes simultâneos no plano free</li>
+              <li style="font-size:.82rem; color:var(--red);">Postgres Changes exige tabela com RLS ativo</li>
+              <li style="font-size:.82rem; color:var(--red);">Filter de subscription não substitui RLS — complemente</li>
+              <li style="font-size:.82rem; color:var(--red);">Payload do evento nao inclui joins — busque dados extras separado</li>
+            </ul>
+          </div>
+
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.9rem;">Limpar subscription</h3>
+            <p class="mt4" style="font-size:.82rem;">Sempre retorne <code>supabase.removeChannel(ch)</code> no cleanup do <code>useEffect</code> para evitar leak de conexão WebSocket.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9 — Invariantes -->
+  <div class="slide" id="s9">
+    <div class="col" style="gap:16px; max-width:960px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-red">Invariantes</span>
+        <h2>Os 5 invariantes Supabase</h2>
+      </div>
+
+      <div class="w100">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Invariante</th>
+              <th>O que garante</th>
+              <th style="color:var(--red);">O que proibe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-red" style="font-size:.75rem; padding:3px 8px;">SB-01</span></td>
+              <td>Client correto por contexto</td>
+              <td style="color:var(--text-muted); font-size:.85rem;"><code>anon</code> key no frontend; <code>service_role</code> key só em servidor/Edge Function com variável de ambiente.</td>
+              <td style="color:var(--red); font-size:.82rem;">Expor <code>service_role</code> em código cliente, bundle JS, ou repositório.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-cyan" style="font-size:.75rem; padding:3px 8px;">SB-02</span></td>
+              <td>RLS em toda tabela</td>
+              <td style="color:var(--text-muted); font-size:.85rem;">Toda tabela no schema <code>public</code> com <code>ENABLE ROW LEVEL SECURITY</code> + ao menos uma policy.</td>
+              <td style="color:var(--red); font-size:.82rem;">Tabela pública sem RLS; usar <code>service_role</code> para burlar políticas como atalho.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green" style="font-size:.75rem; padding:3px 8px;">SB-03</span></td>
+              <td>JWT verificado server-side</td>
+              <td style="color:var(--text-muted); font-size:.85rem;">Em rotas de API próprias (FastAPI, Edge Function), verificar JWT com a secret antes de qualquer operação.</td>
+              <td style="color:var(--red); font-size:.82rem;">Confiar em <code>user_id</code> do body da request; verificar JWT só no cliente.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-yellow" style="font-size:.75rem; padding:3px 8px;">SB-04</span></td>
+              <td>Secrets em env, nao em codigo</td>
+              <td style="color:var(--text-muted); font-size:.85rem;"><code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>JWT_SECRET</code> apenas em variáveis de ambiente. Nunca em arquivo comitado.</td>
+              <td style="color:var(--red); font-size:.82rem;">Hardcode de keys em <code>.ts</code>, <code>.py</code> ou qualquer arquivo versionado.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-red" style="font-size:.75rem; padding:3px 8px;">SB-05</span></td>
+              <td>Pre-filter tenant antes de semântico</td>
+              <td style="color:var(--text-muted); font-size:.85rem;">Em RAG com pgvector, aplicar filtro de <code>org_id</code>/<code>user_id</code> antes da busca por embedding.</td>
+              <td style="color:var(--red); font-size:.82rem;">Busca vetorial global seguida de filtro por tenant — vaza contexto entre tenants via similaridade.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight cyan" style="margin-top:4px;">
+        <h3 style="color:var(--accent2); font-size:.9rem;">Checklist de auditoria rapida</h3>
+        <p class="mt4" style="font-size:.85rem;"><code>SELECT tablename FROM pg_tables WHERE schemaname='public'</code> — lista tabelas. Para cada uma: <code>SELECT relrowsecurity FROM pg_class WHERE relname='tablename'</code> deve retornar <code>true</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10 — O harness para Supabase -->
+  <div class="slide" id="s10">
+    <div class="col" style="gap:16px; max-width:980px; width:100%;">
+      <div class="col" style="gap:6px;">
+        <span class="chip chip-purple">Agent Harness</span>
+        <h2>O harness para projetos Supabase</h2>
+      </div>
+
+      <div class="row" style="gap:20px; align-items:flex-start;">
+        <div class="col flex1" style="gap:12px;">
+          <div class="card col" style="gap:10px; border-color:#312e81;">
+            <h3 style="color:var(--accent3);">KB e agentes gerados</h3>
+            <ul class="clean">
+              <li style="font-size:.85rem;"><code>kb/supabase/index.md</code> — índice com glossário e mapa de conceitos</li>
+              <li style="font-size:.85rem;"><code>kb/supabase/concepts/auth.md</code> — JWT, magic link, OAuth, server-side session</li>
+              <li style="font-size:.85rem;"><code>kb/supabase/concepts/rls.md</code> — políticas, <code>auth.uid()</code>, deny-by-default</li>
+              <li style="font-size:.85rem;"><code>kb/supabase/concepts/pgvector.md</code> — HNSW, <code>match_documents</code>, RAG flow</li>
+              <li style="font-size:.85rem;"><code>kb/supabase/concepts/realtime.md</code> — Postgres Changes, Presence, Broadcast</li>
+              <li style="font-size:.85rem;"><code>kb/supabase/patterns/rls-patterns.md</code> — 4 padrões (pessoal, tenant, público, compartilhado)</li>
+              <li style="font-size:.85rem;"><code>kb/supabase/patterns/rag-pgvector.md</code> — pipeline embed → insert → match com RLS</li>
+            </ul>
+          </div>
+
+          <div class="card col" style="gap:10px; border-color:#0c4a6e;">
+            <h3 style="color:var(--accent2);">Agente disponivel</h3>
+            <div style="display:flex; gap:10px; align-items:center; margin-top:4px;">
+              <span class="badge badge-cyan" style="font-size:.75rem; min-width:160px;">supabase-specialist</span>
+              <p style="font-size:.82rem;">Executa SQL, aplica migrations, deploy Edge Functions via MCP Supabase. Conhece RLS, pgvector, Auth e Realtime.</p>
+            </div>
+            <p class="muted" style="font-size:.8rem; margin-top:4px;">Definido em <code>.claude/agents/</code> com acesso ao MCP <code>mcp__claude_ai_Supabase__*</code> para operar instância real.</p>
+          </div>
+        </div>
+
+        <div class="col" style="min-width:280px; gap:12px;">
+          <div class="highlight green">
+            <h3 style="color:var(--green); font-size:.95rem;">Fluxo recomendado de setup</h3>
+            <div class="pipeline-flow" style="flex-direction:column; align-items:flex-start; gap:6px; background:transparent; border:none; padding:8px 0 0 0;">
+              <span class="step" style="border-color:#064e3b; color:var(--green);">/brainstorm — modelar schema e auth</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#0c4a6e; color:var(--accent2);">/grill-with-docs — glossário do domínio</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#312e81; color:var(--accent3);">supabase-specialist — migrations + RLS</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#451a03; color:var(--yellow);">validar invariantes SB-01 a SB-05</span>
+              <span class="arrow" style="padding-left:8px;">↓</span>
+              <span class="step" style="border-color:#064e3b; color:var(--green);">/build — feature sobre a infra pronta</span>
+            </div>
+          </div>
+
+          <div class="card col" style="gap:8px; border-color:#064e3b; padding:14px 16px;">
+            <h3 style="color:var(--green); font-size:.88rem;">Rule: nenhuma</h3>
+            <p class="muted" style="font-size:.8rem;">Supabase é infra, não lógica de app. Não existe <code>rules/supabase.md</code> path-scoped. Os invariantes SB-01…SB-05 vivem neste guia e no KB. A lógica de negócio fica em <code>backend/</code> com suas próprias rules.</p>
+          </div>
+
+          <div class="highlight cyan">
+            <h3 style="color:var(--accent2); font-size:.9rem;">/grill-with-docs</h3>
+            <p class="mt4" style="font-size:.82rem;">Use para extrair glossário do domínio antes de modelar o schema. Termos do negócio viram nomes de tabela — não deixe os nomes do Supabase vazar para o domínio.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<nav class="nav">
+  <button id="prev" onclick="go(-1)" disabled>← Anterior</button>
+  <span class="slide-counter" id="counter">1 / 10</span>
+  <button id="next" onclick="go(1)">Proximo →</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  let cur = 0;
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => go(i - cur);
+    dotsEl.appendChild(d);
+  });
+  function go(delta) {
+    slides[cur].classList.remove('active');
+    dotsEl.children[cur].classList.remove('active');
+    cur = Math.max(0, Math.min(slides.length - 1, cur + delta));
+    slides[cur].classList.add('active');
+    dotsEl.children[cur].classList.add('active');
+    document.getElementById('counter').textContent = `${cur + 1} / ${slides.length}`;
+    document.getElementById('prev').disabled = cur === 0;
+    document.getElementById('next').disabled = cur === slides.length - 1;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  });
+</script>
+
+</body>
+</html>

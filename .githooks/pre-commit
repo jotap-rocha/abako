@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# pre-commit — heurística leve de segredos (BLOQUEANTE).
+# Não loga o valor do segredo; só arquivo + tipo detectado + o que fazer.
+#
+# Performance: 1 passada de awk extrai as linhas adicionadas do diff e cada padrão
+# roda 1 grep sobre esse arquivo (O(padrões), não O(linhas × padrões)).
+set -euo pipefail
+
+# Patterns sintéticos / óbvios (MVP). Caminho futuro: gitleaks — ver README.
+# Use sempre `grep -E --` para padrões que começam com '-' (PEM).
+PATTERNS=(
+  'AKIA[0-9A-Z]{16}'
+  '-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY-----'
+  'password[[:space:]]*=[[:space:]]*[^[:space:]]+'
+  'api[_-]?key[[:space:]]*=[[:space:]]*[^[:space:]]+'
+  'secret[[:space:]]*=[[:space:]]*[^[:space:]]+'
+  'ghp_[A-Za-z0-9]{20,}'
+  'xox[baprs]-[A-Za-z0-9-]{10,}'
+)
+
+# Labels SEM substring "chave=valor" — senão o próprio arquivo do hook é bloqueado.
+LABELS=(
+  'AWS Access Key ID (AKIA prefix)'
+  'Private key PEM block'
+  'password assignment'
+  'api key assignment'
+  'secret assignment'
+  'GitHub PAT (ghp_ prefix)'
+  'Slack token (xox prefix)'
+)
+
+# 1 = padrão de atribuição (aceita allowlist de leitura de env/config); 0 = literal forte.
+SOFT=(0 0 1 1 1 0 0)
+
+# Atribuição que apenas LÊ de env/config/cofre não é segredo hardcoded.
+ALLOW_READ='(getenv|environ|env\.get|process\.env|Deno\.env|load_env_value|config\.|settings\.|grep -r)'
+
+# Arquivos gerados/minificados e linhas gigantes (base64, bundles) geram falso positivo.
+SKIP_FILES='(\.min\.(js|css)|-bundle\.js)$'
+MAX_LINE=2000
+
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  exit 0
+fi
+
+ADDED=$(mktemp)
+trap 'rm -f "$ADDED"' EXIT
+
+# Saída: "<arquivo>\t<linha adicionada>" (sem o '+' inicial).
+git diff --cached -U0 --no-color --diff-filter=AM 2>/dev/null |
+  SKIP="$SKIP_FILES" MAX="$MAX_LINE" awk '
+    BEGIN { skip = ENVIRON["SKIP"]; max = ENVIRON["MAX"] + 0 }
+    /^diff --git / { f = $4; sub(/^b\//, "", f); next }
+    /^\+\+\+/ { next }
+    /^\+/ {
+      if (f ~ skip) next
+      line = substr($0, 2)
+      if (length(line) > max) next
+      print f "\t" line
+    }' >"$ADDED" || true
+
+if [[ ! -s "$ADDED" ]]; then
+  exit 0
+fi
+
+found=0
+file_hint=""
+label_hint=""
+
+for i in "${!PATTERNS[@]}"; do
+  if [[ "${SOFT[$i]}" -eq 1 ]]; then
+    hit=$(grep -E -- "${PATTERNS[$i]}" "$ADDED" | grep -vE -- "$ALLOW_READ" | head -n 1 || true)
+  else
+    hit=$(grep -E -m 1 -- "${PATTERNS[$i]}" "$ADDED" || true)
+  fi
+  if [[ -n "$hit" ]]; then
+    found=1
+    file_hint="${hit%%$'\t'*}"
+    label_hint="${LABELS[$i]}"
+    break
+  fi
+done
+
+if [[ "$found" -eq 1 ]]; then
+  cat >&2 <<EOF
+[git-hygiene] pre-commit BLOQUEOU o commit: possível segredo no staged diff.
+
+  Arquivo: ${file_hint}
+  Tipo:    ${label_hint}
+
+O que fazer:
+  1. Remova o segredo do arquivo (ou tire do stage: git restore --staged <arquivo>).
+  2. Use variável de ambiente / secret manager — nunca hardcode.
+  3. Se o valor já vazou no histórico, rotacione a credencial imediatamente.
+
+Por quê: custo de vazamento é irreversível (rotação). Heurística MVP; gitleaks
+pode ser plugado depois (ver .githooks/README.md).
+
+EOF
+  exit 1
+fi
+
+exit 0

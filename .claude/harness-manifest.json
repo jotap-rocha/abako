@@ -1,0 +1,463 @@
+{
+  "canonical_path": "D:\\projetos\\agent-harness",
+  "installed_at": "2026-10-16",
+  "mode": "ATUALIZACAO",
+  "artefacts": {
+    "CLAUDE.md": {
+      "source": "generated",
+      "customized": true
+    },
+    "AGENTS.md": {
+      "source": "generated",
+      "customized": true
+    },
+    "CONTEXT.md": {
+      "source": "generated",
+      "customized": true
+    },
+    "README.md": {
+      "source": "generated",
+      "customized": false
+    },
+    ".claude/settings.json": {
+      "source": "generated",
+      "customized": true
+    },
+    "HANDOFF.md": {
+      "source": "generated",
+      "customized": true
+    },
+    "DEV-LOOP.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".env.example": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".gitignore": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".mcp.json": {
+      "source": "canonical",
+      "customized": false
+    },
+    "requirements.txt": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/novo-projeto.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/scorecard.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/validar.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/sync-context.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/evidencias.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/design": {
+      "source": "generated",
+      "customized": true
+    },
+    ".claude/projetos": {
+      "source": "generated",
+      "customized": true
+    },
+    ".claude/guias": {
+      "source": "generated",
+      "customized": true
+    },
+    ".claude/sdd": {
+      "source": "generated",
+      "customized": true
+    },
+    "config": {
+      "source": "canonical",
+      "customized": false
+    },
+    "docs": {
+      "source": "canonical",
+      "customized": false
+    },
+    "docs/manuais/harness-guide.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    "docs/manuais/como-usar.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    "docs/manuais/passo-a-passo.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    "metrics": {
+      "source": "canonical",
+      "customized": false
+    },
+    "agent-policies.yaml": {
+      "source": "canonical",
+      "customized": false
+    },
+    "evidence-gate.yaml": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".cursor/hooks.json": {
+      "source": "generated",
+      "customized": true
+    },
+    ".claude/hooks": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".cursor/hooks": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".harness/policies": {
+      "source": "canonical",
+      "customized": true,
+      "seed": true
+    },
+    ".harness/evidence-gate": {
+      "source": "canonical",
+      "customized": true,
+      "seed": true
+    },
+    "fluxo-events.yaml": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".harness/fluxo-events": {
+      "source": "canonical",
+      "customized": true,
+      "seed": true
+    },
+    ".claude/commands/fluxo-live.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/harness-architect": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/grill-me": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/grill-with-docs": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/to-prd": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/to-brd": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/to-tasks": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/to-issues": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/new-adr": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/sync-context": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/make-readme": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/handoff": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/write-a-skill": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/documentation-writer": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/find-skills": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/guia-architect": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/dev/prompt-crafter.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/dev/dev-loop-executor.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/harness-brainstorm.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/harness-define.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/harness-design.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/harness-build.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/harness-iterate.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/harness-ship.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/guia-brainstorm.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/guia-escopo.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/guia-roteiro.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/guia-etapas.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/guia-publish.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/workflow/guia-iterate.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/design-instrucional": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/dev.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/novo-guia.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/dev": {
+      "source": "canonical",
+      "customized": false
+    },
+    "git-hygiene.yaml": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/rules/git-hygiene.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/nova-branch.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/git-ajuda.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    "docs/cheatsheets/git-hygiene-cheatsheet.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    "docs/cheatsheets/scm-pr-hibrido.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".githooks": {
+      "source": "canonical",
+      "customized": false
+    },
+    "scripts/bootstrap-githooks.sh": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".azuredevops/pull_request_template.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/gen-tests": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/rules/estilo-codigo.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/rules/testes.md": {
+      "source": "canonical",
+      "customized": true
+    },
+    ".claude/rules/seguranca.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/rules/definicao-de-pronto.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/dev/codebase-explorer.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/dev/revisor-codigo.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/agents/dev/meeting-analyst.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    "data-engineering.yaml": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/pipeline": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/databricks": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/airflow": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/spark": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/lakehouse": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/data-quality": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/dbt": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/data-modeling": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/sql-patterns": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/streaming": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/cloud-platforms": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/rules/pipeline.md": {
+      "source": "canonical",
+      "customized": true
+    },
+    ".claude/agents/data-engineering": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/commands/data-engineering": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/de-conformidade": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".harness/data-check": {
+      "source": "canonical",
+      "customized": true,
+      "seed": true
+    },
+    "scripts/bootstrap-githooks.ps1": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/fastapi": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/rules/backend.md": {
+      "source": "canonical",
+      "customized": true
+    },
+    ".claude/agents/architect/sql-architect.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/rules/frontend.md": {
+      "source": "canonical",
+      "customized": true
+    },
+    ".claude/kb/testing/patterns/vitest-patterns.md": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/observabilidade": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/skills/cloud-secrets": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/oci-vault": {
+      "source": "canonical",
+      "customized": false
+    },
+    ".claude/kb/azure-keyvault": {
+      "source": "canonical",
+      "customized": false
+    }
+  }
+}

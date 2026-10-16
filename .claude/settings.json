@@ -1,0 +1,47 @@
+{
+  "env": {},
+  "permissions": {
+    "allow": [
+      "Bash(python3 .claude/skills/sync-context/scripts/*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(mkfs:*)",
+      "Bash(docker compose down -v:*)",
+      "Bash(docker compose down --volumes:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker volume prune:*)",
+      "Bash(dropdb:*)",
+      "Bash(mysqladmin drop:*)",
+      "Bash(*DROP TABLE*)",
+      "Bash(terraform destroy:*)",
+      "Bash(terraform apply -destroy:*)",
+      "Bash(kubectl delete --all:*)",
+      "Bash(kubectl delete namespace:*)",
+      "Bash(kubectl drain:*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=.claude/skills/sync-context/scripts/check_context_drift.py; [ -f \"$S\" ] || exit 0; STAMP=.claude/.context-drift-stamp; [ -n \"$(find $STAMP -mmin -240 2>/dev/null)\" ] && exit 0; touch $STAMP; python3 $S --warn; exit 0"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/agent_policies_pretooluse.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
