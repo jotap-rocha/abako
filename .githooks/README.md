@@ -29,13 +29,21 @@ Hooks são locais e contornáveis (`--no-verify`, clone sem bootstrap). Não sub
 O `pre-commit` **não imprime** o valor do segredo — só arquivo + tipo + o que fazer.
 Se vazou no histórico: **rotacione** a credencial.
 
-## Caminho para gitleaks
+## gitleaks (ADR 018)
 
-Esta heurística é MVP. Para plugar [gitleaks](https://github.com/gitleaks/gitleaks)
-depois:
+O `pre-commit` usa o [gitleaks](https://github.com/gitleaks/gitleaks) quando ele está
+instalado (`winget install Gitleaks.Gitleaks`): roda `gitleaks git --pre-commit --staged`
+com `.gitleaks.toml` (regras padrão + exceções estreitas). Se não achar o binário, avisa e
+cai na heurística leve abaixo. Em Windows o hook também procura o binário na pasta do
+winget, pois shells já abertos não enxergam o PATH novo.
 
-1. Adicione `gitleaks` como dep opcional / CI.
-2. Troque o corpo de `pre-commit` por `gitleaks protect --staged` (ou equivalente).
-3. Mantenha mensagens didáticas (o que fazer + por quê).
+Varredura completa (histórico e árvore), antes de mudar visibilidade ou publicar:
+
+```bash
+gitleaks git --redact --config .gitleaks.toml
+gitleaks dir . --redact --config .gitleaks.toml
+```
+
+Exceções vão em `.gitleaks.toml` e só via PR, sempre estreitas (caminho ou valor exato).
 
 Não implementado neste MVP de propósito (custo de adoção / binário).

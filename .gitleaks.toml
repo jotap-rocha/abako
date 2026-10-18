@@ -1,0 +1,17 @@
+# Configuração do gitleaks (ADR 018). Usa as regras padrão e acrescenta exceções estreitas.
+title = "abako"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Skills de terceiros (exemplos de documentação) e placeholders oficiais"
+paths = [
+  '''^\.claude/skills/''',
+  '''^\.cursor/skills/''',
+  '''^\.(claude|cursor)/kb/oci-vault/''',  # docs do harness com placeholders de OCID
+  '''^skills-lock\.json$''',
+]
+regexes = [
+  '''AKIAIOSFODNN7EXAMPLE''',
+]

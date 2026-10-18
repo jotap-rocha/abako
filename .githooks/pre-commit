@@ -46,6 +46,45 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exit 0
 fi
 
+# gitleaks (ADR 018): se estiver instalado, é o scanner oficial e a heurística abaixo é dispensada.
+find_gitleaks() {
+  if command -v gitleaks >/dev/null 2>&1; then
+    command -v gitleaks
+    return 0
+  fi
+  # winget não atualiza o PATH de shells já abertos (Git Bash no Windows).
+  local c
+  for c in "${LOCALAPPDATA:-}"/Microsoft/WinGet/Packages/Gitleaks.Gitleaks_*/gitleaks.exe \
+           "${LOCALAPPDATA:-}"/Microsoft/WinGet/Links/gitleaks.exe; do
+    if [[ -x "$c" ]]; then
+      printf '%s\n' "$c"
+      return 0
+    fi
+  done
+  return 1
+}
+
+if GL=$(find_gitleaks); then
+  CFG=()
+  [[ -f .gitleaks.toml ]] && CFG=(--config .gitleaks.toml)
+  if "$GL" git --pre-commit --staged --redact --no-banner "${CFG[@]}" >&2; then
+    exit 0
+  fi
+  cat >&2 <<EOF
+
+[git-hygiene] pre-commit BLOQUEOU o commit: o gitleaks achou possível segredo no staged diff.
+
+O que fazer:
+  1. Remova o segredo do arquivo (ou tire do stage: git restore --staged <arquivo>).
+  2. Use variável de ambiente / secret manager — nunca hardcode.
+  3. Se o valor já vazou no histórico, rotacione a credencial imediatamente.
+  4. Falso positivo comprovado? Acrescente exceção estreita em .gitleaks.toml (via PR).
+
+EOF
+  exit 1
+fi
+echo "[git-hygiene] AVISO: gitleaks não encontrado; usando só a heurística leve." >&2
+
 ADDED=$(mktemp)
 trap 'rm -f "$ADDED"' EXIT
 
