@@ -44,5 +44,5 @@ Sem skill pronta no skills.sh para: ledger/dinheiro com precisão decimal, migra
 
 - Definir o comando `check` e o script de rastreabilidade (SPEC-001).
 - Fixar versões das dependências (SPEC-001). Porta do Postgres do projeto: **5433**.
-- Instalar o gitleaks (binário) e ligá-lo ao pre-commit (usuário).
+- gitleaks 8.30.1 instalado e ligado ao pre-commit (`.githooks/pre-commit`, `.gitleaks.toml`). Falta rodá-lo também no CI (SPEC de CI, ADR 022).
 - Conferir versões/flags das ferramentas citadas nas KBs via context7 ao implementar.
