@@ -1,0 +1,98 @@
+name: CI
+
+# CI mínimo (ADR 022): sem segredos, permissões mínimas, ações fixadas por SHA.
+# O `check` completo (ruff, mypy, pytest, Vitest, Playwright) entra com a SPEC-001.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout (histórico completo)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Instalar gitleaks 8.30.1 (checksum fixo)
+        run: |
+          curl -sSfL -o gitleaks.tgz \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tgz" | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+
+      - name: Varredura do histórico e da árvore
+        run: |
+          ./gitleaks git --redact --no-banner --config .gitleaks.toml
+          ./gitleaks dir . --redact --no-banner --config .gitleaks.toml
+
+  workflows:
+    name: workflows (actionlint + zizmor)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Instalar actionlint 1.7.12 (checksum fixo)
+        run: |
+          curl -sSfL -o actionlint.tgz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint.tgz" | sha256sum -c -
+          tar -xzf actionlint.tgz actionlint
+
+      - name: actionlint
+        run: ./actionlint -color
+
+      - name: Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: zizmor
+        run: |
+          python -m pip install --disable-pip-version-check zizmor==1.31.1
+          zizmor --offline --format plain .github
+
+  contratos:
+    name: contratos
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Dependências
+        run: python -m pip install --disable-pip-version-check pyyaml==6.0.3
+
+      - name: Invariantes, fixtures e critérios
+        run: python scripts/validar_contratos.py
+
+      - name: Catálogo de guardrails (agent-policies)
+        run: python -m config.agent_policies check

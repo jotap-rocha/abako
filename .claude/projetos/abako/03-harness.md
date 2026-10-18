@@ -40,9 +40,13 @@ Sem skill pronta no skills.sh para: ledger/dinheiro com precisão decimal, migra
 
 `sql-architect`, `schema-designer`, `sql-optimizer`, `revisor-codigo`, KBs `sql-patterns`, `fastapi`, `testing`, `data-modeling`. O restante da frota (Spark, Databricks, streaming, Airflow etc.), `data-engineering.yaml` e o gate de data-check ficam **em standby**.
 
+## CI mínimo (ADR 022)
+
+`.github/workflows/ci.yml`: `gitleaks` (histórico + árvore, binário com checksum fixo), `workflows` (actionlint + zizmor) e `contratos` (`scripts/validar_contratos.py` + `agent_policies check`). Ações fixadas por SHA, permissões mínimas, sem segredos; Dependabot semanal para ações. O `check` completo (ruff, mypy, pytest, Vitest, Playwright, Postgres efêmero) entra com a SPEC-001. Branch protection exige os 3 checks depois do primeiro run.
+
 ## Pendente
 
 - Definir o comando `check` e o script de rastreabilidade (SPEC-001).
 - Fixar versões das dependências (SPEC-001). Porta do Postgres do projeto: **5433**.
-- gitleaks 8.30.1 instalado e ligado ao pre-commit (`.githooks/pre-commit`, `.gitleaks.toml`). Falta rodá-lo também no CI (SPEC de CI, ADR 022).
+- gitleaks 8.30.1 instalado e ligado ao pre-commit (`.githooks/pre-commit`, `.gitleaks.toml`). Também roda no CI.
 - Conferir versões/flags das ferramentas citadas nas KBs via context7 ao implementar.
