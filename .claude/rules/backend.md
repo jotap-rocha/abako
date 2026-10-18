@@ -1,5 +1,5 @@
 ---
-# Convenções do backend FastAPI e do SQL do sisfin
+# Convenções do backend FastAPI e do SQL do abako
 paths:
   - "backend/**"
   - "db/**"

@@ -1,5 +1,5 @@
 ---
-description: Regras de domínio financeiro do sisfin
+description: Regras de domínio financeiro do abako
 globs: ["backend/**", "db/**", "pipeline/**", "frontend/**", "tests/**", "fixtures/**"]
 alwaysApply: false
 ---

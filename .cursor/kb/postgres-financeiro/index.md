@@ -7,7 +7,7 @@ confidence: null
 
 # KB: Postgres financeiro
 
-Complementa `.claude/kb/sql-patterns/` (genérico) com o que é específico do sisfin. Decisões nos ADRs 006, 008, 011, 012, 013 e 019.
+Complementa `.claude/kb/sql-patterns/` (genérico) com o que é específico do abako. Decisões nos ADRs 006, 008, 011, 012, 013 e 019.
 
 ## Tópicos cobertos
 
@@ -25,6 +25,13 @@ Complementa `.claude/kb/sql-patterns/` (genérico) com o que é específico do s
 - Diagnóstico de query lenta → `.claude/kb/sql-patterns/`.
 - Design de SELECT/RLS/N+1 → agente `sql-architect`.
 - Modelagem de histórico (SCD) → agente `schema-designer`.
+
+## Tópicos detalhados
+
+| Arquivo | Tópico |
+|---|---|
+| [ledger-dinheiro.md](ledger-dinheiro.md) | Ledger e dinheiro: parcelas, saldo derivado, versões, estorno |
+| [migracoes.md](migracoes.md) | Migrações Alembic em SQL puro (ADR 025) |
 
 ## Quick Reference
 

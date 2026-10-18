@@ -1,11 +1,11 @@
-> **Este repositório é o projeto `sisfin`, não o Agent Harness Canônico.**
+> **Este repositório é o projeto `abako`, não o Agent Harness Canônico.**
 > Não copie o guia do repositório canônico do harness. Refine com `/grill-me`, `/grill-with-docs` ou `harness-architect`.
 
-# sisfin
+# abako
 
 Sistema financeiro pessoal, local-first. Responde: quanto tenho em cada conta, quanto estou gastando de verdade e se o orçamento do mês está apertado ou folgado.
 
-> Projeto em fase de especificação. O nome `sisfin` é provisório.
+> Projeto em fase de especificação.
 
 ## Visão geral
 
@@ -25,4 +25,4 @@ React + TypeScript (PWA) → FastAPI → PostgreSQL (`prd`/`tst`) → pipeline P
 - `tests/contracts/` e `fixtures/` — invariantes, critérios e fixtures numéricas
 - `CONTEXT.md` — glossário do domínio e da web
 - `docs/revisao/rubrica-adversarial.md` — rubrica da revisão adversarial
-- `.claude/projetos/sisfin/` — ideia, grill, PRD e plano do harness
+- `.claude/projetos/abako/` — ideia, grill, PRD e plano do harness

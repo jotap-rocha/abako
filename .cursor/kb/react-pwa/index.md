@@ -22,6 +22,14 @@ Base de conhecimento do `fin-frontend` (`.claude/agents/fin/fin-frontend.md`). E
 - Regra financeira → backend/SQL (`.claude/kb/postgres-financeiro/`), nunca aqui.
 - Segurança de sessão, CORS e CSRF → `.claude/kb/seguranca-local/` e ADR 020.
 
+## Tópicos detalhados
+
+| Arquivo | Tópico |
+|---|---|
+| [openapi-cliente.md](openapi-cliente.md) | Cliente TS gerado do OpenAPI |
+| [pwa.md](pwa.md) | PWA: manifest, service worker, sem escrita offline |
+| [formularios.md](formularios.md) | Formulário dinâmico por tipo, RHF + Zod, dinheiro como texto |
+
 ## Quick Reference
 
 Ver [quick-reference.md](quick-reference.md).

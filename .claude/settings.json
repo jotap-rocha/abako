@@ -18,7 +18,71 @@
       "Bash(terraform apply -destroy:*)",
       "Bash(kubectl delete --all:*)",
       "Bash(kubectl delete namespace:*)",
-      "Bash(kubectl drain:*)"
+      "Bash(kubectl drain:*)",
+      "Bash(cat .env:*)",
+      "Bash(tee .env:*)",
+      "Bash(cat backups:*)",
+      "Bash(Remove-Item -Recurse -Force:*)",
+      "Bash(curl https:*)",
+      "Bash(gh repo edit --visibility:*)",
+      "Bash(psql -p 5432:*)",
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.prd)",
+      "Read(./.env.prod)",
+      "Read(./.env.tst)",
+      "Read(./.env.dev)",
+      "Read(./data/**)",
+      "Read(./backups/**)",
+      "Read(**/*.duckdb)",
+      "Read(**/*.duckdb.wal)",
+      "Read(**/*.dump)",
+      "Read(**/*.age)",
+      "Read(**/.pgpass)",
+      "Edit(./.env)",
+      "Edit(./.env.local)",
+      "Edit(./.env.prd)",
+      "Edit(./.env.prod)",
+      "Edit(./.env.tst)",
+      "Edit(./.env.dev)",
+      "Edit(./data/**)",
+      "Edit(./backups/**)",
+      "Edit(**/*.duckdb)",
+      "Edit(**/*.duckdb.wal)",
+      "Edit(**/*.dump)",
+      "Edit(**/*.age)",
+      "Edit(**/.pgpass)",
+      "Write(./.env)",
+      "Write(./.env.local)",
+      "Write(./.env.prd)",
+      "Write(./.env.prod)",
+      "Write(./.env.tst)",
+      "Write(./.env.dev)",
+      "Write(./data/**)",
+      "Write(./backups/**)",
+      "Write(**/*.duckdb)",
+      "Write(**/*.duckdb.wal)",
+      "Write(**/*.dump)",
+      "Write(**/*.age)",
+      "Write(**/.pgpass)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(pip install:*)",
+      "Bash(pip3 install:*)",
+      "Bash(uv add:*)",
+      "Bash(npm install:*)",
+      "Bash(npm i:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npx skills add:*)",
+      "Bash(rm:*)",
+      "Bash(psql:*)",
+      "Bash(scripts/deploy-local:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)"
     ]
   },
   "hooks": {
@@ -35,6 +99,15 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/agent_policies_pretooluse.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "PowerShell",
         "hooks": [
           {
             "type": "command",

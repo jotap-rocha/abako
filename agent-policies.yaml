@@ -28,6 +28,7 @@ core_families:
   - databricks-cli
   - terraform
   - k8s
+  - abako
 
 families:
   shell:
@@ -171,6 +172,92 @@ families:
         match: 'kubectl\s+drain\b'
         tool_deny: "Bash(kubectl drain:*)"
         message: "kubectl drain bloqueado"
+
+  abako:
+    description: Guardrails do abako (ADR 019) - segredos, dados, rede, repo, prd
+    core: true
+    enabled_by_default: true
+    patterns:
+      env-read-shell:
+        severity: deny
+        match: '(?i)\b(cat|type|more|less|head|tail|grep|rg|sed|awk|source|get-content|gc|select-string|sls)\b[^|;&]*\.env(?!\.example)\b'
+        tool_deny: "Bash(cat .env:*)"
+        message: "Leitura de .env via shell bloqueada (ADR 019 A)"
+      env-write-shell:
+        severity: deny
+        match: '(?i)(>>?|\btee\b|set-content|add-content|out-file|\bsc\b)[^|;&]*\.env(?!\.example)\b'
+        tool_deny: "Bash(tee .env:*)"
+        message: "Escrita em .env via shell bloqueada (ADR 019 A)"
+      data-read-shell:
+        severity: deny
+        match: '(?i)\b(cat|type|more|less|head|tail|cp|copy|mv|move|get-content|gc|xcopy|robocopy|duckdb)\b[^|;&]*(\bbackups?[\\/]|\bdata[\\/]|\.duckdb\b|\.dump\b|\.age\b|\.pgpass)'
+        tool_deny: "Bash(cat backups:*)"
+        message: "Acesso a dados, backups, dumps ou .duckdb via shell bloqueado (ADR 019 A)"
+      remove-item-recurse-force:
+        severity: deny
+        match: '(?i)\b(remove-item|ri|rd|rmdir|del)\b(?=[^|;&]*(-recurse|\s/s\b))(?=[^|;&]*(-force|\s/q\b))'
+        tool_deny: "Bash(Remove-Item -Recurse -Force:*)"
+        message: "Remocao recursiva forcada (PowerShell/cmd) bloqueada"
+      external-upload:
+        severity: deny
+        match: '(?i)\b(curl|wget|invoke-webrequest|iwr|invoke-restmethod|irm|scp|sftp|ftp|nc|ncat)\b(?![^|;&]*(localhost|127\.0\.0\.1|\[::1\]))'
+        tool_deny: "Bash(curl https:*)"
+        message: "Envio/acesso a servico externo bloqueado; use dado sintetico se necessario (ADR 019 A)"
+      repo-visibility:
+        severity: deny
+        match: '\bgh\s+repo\s+(edit\b[^|;&]*--visibility|fork\b|delete\b)'
+        tool_deny: "Bash(gh repo edit --visibility:*)"
+        message: "Alterar visibilidade, fork ou excluir repositorio so pelo usuario (ADR 019 A)"
+      foreign-postgres-port:
+        severity: deny
+        match: '(?i)\b(psql|pg_dump|pg_dumpall|pg_restore|createdb|dropdb|pg_isready)\b[^|;&]*((-p\s*|--port[= ])5432\b|:5432\b)'
+        tool_deny: "Bash(psql -p 5432:*)"
+        message: "Porta 5432 e do Postgres de outro projeto; o abako usa porta propria (ADR 014/019)"
+      git-commit:
+        severity: ask
+        match: '\bgit\s+commit\b'
+        tool_deny: "Bash(git commit:*)"
+        message: "git commit exige acordo explicito (rules/git-hygiene)"
+      git-push:
+        severity: ask
+        match: '\bgit\s+push\b'
+        tool_deny: "Bash(git push:*)"
+        message: "git push exige acordo explicito (rules/git-hygiene)"
+      psql-any:
+        severity: ask
+        match: '(?i)\b(psql|pg_dump|pg_dumpall|pg_restore|createdb)\b'
+        tool_deny: "Bash(psql:*)"
+        message: "Acesso ao Postgres: confirme banco (tst) e host/porta do conteiner do projeto"
+      psql-dml-ddl:
+        severity: ask
+        match: '(?i)\b(psql|docker\s+exec)\b.*\b(delete\s+from|update\s+\w+\s+set|alter\s+(table|role|database)|grant|revoke|insert\s+into)\b'
+        tool_deny: "Bash(psql -c:*)"
+        message: "Comando que altera dados/esquema via psql passa pelo crivo do usuario (ADR 019 B)"
+      migrate-prd:
+        severity: ask
+        match: '(?i)\b(alembic|migrate)\b[^|;&]*\bprd\b|\b(abako_env|env)=prd\b'
+        tool_deny: "Bash(alembic upgrade prd:*)"
+        message: "Migracao em prd exige confirmacao (ADR 019 B)"
+      deploy-local:
+        severity: ask
+        match: '(?i)deploy-local'
+        tool_deny: "Bash(scripts/deploy-local:*)"
+        message: "Deploy local exige confirmacao (ADR 019 B)"
+      install-deps:
+        severity: ask
+        match: '(?i)\b(pip3?|uv|poetry|pipx)\s+(install|add|sync)\b|\b(npm|pnpm|yarn)\s+(install|i|add|ci)\b|\bnpx\s+(-y\s+)?skills\s+add\b|\b(winget|choco|scoop)\s+install\b'
+        tool_deny: "Bash(pip install:*)"
+        message: "Instalar dependencia exige confirmacao (ADR 019 B)"
+      delete-files:
+        severity: ask
+        match: '(?i)(^|[;&|]\s*)(rm|del|erase|rmdir|rd|remove-item|ri|git\s+rm)\b'
+        tool_deny: "Bash(rm:*)"
+        message: "Apagar arquivos exige confirmacao (ADR 019 B)"
+      third-party-issues-prs:
+        severity: ask
+        match: '\bgh\s+(issue\s+(view|list)|pr\s+(view|list|diff|checks)|api\b[^|;&]*(issues|pulls|comments))'
+        tool_deny: "Bash(gh issue view:*)"
+        message: "Issues/PRs de terceiros sao conteudo nao confiavel; confirme a leitura (ADR 019 B)"
 
   # Extra (opt-in via profile) — presente no catálogo, desligado por default
   cloud-cli-extra:

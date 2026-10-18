@@ -1,7 +1,7 @@
-> **Este repositório é o projeto `sisfin`, não o Agent Harness Canônico.**
+> **Este repositório é o projeto `abako`, não o Agent Harness Canônico.**
 > Não copie o guia do repositório canônico do harness. Refine com `/grill-me`, `/grill-with-docs` ou `harness-architect`.
 
-# sisfin — espelho portátil (Cursor/Windsurf/Codex)
+# abako — espelho portátil (Cursor/Windsurf/Codex)
 
 Sistema financeiro pessoal local-first (saldos, gasto real, orçamento, reserva, cartões). Sem referências a `.claude/`.
 

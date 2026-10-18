@@ -19,6 +19,14 @@ Resume os ADRs 014, 017, 018, 019 e 020 como modelo de ameaça local. Complement
 - **Pacote do revisor** sem dado real, `.env`, dumps ou backups.
 - **Aplicação:** Argon2id, sessão no servidor, cookie HttpOnly + SameSite, CSRF, CORS restrito, rate limit de login.
 
+## Tópicos detalhados
+
+| Arquivo | Tópico |
+|---|---|
+| [backup-restore.md](backup-restore.md) | Backup e restauração do Postgres com age |
+| [api-seguranca.md](api-seguranca.md) | Segurança da API FastAPI (ADR 020) |
+| [segredos-gitleaks.md](segredos-gitleaks.md) | Segredos, .env e gitleaks (ADR 018) |
+
 ## Quick Reference
 
 Ver [quick-reference.md](quick-reference.md).

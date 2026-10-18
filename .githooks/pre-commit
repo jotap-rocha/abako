@@ -35,8 +35,11 @@ SOFT=(0 0 1 1 1 0 0)
 # Atribuição que apenas LÊ de env/config/cofre não é segredo hardcoded.
 ALLOW_READ='(getenv|environ|env\.get|process\.env|Deno\.env|load_env_value|config\.|settings\.|grep -r)'
 
+# Placeholder oficial da documentação da AWS (não é credencial); aparece em skills de terceiros.
+DOC_PLACEHOLDERS='AKIAIOSFODNN7EXAMPLE'
+
 # Arquivos gerados/minificados e linhas gigantes (base64, bundles) geram falso positivo.
-SKIP_FILES='(\.min\.(js|css)|-bundle\.js)$'
+SKIP_FILES='(\.min\.(js|css)|-bundle\.js)$|^\.(claude|cursor)/skills/'
 MAX_LINE=2000
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -71,7 +74,7 @@ for i in "${!PATTERNS[@]}"; do
   if [[ "${SOFT[$i]}" -eq 1 ]]; then
     hit=$(grep -E -- "${PATTERNS[$i]}" "$ADDED" | grep -vE -- "$ALLOW_READ" | head -n 1 || true)
   else
-    hit=$(grep -E -m 1 -- "${PATTERNS[$i]}" "$ADDED" || true)
+    hit=$(grep -E -- "${PATTERNS[$i]}" "$ADDED" | grep -vF -- "$DOC_PLACEHOLDERS" | head -n 1 || true)
   fi
   if [[ -n "$hit" ]]; then
     found=1

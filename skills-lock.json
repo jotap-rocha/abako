@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "skills": {
+    "database-backups": {
+      "source": "bagelhole/devops-security-agent-skills",
+      "sourceType": "github",
+      "skillPath": "infrastructure/databases/database-backups/SKILL.md",
+      "computedHash": "98bbc6f88581ae211894fd287a10cd3575ae3b2e8a0420cf760a3edbe42dc474"
+    },
+    "database-migration": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/framework-migration/skills/database-migration/SKILL.md",
+      "computedHash": "fad57306773041a544fe3487e84d3dfa953dbd5a8ecbce84c977484365c323c2"
+    },
+    "fastapi-templates": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/api-scaffolding/skills/fastapi-templates/SKILL.md",
+      "computedHash": "9e496e6652cf66bd53fe714360203d508f3bc98eb3163204dd20a75684ed2fc9"
+    },
+    "implementing-secret-scanning-with-gitleaks": {
+      "source": "mukul975/Anthropic-Cybersecurity-Skills",
+      "sourceType": "github",
+      "skillPath": "skills/implementing-secret-scanning-with-gitleaks/SKILL.md",
+      "computedHash": "eab9e85ee5b5732bf73444ca9f06ce6fc02dc05c5a0d772181603f8cf3f70939"
+    },
+    "openapi-ts-client": {
+      "source": "bm629/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/openapi-ts-client/SKILL.md",
+      "computedHash": "50e9b06d5513f103e1f04956cfdb0940de6bb198e73de3a5445ab0ad2d6bee4a"
+    },
+    "postgresql-table-design": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/database-design/skills/postgresql-table-design/SKILL.md",
+      "computedHash": "d9832627098bddf570aef2219092625faf6b2a14aeeb0f6fb96ed691a020100a"
+    },
+    "pwa-development": {
+      "source": "alinaqi/claude-bootstrap",
+      "sourceType": "github",
+      "skillPath": "skills/pwa-development/SKILL.md",
+      "computedHash": "2219041ce92f6361ba77eb06c9a927dc7a1ba48f40ff5132321a29c4154ebc7a"
+    },
+    "python-best-practices": {
+      "source": "0xbigboss/claude-code",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/python-best-practices/SKILL.md",
+      "computedHash": "9096f9ba1660f3dc864206f05f2851f77a3872dded644514a63a509d5052466d"
+    },
+    "react-best-practices": {
+      "source": "0xbigboss/claude-code",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/react-best-practices/SKILL.md",
+      "computedHash": "3184afb0fcd05ef984e9265cdbaa94d58021b0839a75fdf7fe739f699b6b5bbe"
+    },
+    "secrets-scan": {
+      "source": "jwynia/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tech/security/secrets-scan/SKILL.md",
+      "computedHash": "1d7b87f7145e0ca3329f8c0fff5b3e4a1ef3c1445625d116fa18bdf4782cf793"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
+      "computedHash": "128fac78002d916c8ca908245d398e634f540d8bcf20915b2b2359aeb18eba59"
+    },
+    "typescript-best-practices": {
+      "source": "0xbigboss/claude-code",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/typescript-best-practices/SKILL.md",
+      "computedHash": "b73b69197553b711e02839015e6abca717eb2305e90de3cc86403c92d92b00d9"
+    },
+    "validating-backup-integrity-for-recovery": {
+      "source": "mukul975/Anthropic-Cybersecurity-Skills",
+      "sourceType": "github",
+      "skillPath": "skills/validating-backup-integrity-for-recovery/SKILL.md",
+      "computedHash": "118bcfc704a270c83fc9a4fa6dbdce03ff6b8b6034d608c739bb30990ccd9df6"
+    }
+  }
+}

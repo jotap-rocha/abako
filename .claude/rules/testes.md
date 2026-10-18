@@ -1,5 +1,5 @@
 ---
-# Padrão de testes do sisfin (pytest, Hypothesis, Vitest, Playwright)
+# Padrão de testes do abako (pytest, Hypothesis, Vitest, Playwright)
 paths:
   - "tests/**"
   - "fixtures/**"

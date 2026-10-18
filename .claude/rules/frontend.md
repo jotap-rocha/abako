@@ -1,5 +1,5 @@
 ---
-# Convenções do frontend React + TypeScript (PWA) do sisfin
+# Convenções do frontend React + TypeScript (PWA) do abako
 paths:
   - "frontend/**"
 ---

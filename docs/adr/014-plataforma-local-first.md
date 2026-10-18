@@ -16,7 +16,8 @@ O usuário quer aproveitar os recursos da própria máquina (Windows 11 Home) e 
 - Tudo **local (on premise)**, `localhost` apenas.
 - **Dois bancos Postgres: `prd` e `tst`**, num **contêiner Postgres dedicado ao projeto**, separado do Postgres que o usuário já usa em outro projeto. O analítico é um arquivo DuckDB (ADR 008).
 - **Docker Desktop** (já em uso pelo usuário).
-- O nome do projeto é provisório: nomes de contêiner, volume e rede vêm de uma variável (`COMPOSE_PROJECT_NAME` no `.env`), nunca fixos no código, para a renomeação ser trivial.
+- Nomes de contêiner, volume e rede vêm de uma variável (`COMPOSE_PROJECT_NAME` no `.env`), nunca fixos no código, para uma futura renomeação ser trivial (o projeto já foi renomeado de `sisfin` para `abako`).
+- O contêiner expõe o Postgres na porta **5433**, nunca na 5432 (que é do outro projeto do usuário).
 - **Backup antes** de sessões de agente que alterem esquema ou dados; operações destrutivas pedem confirmação.
 - **Sem ambiente apartado nem dados sintéticos para desenvolvimento:** o usuário assume o risco de desenvolver com os dados reais.
 - Criptografia de disco ignorada por decisão do usuário.
