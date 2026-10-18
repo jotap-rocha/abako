@@ -15,7 +15,8 @@
     "sql-cli",
     "databricks-cli",
     "terraform",
-    "k8s"
+    "k8s",
+    "abako"
   ],
   "policy_source": "agent-policies.yaml"
 }

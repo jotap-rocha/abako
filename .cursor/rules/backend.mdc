@@ -1,5 +1,5 @@
 ---
-description: Convenções do backend FastAPI e do SQL do sisfin
+description: Convenções do backend FastAPI e do SQL do abako
 globs: ["backend/**", "db/**"]
 alwaysApply: false
 ---

@@ -1,5 +1,5 @@
 ---
-# Regras de domínio financeiro do sisfin
+# Regras de domínio financeiro do abako
 paths:
   - "backend/**"
   - "db/**"

@@ -1,5 +1,5 @@
 ---
-# Regras do pipeline transacional → analítico (Postgres → DuckDB) do sisfin
+# Regras do pipeline transacional → analítico (Postgres → DuckDB) do abako
 paths:
   - "pipeline/**"
 ---

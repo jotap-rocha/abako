@@ -1,5 +1,5 @@
 ---
-description: Padrão de testes do sisfin (pytest, Hypothesis, Vitest, Playwright)
+description: Padrão de testes do abako (pytest, Hypothesis, Vitest, Playwright)
 globs: ["tests/**", "fixtures/**", "**/test_*.py", "**/*.test.ts", "**/*.test.tsx"]
 alwaysApply: false
 ---

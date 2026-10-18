@@ -1,7 +1,7 @@
-> **Este repositório é o projeto `sisfin`, não o Agent Harness Canônico.**
+> **Este repositório é o projeto `abako`, não o Agent Harness Canônico.**
 > Não copie o guia do repositório canônico do harness. Refine com `/grill-me`, `/grill-with-docs` ou `harness-architect`.
 
-# Glossário de domínio — sisfin
+# Glossário de domínio — abako
 
 > Derivado do brainstorm e dos ADRs 006–023. Refinar com /grill-with-docs.
 

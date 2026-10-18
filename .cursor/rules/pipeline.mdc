@@ -1,5 +1,5 @@
 ---
-description: Regras do pipeline transacional → analítico (Postgres → DuckDB) do sisfin
+description: Regras do pipeline transacional → analítico (Postgres → DuckDB) do abako
 globs: ["pipeline/**"]
 alwaysApply: false
 ---

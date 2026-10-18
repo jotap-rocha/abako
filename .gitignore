@@ -108,3 +108,8 @@ logs/
 # Analítico local (dados financeiros)
 *.duckdb
 *.duckdb.wal
+
+# Backups locais (dados financeiros)
+backups/
+*.dump
+*.age

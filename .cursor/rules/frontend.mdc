@@ -1,5 +1,5 @@
 ---
-description: Convenções do frontend React + TypeScript (PWA) do sisfin
+description: Convenções do frontend React + TypeScript (PWA) do abako
 globs: ["frontend/**"]
 alwaysApply: false
 ---

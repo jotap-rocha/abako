@@ -16,7 +16,7 @@ O harness traz muitos agentes, skills e KBs genéricos. O projeto deve usar só 
 - Usar só o necessário; agentes novos com prefixo `fin-`.
 - **Novo agente `fin-frontend`** (`.claude/agents/fin/fin-frontend.md`).
 - **KBs novas:** `react-pwa`, `postgres-financeiro`, `seguranca-local`.
-- **Skills:** o usuário as busca em catálogos públicos por assunto (lista em `.claude/projetos/sisfin/03-harness.md`).
+- **Skills:** o usuário as busca em catálogos públicos por assunto (lista em `.claude/projetos/abako/03-harness.md`).
 - `CLAUDE.md` mapeia só as KBs relevantes, com caminhos exatos.
 
 ## Alternativas consideradas

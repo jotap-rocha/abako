@@ -32,3 +32,5 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [021](021-estrutura-do-repositorio-e-testes.md) | Estrutura do repositório e estratégia de testes | Aceita | 2026-10-16 |
 | [022](022-repositorio-publico-ci-cd.md) | Repositório público, CI/CD e escopo da documentação | Aceita | 2026-10-16 |
 | [023](023-reserva-r2-recorrentes-e-vale.md) | Reserva, compromissos vs. disponível, recorrentes e vale | Aceita | 2026-10-16 |
+| [024](024-guardrails-implementacao.md) | Implementação dos guardrails dos agentes | Aceita | 2026-10-17 |
+| [025](025-migracoes-alembic-sql.md) | Migrações do Postgres com Alembic em SQL puro | Aceita | 2026-10-17 |
