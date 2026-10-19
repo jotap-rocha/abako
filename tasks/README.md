@@ -8,7 +8,7 @@
 
 | # | Task | Status | Bloqueada por |
 |---|---|---|---|
-| 01 | [SPEC-001a: ambiente do banco e guarda de teste](01-ambiente-banco.md) | not started | — |
+| 01 | [SPEC-001a: ambiente do banco e guarda de teste](01-ambiente-banco.md) | done | — |
 | 02 | [SPEC-001b: check, rastreabilidade e CI](02-check-rastreabilidade.md) | not started | 01 |
 | 03 | [SPEC-001c: esquema base e garantias](03-esquema-base.md) | not started | 02 |
 | 04 | [SPEC-001d: backup e restauração](04-backup-restore.md) | not started | 03 |

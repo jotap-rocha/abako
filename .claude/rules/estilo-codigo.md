@@ -9,7 +9,7 @@ paths:
 Padrão de estilo do time. O hook de `PostToolUse` já roda `ruff format` + `ruff check --fix`
 a cada edição — escreva código que **passa limpo** sem depender do autofix.
 
-- **Formatação/lint:** `ruff` (config em `pyproject.toml`). `line-length = 100`, alvo `py313`.
+- **Formatação/lint:** `ruff` (config em `pyproject.toml`). `line-length = 100`, alvo `py312` (Python 3.12.10 instalado).
 - **Tipagem:** `mypy`. Toda função pública tem type hints completos.
   Evite `Any`; quando inevitável, comente o porquê. Prefira `X | None` a `Optional[X]`.
 - **`from __future__ import annotations`** no topo de cada módulo (anotações como string).
