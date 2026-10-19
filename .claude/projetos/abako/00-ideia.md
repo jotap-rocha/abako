@@ -26,4 +26,4 @@ O pipeline é um componente do MVP, mas o projeto não é de pipeline puro: os g
 
 1. Concluir o `/grill-me` (lacunas em `01-grill.md`).
 2. `harness-define` → `harness-design` (PRD já rascunhado em `02-prd.md`).
-3. `/to-tasks` para transformar as SPEC-001..013 em tasks.
+3. `/to-tasks` para transformar as SPEC-001..014 em tasks.

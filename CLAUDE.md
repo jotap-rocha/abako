@@ -3,7 +3,7 @@
 
 # abako
 
-Sistema financeiro pessoal, local-first: saldos por conta, gasto real, situação do orçamento (apertado/folgado), reserva e cartões. Decisões: `docs/adr/` (ADRs 006–023). Glossário: `CONTEXT.md`. PRD e plano: `.claude/projetos/abako/`.
+Sistema financeiro pessoal, local-first: saldos por conta, gasto real, situação do orçamento (apertado/folgado), reserva e cartões. Decisões: `docs/adr/` (ADRs 006–032). Glossário: `CONTEXT.md`. PRD e plano: `.claude/projetos/abako/`.
 
 > Este arquivo é **público** (ADR 022): sem dado pessoal, sem nomes de bancos/produtos reais.
 
@@ -12,7 +12,7 @@ Sistema financeiro pessoal, local-first: saldos por conta, gasto real, situaçã
 - **Frontend:** React + TypeScript, SPA/PWA (Vite provável), cliente TS **gerado do OpenAPI**. Alvo v1: Chrome desktop, layout responsivo.
 - **Backend:** FastAPI (Python), autenticação própria (Argon2id, sessão no servidor).
 - **Migrações:** Alembic em SQL puro, em `db/migrations/` (ADR 025).
-- **Banco transacional:** PostgreSQL local em **contêiner dedicado** (Docker Desktop), dois bancos: `prd` e `tst`. Nomes de contêiner/volume via `COMPOSE_PROJECT_NAME` (renomear o projeto = mudar a variável); porta **5433** (nunca 5432). Regras financeiras como **views/funções SQL**.
+- **Banco transacional:** PostgreSQL local em **contêiner dedicado** (Docker Desktop), dois bancos: `prd` e `tst`, mais um banco descartável só para o teste de restauração de backup. Nomes de contêiner/volume via `COMPOSE_PROJECT_NAME` (renomear o projeto = mudar a variável); porta **5433** (nunca 5432). Regras financeiras como **views/funções SQL**.
 - **Analítico:** **DuckDB** em arquivo fisicamente separado, só agregados; pipeline em Python lê o Postgres por papel somente leitura e troca o arquivo atomicamente.
 - **Testes:** pytest, Hypothesis (inclui `RuleBasedStateMachine`), Vitest + React Testing Library, Playwright (poucas jornadas).
 - **Infra:** tudo em `localhost` (Windows 11 + Docker Desktop). CI em GitHub-hosted runners, sem segredos.
@@ -38,7 +38,7 @@ Versões exatas: definidas na SPEC-001.
 
 ## Invariantes
 
-Fonte da verdade: `tests/contracts/invariantes.yaml` (INV-01..INV-26), cada uma com fixture em `fixtures/numericos.yaml` e ao menos um teste. Resumo dos que mais importam:
+Fonte da verdade: `tests/contracts/invariantes.yaml` (INV-01..INV-35), cada uma com fixture em `fixtures/numericos.yaml` (ou teste de propriedade, quando não há valor fixo) e ao menos um teste. Resumo dos que mais importam:
 
 1. **Dinheiro nunca é float.** `NUMERIC`/`Decimal` no banco e no Python; JSON e front usam texto (INV-14).
 2. **Ledger:** edição cria nova versão (SCD2), só a vigente conta, exclusão lógica; saldo derivado = último snapshot + transações válidas posteriores; divergência é sinalizada, **nunca corrigida sozinha** (INV-03, 09, 23).
@@ -71,7 +71,7 @@ Fonte da verdade: `tests/contracts/invariantes.yaml` (INV-01..INV-26), cada uma 
 
 ## Fluxo de trabalho
 
-- Specs saem **uma por vez** (ordem: SPEC-001..013, ver `.claude/projetos/abako/02-prd.md`), com critérios de aceite de ID estável (`SPEC-NNN-AC-N`) em `tests/contracts/criterios.yaml`.
+- Specs saem **uma por vez** (ordem: SPEC-001..014, ver `.claude/projetos/abako/02-prd.md`), com critérios de aceite de ID estável (`SPEC-NNN-AC-N`) em `tests/contracts/criterios.yaml`.
 - Definição de Pronto: `.claude/rules/definicao-de-pronto.md`. Git: `.claude/rules/git-hygiene.md` (branch `tipo/escopo`, sem commit/push sem acordo explícito).
 - Revisão adversarial: `docs/revisao/rubrica-adversarial.md` (A–E), 1 passada por entrega + 1 reteste.
 - O usuário é forte em Python/SQL e **fraco em web**: explicar termos de front/web (ver glossário).

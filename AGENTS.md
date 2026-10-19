@@ -15,7 +15,7 @@ React + TypeScript (PWA, cliente gerado do OpenAPI) · FastAPI · PostgreSQL loc
 
 ## Invariantes
 
-Fonte: `tests/contracts/invariantes.yaml` (INV-01..26) + `fixtures/numericos.yaml`. Essenciais:
+Fonte: `tests/contracts/invariantes.yaml` (INV-01..35) + `fixtures/numericos.yaml`. Essenciais:
 
 - Dinheiro nunca é float (NUMERIC/Decimal; JSON como texto).
 - Ledger com versões (SCD2), exclusão lógica; saldo derivado = último snapshot + transações válidas posteriores; divergência só sinalizada.

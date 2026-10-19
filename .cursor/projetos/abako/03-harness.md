@@ -1,6 +1,24 @@
 # abako — Harness
 
-> Decisões de harness do projeto (ADR 016, 019, 024). Estado: artefatos do projeto criados; o `harness-architect` ainda não rodou.
+> Decisões de harness do projeto (ADR 016, 019, 024). Estado (revisão de 2026-10-19, `harness-design`): artefatos criados e conferidos contra o disco; reflete SPECs 001..014 e ADRs 026–032. Sem scaffold novo: só ajustes pontuais (ver "Deriva corrigida"). Adversarial-judge via OpenRouter não usado por decisão do usuário (revisão adversarial feita manualmente).
+
+## Deriva corrigida (2026-10-19)
+
+| Onde | Deriva | Correção |
+|---|---|---|
+| `kb/seguranca-local/backup-restore.md` | restaurava em `tst` (contradiz ADR 032: banco descartável dedicado, alvo `prd` recusado) | texto alinhado ao ADR 032 |
+| `kb/postgres-financeiro/ledger-dinheiro.md` | sem D1/D4 (visão corrigida, versão vigente única, controle otimista, idempotência) | seção "Tempo, concorrência e idempotência" |
+| `rules/pipeline.md` | sem trava de execução única | `pg_advisory_lock` (ADR 029) |
+| `kb/react-pwa/pwa.md` | sem limpeza de cache no logout nem escopo online/PC (ADR 031) | duas linhas |
+| `02-prd.md` | faltava seção SI Considerations; banco de restauração não citado | adicionados |
+| `.cursor/` espelhos | rules/KBs editados acima e `projetos/abako/*` defasados | sincronizados |
+
+## Lacunas conhecidas, deliberadamente não preenchidas
+
+- Sem agente/skill novos: nenhuma lacuna real. Backup/restauração e migrações ficam nas KBs e nas skills já travadas; a SPEC-001 detalha.
+- `scripts/check`, rastreabilidade, `db/`, `backend/`, `frontend/`, `pipeline/`, `tests/` (além de `contracts/`) não existem ainda: nascem nas SPECs (001 em diante).
+- `criterios.yaml` vazio por desenho; fixtures novas nas SPEC-003 e 005.
+- Papel/permissão para o script de restauração criar e remover o banco descartável: o `settings.json` nega `dropdb`; definir na SPEC-001 como o script faz isso (ver dúvidas no relatório).
 
 ## Já criado
 
@@ -47,6 +65,8 @@ Sem skill pronta no skills.sh para: ledger/dinheiro com precisão decimal, migra
 ## Pendente
 
 - Definir o comando `check` e o script de rastreabilidade (SPEC-001).
+- Backup criptografado (age) com teste de restauração num banco descartável dedicado do mesmo contêiner, recusando o alvo `prd` (D7, ADR 032); definir na SPEC-001 retenção, local da chave e se roda no `check` ou na rotina de deploy local.
+- SPECs renumeradas 001..014 (2026-10-18, revisão adversarial): login na 002, gasto real na 008, vale e R5 na 013, pipeline na 014. Ver `02-prd.md`.
 - Fixar versões das dependências (SPEC-001). Porta do Postgres do projeto: **5433**.
 - gitleaks 8.30.1 instalado e ligado ao pre-commit (`.githooks/pre-commit`, `.gitleaks.toml`). Também roda no CI.
 - Conferir versões/flags das ferramentas citadas nas KBs via context7 ao implementar.

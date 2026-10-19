@@ -34,3 +34,10 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [023](023-reserva-r2-recorrentes-e-vale.md) | Reserva, compromissos vs. disponível, recorrentes e vale | Aceita | 2026-10-16 |
 | [024](024-guardrails-implementacao.md) | Implementação dos guardrails dos agentes | Aceita | 2026-10-17 |
 | [025](025-migracoes-alembic-sql.md) | Migrações do Postgres com Alembic em SQL puro | Aceita | 2026-10-17 |
+| [026](026-semantica-temporal-edicao-retroativa.md) | Semântica temporal da edição retroativa e snapshots | Aceita | 2026-10-19 |
+| [027](027-fechamento-em-dia-inexistente.md) | Fechamento do cartão em dia inexistente e compra no dia do fechamento | Aceita | 2026-10-19 |
+| [028](028-ordem-das-specs-001-014.md) | Ordem e renumeração das SPECs (001..014) | Aceita | 2026-10-19 |
+| [029](029-concorrencia-e-idempotencia.md) | Concorrência e idempotência como garantias de esquema | Aceita | 2026-10-19 |
+| [030](030-compra-100-por-cento-e-repasse-excedente.md) | Compra 100% própria ou 100% de terceiro e repasse excedente | Aceita | 2026-10-19 |
+| [031](031-seguranca-local-e-pwa-online.md) | Segurança local da API e PWA online | Aceita | 2026-10-19 |
+| [032](032-backup-com-restauracao-testada.md) | Backup com restauração testada na v1 | Aceita | 2026-10-19 |

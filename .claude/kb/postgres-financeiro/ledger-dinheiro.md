@@ -26,5 +26,12 @@ Fonte: `tests/contracts/invariantes.yaml`, `fixtures/numericos.yaml`, ADRs 006, 
 - Transferência = 2 pernas, soma zero, não é gasto.
 - Estorno: sem parcela paga → limite integral, fatura reduz, nada na conta corrente; com parcela paga → limite das não pagas, crédito do pago na próxima fatura aberta, líquido zero.
 
+## Tempo, concorrência e idempotência (ADR 026, 029; esquema na SPEC-001, comportamento testado na SPEC-004)
+- Histórico exibido = visão corrigida; "conhecido na época" só em consulta de auditoria (data de registro do SCD2). Snapshot que passa a divergir após edição retroativa é sinalizado pelo R4.
+- Unicidade parcial: no máximo **uma versão vigente** por transação.
+- Controle otimista: campo de versão; edição com versão defasada é rejeitada (conflito), nunca sobrescreve em silêncio.
+- Criação com chave de idempotência: duplo clique/retry não duplica lançamento.
+- Fechamento em dia inexistente no mês = último dia válido (ADR 027). Compra compartilhada: v1 só 100% própria ou 100% terceiro (ADR 030).
+
 ## Propriedades Hypothesis sugeridas
 soma das parcelas == total · transferência soma zero · saldo derivado independe da ordem de lançamento · editar N vezes preserva N+1 versões e só a última conta.

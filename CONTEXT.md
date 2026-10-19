@@ -3,7 +3,7 @@
 
 # Glossário de domínio — abako
 
-> Derivado do brainstorm e dos ADRs 006–023. Refinar com /grill-with-docs.
+> Derivado do brainstorm e dos ADRs 006–032. Refinar com /grill-with-docs.
 
 ## Domínio
 

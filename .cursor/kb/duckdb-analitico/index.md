@@ -21,4 +21,4 @@ Decisão no ADR 008. Usado pelo `fin-pipeline`.
 - Regras financeiras ficam no Postgres (`postgres-financeiro`); o analítico só agrega.
 
 ## Nota de validação
-Criado sem Context-7 (`mcp_validated`/`confidence` = `null`). Confirmar sintaxe de ATTACH e versões ao implementar a SPEC-009.
+Criado sem Context-7 (`mcp_validated`/`confidence` = `null`). Confirmar sintaxe de ATTACH e versões ao implementar a SPEC-014.
