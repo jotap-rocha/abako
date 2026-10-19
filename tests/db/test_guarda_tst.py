@@ -29,6 +29,8 @@ def test_url_tst_valida_passa() -> None:
         "postgresql://u:p@db.exemplo.com:5433/tst",  # host remoto
         "postgresql://u:p@0.0.0.0:5433/tst",
         "postgresql://u:p@127.0.0.1/tst",  # sem porta explícita
+        "postgresql://u:p@127.0.0.1:5433/tst?host=outro",  # query sobrescreve o host
+        "postgresql://u:p@127.0.0.1:5433/tst?dbname=prd",  # query sobrescreve o banco
         "",
     ],
 )
@@ -51,8 +53,8 @@ def test_aborta_fora_de_tst() -> None:
         text=True,
         check=False,
     )
-    assert r.returncode != 0
-    assert "tst" in (r.stdout + r.stderr)
+    assert r.returncode == 2
+    assert "ABORTADO" in r.stdout + r.stderr
     assert "test_url_tst_valida_passa" not in r.stdout  # nada foi coletado
 
 
@@ -66,5 +68,21 @@ def test_aborta_se_ambiente_for_prd() -> None:
         text=True,
         check=False,
     )
-    assert r.returncode != 0
+    assert r.returncode == 2
+    assert "ABORTADO" in r.stdout + r.stderr
     assert "test_url_tst_valida_passa" not in r.stdout
+
+
+def test_controle_url_valida_coleta_testes() -> None:
+    """Controle: com URL de tst válida a suíte não aborta e coleta o teste."""
+    env = {**os.environ, "ABAKO_ENV": "tst", "ABAKO_DB_MIGRATE_URL_TST": URL_OK}
+    r = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q", "tests/db/test_guarda_tst.py"],
+        cwd=RAIZ,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert r.returncode == 0
+    assert "test_url_tst_valida_passa" in r.stdout

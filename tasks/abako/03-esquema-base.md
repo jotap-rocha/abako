@@ -18,3 +18,5 @@ Esquema base do ledger: `user_id` em toda tabela, papéis do banco (aplicação 
 ## Notes
 
 Comportamento de idempotência e conflito é testado na SPEC-004; aqui nasce só o esquema.
+
+Dívida da task 01: as URLs `ABAKO_DB_APP_URL` e `ABAKO_DB_PIPELINE_URL` (papéis `app` e `pipeline`) devem passar pelo mesmo guarda da suíte (`db/alvo.py` + `tests/conftest.py`: host local, porta 5433, banco `tst`, sem query string, `current_database()` conferido) antes de qualquer teste de papéis conectar.
