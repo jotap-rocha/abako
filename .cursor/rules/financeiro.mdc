@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Domínio financeiro
 
-Fonte da verdade: `tests/contracts/invariantes.yaml` (INV-01..35), `fixtures/numericos.yaml` e os ADRs 006–023. Esta rule só lembra o que o agente não pode quebrar.
+Fonte da verdade: `tests/contracts/invariantes.yaml` (INV-01..37), `fixtures/numericos.yaml` e os ADRs 006–023. Esta rule só lembra o que o agente não pode quebrar.
 
 - **Dinheiro nunca é float.** `NUMERIC` no banco, `Decimal` no Python, texto no JSON e no front (ADR 012, INV-14).
 - **Regra de cálculo vive no SQL/backend**, nunca no front (ADR 015). O front só formata na borda.

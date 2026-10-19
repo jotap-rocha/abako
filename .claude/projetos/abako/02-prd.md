@@ -2,7 +2,7 @@
 
 > **Atualizado em 2026-10-18**: incorpora D1..D8 da revisão adversarial (aprovadas; D2 parcial): SPECs reordenadas e renumeradas (001..014), gasto real com SPEC própria, PWA online, v1 sem compra dividida, backup com restauração testada, segurança local, concorrência/idempotência no esquema.
 
-> PRD consolidado das decisões (ADRs 006–032), finalizado no `harness-design` (2026-10-19). Fica só local: não é publicado em issue tracker externo (repositório público, ADR 022). Cada SPEC é detalhada uma por vez, com critérios `SPEC-NNN-AC-N`.
+> PRD consolidado das decisões (ADRs 006–035), finalizado no `harness-design` (2026-10-19). Fica só local: não é publicado em issue tracker externo (repositório público, ADR 022). Cada SPEC é detalhada uma por vez, com critérios `SPEC-NNN-AC-N`.
 
 ## Problem Statement
 
@@ -27,7 +27,7 @@ Um sistema local que funciona como **ledger** de transações, com conferência 
 11. Como usuário, quero estornar uma compra (integral ou com parcelas pagas) e ver limite e fatura corretos, sem dinheiro indo à conta corrente.
 12. Como usuário, quero marcar uma compra inteira como de terceiro (v1: 100% própria ou 100% terceiro, sem divisão) e registrar repasses, para saber quanto cada pessoa me deve; repasse maior que a dívida é tratado explicitamente (D5).
 13. Como usuário, quero ver meu gasto real do mês, sem transferências, investimentos, repasses, rendimentos, pagamento de fatura, terceiros nem vale.
-14. Como usuário, quero definir a meta da reserva em meses de gasto essencial e ver nível, falta e cobertura em meses.
+14. Como usuário, quero definir a meta da reserva em meses de gasto essencial e ver nível, falta e cobertura (líquido, com imposto retido e bruto separados, ADR 034) em meses.
 15. Como usuário, quero ver o aporte mensal necessário até uma data-alvo da reserva.
 16. Como usuário, quero cadastrar fixos e receitas recorrentes, ver a ocorrência de cada mês e vinculá-la a uma transação.
 17. Como usuário, quero ver a sobra do horizonte do R2, inicial 10 dias e configurável (disponível − compromissos) e ser alertado se for negativa.
@@ -46,7 +46,7 @@ Um sistema local que funciona como **ledger** de transações, com conferência 
 
 ## Implementation Decisions
 
-Detalhadas nos ADRs 006–032. Resumo:
+Detalhadas nos ADRs 006–035. Resumo:
 
 - **Ledger versionado** (SCD2), saldo derivado = snapshot + transações válidas posteriores (ADR 006).
 - **Sete tipos de transação**, parcela por linha, limite pelo total da compra (ADR 011).
@@ -55,7 +55,8 @@ Detalhadas nos ADRs 006–032. Resumo:
 - **FastAPI** com OpenAPI; cliente TS gerado; **React + TS** como PWA; **Postgres** transacional (ADR 015).
 - **Autenticação** própria: Argon2id, sessão no servidor, CSRF, CORS, rate limit (ADR 020).
 - **Plataforma local** em `localhost`, bancos `prd`/`tst` mais um banco descartável só para o teste de restauração (ADR 014, 032).
-- **Reserva, R2, recorrentes e vale** conforme ADR 023.
+- **Reserva, R2, recorrentes e vale** conforme ADR 023. Reserva exibida em líquido, imposto acumulado e bruto (ADR 034).
+- **Endereço local (ADR 035):** `http://abako.localhost:8080` (porta configurável), escuta só em `127.0.0.1`; proxy local fica para depois.
 
 Decisões da revisão adversarial (aprovadas em 2026-10-18; detalhe em `01-grill.md`):
 
@@ -82,7 +83,7 @@ Ordem das entregas (cada SPEC sai uma por vez, com critérios `SPEC-NNN-AC-N`). 
 | 009 | Reserva / cobertura | 007 |
 | 010 | Recorrentes + R2 (cálculo da sobra) | 012 |
 | 011 | Alertas R1, R2, R4 | 011 (sem R5) |
-| 012 | Frontend (PWA online, logout limpa cache, textos explicativos) | 010 |
+| 012 | Frontend (PWA online, logout limpa cache, textos explicativos) — entregue em 5 incrementos intercalados (ADR 033): casca/login após a 002, saldos após a 003, lançamento após a 004, leitura após a 011, formulários restantes | 010 |
 | 013 | Vale (bolsos, sobra, decisão) + alerta R5 | 013 + R5 |
 | 014 | Pipeline / analítico (DuckDB, trava de execução) | 009 |
 
@@ -118,6 +119,6 @@ SI Assessment nível c; `[AVISO_LGPD]` (dado financeiro pessoal real, sem ambien
 ## Further Notes
 
 - Sem SLA formal de desempenho ou disponibilidade; qualquer necessidade futura é tratada como evolução contínua.
-- Pendências externas: formatos de exportação dos bancos, bruto vs. líquido da reserva, datas de fechamento e semântica de limite dos cartões, disponibilidade do modelo revisor.
+- Pendências externas: formatos de exportação dos bancos, datas de fechamento e semântica de limite dos cartões, disponibilidade do modelo revisor.
 - Alertas da v1: R1 (reserva), R2 (sobra no horizonte), R4 (divergência) na SPEC-011; R5 (`resta` negativo em bolso do vale) na SPEC-013, junto do vale. R4 é alerta visível no app, não só log.
 - Pendências externas: a data real de fechamento de cada cartão o usuário não sabe hoje; cadastro com vigência, ajustável e calibrado por snapshot de fatura (ADR 013); não bloqueia nenhuma SPEC. Origem do "gasto essencial" da reserva segue pendente.

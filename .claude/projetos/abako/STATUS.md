@@ -25,6 +25,6 @@ Iniciado em: 2026-10-16
 - [x] 1c. Revisão adversarial externa: D1..D8 aprovadas (2026-10-18)
 - [x] 2. PRD gerado (2026-10-19) — `02-prd.md`, SPECs 001..014, com SI Considerations; só local
 - [x] 3. Harness montado (2026-10-19) — revisão contra o disco em `03-harness.md` (deriva corrigida, sem scaffold novo); adversarial-judge não usado por decisão do usuário
-- [ ] 4. Tasks criadas
+- [x] 4. Tasks criadas (rascunho, 21 tasks em `tasks/abako/`, aguardando validação do usuário) — 2026-10-19; frontend fino antecipado (ADR 033)
 - [ ] 5. Implementação concluída
 - [ ] 6. Ship / retrospectiva

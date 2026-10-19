@@ -4,7 +4,7 @@
 
 ## Estado atual
 
-- Brainstorm e decisões concluídos: ADRs 006–032 aceitas (`docs/adr/`), invariantes INV-01..35 e fixtures em `tests/contracts/` e `fixtures/`, rubrica do revisor em `docs/revisao/`, PRD rascunhado em `.claude/projetos/abako/`.
+- Brainstorm e decisões concluídos: ADRs 006–035 aceitas (`docs/adr/`), invariantes INV-01..37 e fixtures em `tests/contracts/` e `fixtures/`, rubrica do revisor em `docs/revisao/`, PRD rascunhado em `.claude/projetos/abako/`.
 - Harness instalado; contexto (`CLAUDE.md`, `AGENTS.md`, `CONTEXT.md`, `README.md`) preenchido a partir das decisões. Nenhum código ainda.
 - Repositório GitHub: `abako` (será público; `main` protegida, alterações via PR). Trabalho de contexto na branch `chore/contexto-abako`.
 

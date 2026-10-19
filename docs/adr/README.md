@@ -41,3 +41,6 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [030](030-compra-100-por-cento-e-repasse-excedente.md) | Compra 100% própria ou 100% de terceiro e repasse excedente | Aceita | 2026-10-19 |
 | [031](031-seguranca-local-e-pwa-online.md) | Segurança local da API e PWA online | Aceita | 2026-10-19 |
 | [032](032-backup-com-restauracao-testada.md) | Backup com restauração testada na v1 | Aceita | 2026-10-19 |
+| [033](033-frontend-fino-antecipado.md) | Frontend fino antecipado (SPEC-012 em incrementos) | Aceita | 2026-10-19 |
+| [034](034-reserva-bruto-liquido.md) | Reserva em bruto e líquido, com imposto retido | Aceita | 2026-10-19 |
+| [035](035-endereco-abako-localhost.md) | Endereço local `abako.localhost` | Aceita | 2026-10-19 |

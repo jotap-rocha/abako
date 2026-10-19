@@ -38,3 +38,5 @@ invariantes:
   - {id: INV-33, enunciado: "Repasse acima da dívida da pessoa nunca gera 'a receber' negativo silencioso (regra exata definida na SPEC-007).", fixtures: [], spec: SPEC-007, teste: []}
   - {id: INV-34, enunciado: "Requisição com cabeçalho Host fora da lista permitida é rejeitada.", fixtures: [], spec: SPEC-002, teste: []}
   - {id: INV-35, enunciado: "Duas execuções simultâneas do pipeline são impedidas por trava; a segunda falha sem tocar o arquivo analítico.", fixtures: [], spec: SPEC-014, teste: []}
+  - {id: INV-36, enunciado: "Rendimento registra valor bruto e imposto retido; o valor creditado na conta é bruto − imposto; o imposto não é gasto real.", fixtures: [], spec: SPEC-004, teste: []}
+  - {id: INV-37, enunciado: "A reserva exibe líquido (saldo da conta), imposto acumulado e bruto = líquido + imposto acumulado; a cobertura usa o líquido.", fixtures: [], spec: SPEC-009, teste: []}

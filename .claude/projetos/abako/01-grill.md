@@ -2,13 +2,13 @@
 
 > **Atualizado em 2026-10-18**: decisões D1..D8 da revisão adversarial aprovadas (D2 parcialmente); itens [confirmar] de concorrência, idempotência, trava do pipeline e ciclo de vida/backup resolvidos; SPECs renumeradas (ver `02-prd.md`).
 
-> Consolidado a partir do brainstorm do usuário. As decisões vivem nos ADRs 006–032 (`docs/adr/`); aqui ficam o checklist de completude, as decisões em uma linha e as lacunas.
+> Consolidado a partir do brainstorm do usuário. As decisões vivem nos ADRs 006–035 (`docs/adr/`); aqui ficam o checklist de completude, as decisões em uma linha e as lacunas.
 
 ## Checklist de completude
 
 - [x] **Problema real:** o saldo é conferido manualmente em planilha; falta visão de gasto real e de folga do orçamento (ADR 006).
 - [x] **Usuário:** uma pessoa (o próprio dono). `user_id` preparado para multiusuário futuro, não funcional (ADR 006, 012).
-- [x] **Critérios de sucesso mensuráveis:** invariantes INV-01..35 e fixtures numéricas (`tests/contracts/`, `fixtures/`).
+- [x] **Critérios de sucesso mensuráveis:** invariantes INV-01..37 e fixtures numéricas (`tests/contracts/`, `fixtures/`).
 - [x] **Out of scope declarado:** ver `02-prd.md`.
 - [x] **Restrições técnicas:** local-first, Windows 11, Docker, Android antigo só como futuro (ADR 014).
 - [x] **SLA / performance:** sem SLA formal; volume pequeno (ADR 008). Se surgir necessidade, entra como evolução contínua.
@@ -40,7 +40,7 @@
 
 1. ~~R5~~ — resolvido: alerta do vale quando o `resta` de um bolso fica negativo (ADR 023).
 2. ~~Horizonte do R2~~ — resolvido: parâmetro com vigência, inicial 10 dias (ADR 023).
-3. **Pendências externas** (não bloqueiam as SPECs iniciais): formatos de exportação dos bancos; bruto vs. líquido da reserva; datas de fechamento e semântica de limite dos cartões; disponibilidade do modelo revisor.
+3. **Pendências externas** (não bloqueiam as SPECs iniciais): formatos de exportação dos bancos; datas de fechamento e semântica de limite dos cartões; disponibilidade do modelo revisor.
 4. ~~SLA / performance~~ — resolvido: sem SLA formal; tratar como evolução contínua se surgir.
 5. ~~Estrutura de pastas e Docker~~ — resolvido: estrutura em `CLAUDE.md`; Docker Desktop; contêiner Postgres dedicado ao projeto (ADR 014).
 6. **Comando `check`** e script de rastreabilidade: definir na SPEC-001.
@@ -92,7 +92,7 @@ Tipo **a** (aplicação/API) com pipeline local pequeno. Itens marcados **[confi
 
 ## Critérios de sucesso mensuráveis
 
-- Invariantes cobertas: 35 de 35 (INV-01..35) com fixture (ou teste de propriedade) e ao menos 1 teste; script de rastreabilidade retorna vazio.
+- Invariantes cobertas: 37 de 37 (INV-01..37) com fixture (ou teste de propriedade) e ao menos 1 teste; script de rastreabilidade retorna vazio.
 - Critérios de aceite: 100% dos `SPEC-NNN-AC-N` com teste.
 - `check` verde antes de qualquer revisão adversarial.
 - Isolamento: 0 consultas sem filtro de `user_id` da sessão.
@@ -118,7 +118,7 @@ Dois revisores (Gemini e GPT) receberam só PRD + grill, sem ADRs/invariantes; p
 - D5 [APROVADA] Compra dividida entre próprio e terceiro: v1 só 100% próprio ou 100% terceiro (declarar), e tratamento de repasse maior que a dívida.
 - D6 [APROVADA] Segurança local: validação de Host (DNS rebinding), limpar cache da PWA no logout, limite do que a senha protege (outro acesso à conta do Windows).
 - D7 [APROVADA] Backup com teste de restauração e política mínima de retenção entram na v1 (substitui "direito ao esquecimento fora da v1").
-- D8 [APROVADA] PWA: instalável, online na rede local, sem lançamento offline (declarar). Origem do "gasto essencial" da reserva segue como pendência.
+- D8 [APROVADA] PWA: instalável, online na rede local, sem lançamento offline (declarar). O gasto essencial é parâmetro manual (ADR 007); bruto vs. líquido resolvido no ADR 034.
 
 **Rejeitado:** pipeline disparado por evento / série histórica no DuckDB (v1 manual); hash de terceiro no analítico (continua dado pessoal); remover DuckDB do escopo (ADR 008, usuário mantém, só adia); testes de mutação (opcional).
 

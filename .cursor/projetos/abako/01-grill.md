@@ -8,7 +8,7 @@
 
 - [x] **Problema real:** o saldo é conferido manualmente em planilha; falta visão de gasto real e de folga do orçamento (ADR 006).
 - [x] **Usuário:** uma pessoa (o próprio dono). `user_id` preparado para multiusuário futuro, não funcional (ADR 006, 012).
-- [x] **Critérios de sucesso mensuráveis:** invariantes INV-01..35 e fixtures numéricas (`tests/contracts/`, `fixtures/`).
+- [x] **Critérios de sucesso mensuráveis:** invariantes INV-01..37 e fixtures numéricas (`tests/contracts/`, `fixtures/`).
 - [x] **Out of scope declarado:** ver `02-prd.md`.
 - [x] **Restrições técnicas:** local-first, Windows 11, Docker, Android antigo só como futuro (ADR 014).
 - [x] **SLA / performance:** sem SLA formal; volume pequeno (ADR 008). Se surgir necessidade, entra como evolução contínua.
@@ -92,7 +92,7 @@ Tipo **a** (aplicação/API) com pipeline local pequeno. Itens marcados **[confi
 
 ## Critérios de sucesso mensuráveis
 
-- Invariantes cobertas: 35 de 35 (INV-01..35) com fixture (ou teste de propriedade) e ao menos 1 teste; script de rastreabilidade retorna vazio.
+- Invariantes cobertas: 37 de 37 (INV-01..37) com fixture (ou teste de propriedade) e ao menos 1 teste; script de rastreabilidade retorna vazio.
 - Critérios de aceite: 100% dos `SPEC-NNN-AC-N` com teste.
 - `check` verde antes de qualquer revisão adversarial.
 - Isolamento: 0 consultas sem filtro de `user_id` da sessão.

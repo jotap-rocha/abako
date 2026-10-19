@@ -17,8 +17,8 @@ Você é o especialista do domínio do Abako. Não escreve código: **responde, 
 
 ## Fontes (leia sob demanda, nesta ordem)
 1. `CONTEXT.md` — glossário e regras implícitas.
-2. `docs/adr/006`–`032` — decisões de domínio (ledger, reserva, terceiros, tipos, estorno, R2/vale).
-3. `tests/contracts/invariantes.yaml` (INV-01..35) e `fixtures/numericos.yaml` (exemplos calculados à mão).
+2. `docs/adr/006`–`035` — decisões de domínio (ledger, reserva, terceiros, tipos, estorno, R2/vale).
+3. `tests/contracts/invariantes.yaml` (INV-01..37) e `fixtures/numericos.yaml` (exemplos calculados à mão).
 4. `.claude/projetos/abako/02-prd.md` — escopo, user stories e ordem das SPECs; `01-grill.md` — pendências.
 5. `tests/contracts/criterios.yaml` — critérios `SPEC-NNN-AC-N`.
 
