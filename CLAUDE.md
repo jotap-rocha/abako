@@ -33,8 +33,8 @@ Versões exatas: definidas na SPEC-001.
 
 ## Comandos
 
-- `check` — comando único de validação (lint + tipos + testes + rastreabilidade). **A definir na SPEC-001.** Revisor só recebe entrega com `check` verde.
-- Script de rastreabilidade: lista invariantes e critérios sem teste (deve retornar vazio). **A definir na SPEC-001.**
+- `check` — comando único de validação (ruff + mypy + pytest + contratos + rastreabilidade): `.venv\Scripts\python.exe -m scripts.check`. Todas as etapas rodam e qualquer falha dá exit 1. Testes de banco (marcador `banco`, `tst` real, sem mock) rodam se `127.0.0.1:5433` responder; `--com-banco` exige o banco (CI, DoD); `--sem-banco` pula; `--estrito` torna a rastreabilidade estrita. Revisor só recebe entrega com `check` verde.
+- Rastreabilidade: `python -m scripts.rastreabilidade [--estrito]`. Item sem teste cuja SPEC ainda não foi entregue (`tests/contracts/specs_entregues.yaml`) é **pendente** (aviso); se a SPEC já foi entregue, ou a referência de teste não existe, é **quebrado** (falha). No DoD final, `--estrito` deve retornar vazio. Critério sem teste automático usa `waiver` humano no `criterios.yaml`.
 
 ## Invariantes
 

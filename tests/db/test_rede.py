@@ -6,6 +6,7 @@ import socket
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 RAIZ = Path(__file__).resolve().parents[2]
@@ -61,6 +62,7 @@ def _conecta(host: str) -> bool:
         return False
 
 
+@pytest.mark.banco
 def test_escuta_apenas_localhost() -> None:
     assert _conecta("127.0.0.1"), (
         "Postgres do abako não responde em 127.0.0.1:5433 (suba o compose)"

@@ -11,4 +11,47 @@
 #     fixtures: [F-XXX-NN]      # opcional
 #     teste: []                 # caminhos/ids de teste (preenchido na implementação)
 versao: 1
-criterios: []
+criterios:
+  - id: SPEC-001-AC-1
+    spec: SPEC-001
+    dado: "uma sessão de testes apontando para um banco que não é o tst"
+    quando: "a suíte inicia"
+    entao: "a suíte aborta antes de qualquer teste"
+    invariantes: []
+    teste: ["tests/db/test_guarda_tst.py::test_aborta_fora_de_tst"]
+  - id: SPEC-001-AC-2
+    spec: SPEC-001
+    dado: "o contêiner do Postgres do projeto no ar"
+    quando: "se tenta conectar por interfaces não loopback"
+    entao: "somente 127.0.0.1:5433 responde"
+    invariantes: []
+    teste: ["tests/db/test_rede.py::test_escuta_apenas_localhost"]
+  - id: SPEC-001-AC-3
+    spec: SPEC-001
+    dado: "um tst limpo"
+    quando: "as migrações são aplicadas e revertidas"
+    entao: "aplicam e revertem sem erro"
+    invariantes: []
+    teste: ["tests/db/test_migracoes.py::test_aplica_e_reverte"]
+  - id: SPEC-001-AC-4
+    spec: SPEC-001
+    dado: "o comando único check"
+    quando: "qualquer etapa (lint, tipos, testes, contratos, rastreabilidade) falha"
+    entao: "o check termina com código diferente de zero"
+    invariantes: []
+    teste: ["tests/test_check.py::test_check_falha_quando_etapa_falha"]
+  - id: SPEC-001-AC-5
+    spec: SPEC-001
+    dado: "invariantes e critérios com e sem teste"
+    quando: "o script de rastreabilidade roda"
+    entao: "lista os sem teste e retorna vazio quando tudo tem teste"
+    invariantes: []
+    teste: ["tests/test_rastreabilidade.py::test_lista_sem_teste"]
+  - id: SPEC-001-AC-6
+    spec: SPEC-001
+    dado: "o workflow de CI"
+    quando: "roda no primeiro push, sem segredos"
+    entao: "o job check executa o check completo e fica verde"
+    invariantes: []
+    teste: []
+    waiver: "humano: verificar o run do job check no GitHub Actions e registrar o link do run na task 02"

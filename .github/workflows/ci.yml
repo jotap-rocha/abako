@@ -1,7 +1,9 @@
 name: CI
 
 # CI mínimo (ADR 022): sem segredos, permissões mínimas, ações fixadas por SHA.
-# O `check` completo (ruff, mypy, pytest, Vitest, Playwright) entra com a SPEC-001.
+# Job `check` (SPEC-001b): ruff, mypy, pytest com Postgres efêmero, contratos e rastreabilidade.
+# Vitest e Playwright entram em jobs próprios quando existir `frontend/` (task do frontend);
+# até lá o `check` não os executa. Esses jobs devem usar setup-node fixado por SHA.
 on:
   pull_request:
   push:
@@ -96,3 +98,45 @@ jobs:
 
       - name: Catálogo de guardrails (agent-policies)
         run: python -m config.agent_policies check
+
+  check:
+    name: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    # Postgres efêmero, descartado com o runner. Credenciais fictícias de uso único (não são
+    # segredo: o banco só existe durante o job). Porta publicada só em loopback, como o compose.
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: ci_owner
+          POSTGRES_PASSWORD: ci-efemero
+          POSTGRES_DB: tst
+        ports:
+          - 127.0.0.1:5433:5432
+        options: >-
+          --health-cmd "pg_isready -U ci_owner -d tst"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      ABAKO_ENV: tst
+      ABAKO_DB_MIGRATE_URL_TST: postgresql://ci_owner:ci-efemero@127.0.0.1:5433/tst
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Dependências (versões exatas)
+        run: python -m pip install --disable-pip-version-check -r requirements-dev.txt
+
+      - name: check completo (exige o banco tst)
+        run: python -m scripts.check --com-banco
