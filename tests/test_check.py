@@ -28,10 +28,17 @@ def test_check_passa_quando_todas_passam() -> None:
 
 
 def test_etapas_padrao_cobrem_o_contrato() -> None:
-    nomes = [e.nome for e in etapas_padrao(banco="nao")]
-    assert nomes == ["ruff", "mypy", "pytest (sem banco)", "contratos", "rastreabilidade"]
-    com = [e.nome for e in etapas_padrao(banco="sim")]
-    assert "pytest (banco)" in com
+    sem = etapas_padrao(banco="nao")
+    assert [e.nome for e in sem] == [
+        "ruff",
+        "mypy",
+        "pytest (sem banco)",
+        "pytest (banco)",
+        "contratos",
+        "rastreabilidade",
+    ]
+    assert [e.nome for e in sem if e.pulada] == ["pytest (banco)"]
+    assert not any(e.pulada for e in etapas_padrao(banco="sim"))
 
 
 def test_com_banco_sem_contêiner_falha_explicitamente(
@@ -40,3 +47,34 @@ def test_com_banco_sem_contêiner_falha_explicitamente(
     monkeypatch.setattr("scripts.check.banco_no_ar", lambda: False)
     assert main(["--com-banco", "--so-pre-requisitos"]) == 1
     assert "banco" in capsys.readouterr().out.lower()
+
+
+def test_resumo_lista_etapas_e_banco_pulado(capsys: pytest.CaptureFixture[str]) -> None:
+    etapas = [_etapa("a", 0), Etapa("pytest (banco)", [], pulada=True)]
+    assert executar(etapas) == 0
+    saida = capsys.readouterr().out
+    assert "pytest (banco): PULADO" in saida
+    assert "verde parcial (banco não rodou)" in saida
+    assert "check: verde\n" not in saida
+
+
+def test_verde_completo_so_sem_etapas_puladas(capsys: pytest.CaptureFixture[str]) -> None:
+    assert executar([_etapa("a", 0)]) == 0
+    assert "check: verde\n" in capsys.readouterr().out
+
+
+def test_banco_fora_do_ar_gera_resumo_parcial(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # simula a ausência de resposta na porta (nenhum mock de banco)
+    monkeypatch.setattr("scripts.check.banco_no_ar", lambda: False)
+    monkeypatch.setattr(
+        "scripts.check.etapas_padrao",
+        lambda banco, estrito: [
+            Etapa("ruff", [PY, "-c", "pass"]),
+            Etapa("pytest (banco)", [], pulada=banco != "sim"),
+        ],
+    )
+    assert main([]) == 0
+    saida = capsys.readouterr().out
+    assert "pytest (banco): PULADO" in saida and "verde parcial" in saida

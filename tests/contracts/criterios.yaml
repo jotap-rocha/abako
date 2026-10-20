@@ -54,4 +54,4 @@ criterios:
     entao: "o job check executa o check completo e fica verde"
     invariantes: []
     teste: []
-    waiver: "humano: verificar o run do job check no GitHub Actions e registrar o link do run na task 02"
+    waiver: "humano: link do run pendente do primeiro push (verificar o job check no GitHub Actions e registrar o link na task 02)"

@@ -25,4 +25,4 @@ Branch protection exige os checks depois do primeiro run.
 - Testes de banco ganharam o marcador `banco` (`pyproject.toml`); `check` roda `-m "not banco"` sempre e `-m banco` se `127.0.0.1:5433` responde (`--com-banco` exige; sem mock).
 - Jobs de Vitest/Playwright: não criados (não há `frontend/`); documentado no cabeçalho do `ci.yml`. Aplicar setup-node fixado por SHA na task do frontend.
 - Critérios SPEC-001-AC-1..6 adicionados em `criterios.yaml` (1..3 apontam os testes da task 01).
-- Revisão: o `revisor-codigo` independente ainda NÃO foi chamado; precisa ser invocado pela sessão principal.
+- Revisão independente (`revisor-codigo`): aprovado com ressalvas, 0 bloqueantes, 9 ressalvas (5 corrigidas no commit `fix(task-02)`: spec inválida, referência de teste estrita, waiver `humano:` visível, resumo do check com PULADO, SPEC completa exige `specs_entregues.yaml`; 4 em aberto).

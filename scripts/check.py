@@ -3,7 +3,7 @@ r"""Comando único `check` (ADR 021): lint, tipos, testes, contratos e rastreabi
 Uso (na raiz do repositório, chamando o python do venv):
 
     .venv\Scripts\python.exe -m scripts.check              # banco: automático
-    .venv\Scripts\python.exe -m scripts.check --com-banco  # exige o `tst` no ar (CI, DoD)
+    .venv\Scripts\python.exe -m scripts.check --com-banco  # exige o `tst` no ar (CI, fechamento de task, DoD)
     .venv\Scripts\python.exe -m scripts.check --sem-banco  # pula os testes de banco
     .venv\Scripts\python.exe -m scripts.check --estrito    # rastreabilidade estrita (DoD final)
 
@@ -29,6 +29,7 @@ PORTA_BANCO = 5433
 class Etapa:
     nome: str
     cmd: list[str]
+    pulada: bool = False
 
 
 def banco_no_ar() -> bool:
@@ -47,8 +48,9 @@ def etapas_padrao(banco: str = "nao", estrito: bool = False) -> list[Etapa]:
         Etapa("mypy", [py, "-m", "mypy"]),
         Etapa("pytest (sem banco)", [py, "-m", "pytest", "-q", "-m", "not banco"]),
     ]
-    if banco == "sim":
-        etapas.append(Etapa("pytest (banco)", [py, "-m", "pytest", "-q", "-m", "banco"]))
+    etapas.append(
+        Etapa("pytest (banco)", [py, "-m", "pytest", "-q", "-m", "banco"], pulada=banco != "sim")
+    )
     etapas.append(Etapa("contratos", [py, "scripts/validar_contratos.py"]))
     rastro = [py, "-m", "scripts.rastreabilidade"]
     if estrito:
@@ -58,16 +60,24 @@ def etapas_padrao(banco: str = "nao", estrito: bool = False) -> list[Etapa]:
 
 
 def executar(etapas: list[Etapa]) -> int:
-    resultados: list[tuple[str, bool]] = []
+    resultados: list[tuple[str, str]] = []
     for e in etapas:
+        if e.pulada:
+            resultados.append((e.nome, "PULADO"))
+            continue
         print(f"\n=== {e.nome} ===", flush=True)
         ok = subprocess.run(e.cmd, cwd=RAIZ, check=False).returncode == 0
-        resultados.append((e.nome, ok))
+        resultados.append((e.nome, "ok" if ok else "FALHOU"))
     print("\n=== resumo ===")
-    for nome, ok in resultados:
-        print(f"{'ok     ' if ok else 'FALHOU '} {nome}")
-    falhou = any(not ok for _, ok in resultados)
-    print("check: FALHOU" if falhou else "check: verde")
+    for nome, res in resultados:
+        print(f"{nome}: {res}")
+    falhou = any(res == "FALHOU" for _, res in resultados)
+    if falhou:
+        print("check: FALHOU")
+    elif any(res == "PULADO" for _, res in resultados):
+        print("check: verde parcial (banco não rodou)")
+    else:
+        print("check: verde")
     return 1 if falhou else 0
 
 
