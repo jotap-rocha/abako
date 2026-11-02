@@ -1,0 +1,37 @@
+task_id: "3"
+criteria:
+  SPEC-001-AC-10:
+    id: SPEC-001-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_esquema.py::test_dinheiro_numeric"
+    test_paths:
+      - "tests/db/test_esquema.py::test_dinheiro_numeric"
+    exit_code: 0
+    log_path: "logs/3/SPEC-001-AC-10.log"
+  SPEC-001-AC-11:
+    id: SPEC-001-AC-11
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_idempotencia_esquema.py::test_chave_unica_por_usuario"
+    test_paths:
+      - "tests/db/test_idempotencia_esquema.py::test_chave_unica_por_usuario"
+    exit_code: 0
+    log_path: "logs/3/SPEC-001-AC-11.log"
+  SPEC-001-AC-7:
+    id: SPEC-001-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_esquema.py::test_toda_tabela_tem_user_id"
+    test_paths:
+      - "tests/db/test_esquema.py::test_toda_tabela_tem_user_id"
+    exit_code: 0
+    log_path: "logs/3/SPEC-001-AC-7.log"
+  SPEC-001-AC-8:
+    id: SPEC-001-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_versao_vigente.py::test_segunda_vigente_falha"
+    test_paths:
+      - "tests/db/test_versao_vigente.py::test_segunda_vigente_falha"
+    exit_code: 0
+    log_path: "logs/3/SPEC-001-AC-8.log"
+  SPEC-001-AC-9:
+    id: SPEC-001-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_papeis.py::test_app_sem_update_delete"
+    test_paths:
+      - "tests/db/test_papeis.py::test_app_sem_update_delete"
+    exit_code: 0
+    log_path: "logs/3/SPEC-001-AC-9.log"

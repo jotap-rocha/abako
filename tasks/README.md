@@ -10,7 +10,7 @@
 |---|---|---|---|
 | 01 | [SPEC-001a: ambiente do banco e guarda de teste](01-ambiente-banco.md) | done | — |
 | 02 | [SPEC-001b: check, rastreabilidade e CI](02-check-rastreabilidade.md) | done | 01 |
-| 03 | [SPEC-001c: esquema base e garantias](03-esquema-base.md) | not started | 02 |
+| 03 | [SPEC-001c: esquema base e garantias](03-esquema-base.md) | done | 02 |
 | 04 | [SPEC-001d: backup e restauração](04-backup-restore.md) | not started | 03 |
 | 05 | [SPEC-002: login e sessão](05-login.md) | not started | 03 |
 | 06 | [SPEC-012 (1/5): casca do frontend e login](06-front-casca.md) | not started | 05 |

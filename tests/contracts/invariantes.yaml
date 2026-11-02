@@ -15,8 +15,8 @@ invariantes:
   - {id: INV-10, enunciado: "A receber por pessoa = despesas de terceiros no cartão − repasses da pessoa.", fixtures: [F-FAT-01], spec: SPEC-007, teste: []}
   - {id: INV-11, enunciado: "Despesa de terceiro não é gasto real do usuário, mas entra no limite usado e no total da fatura.", fixtures: [F-GASTO-01, F-LIM-01], spec: SPEC-008, teste: []}
   - {id: INV-12, enunciado: "Cobertura da reserva = saldo da reserva ÷ gasto essencial; repasse, rendimento e aporte não são receita nem despesa.", fixtures: [F-RES-01, F-RES-02], spec: SPEC-009, teste: []}
-  - {id: INV-13, enunciado: "Isolamento: nenhuma consulta retorna dados de outro user_id; toda tabela tem user_id.", fixtures: [], spec: SPEC-001, teste: []}
-  - {id: INV-14, enunciado: "Nenhum valor monetário usa ponto flutuante (NUMERIC/Decimal; JSON de valores como texto).", fixtures: [], spec: SPEC-001, teste: []}
+  - {id: INV-13, enunciado: "Isolamento: nenhuma consulta retorna dados de outro user_id; toda tabela tem user_id.", fixtures: [], spec: SPEC-001, teste: ["tests/db/test_esquema.py::test_toda_tabela_tem_user_id"]}
+  - {id: INV-14, enunciado: "Nenhum valor monetário usa ponto flutuante (NUMERIC/Decimal; JSON de valores como texto).", fixtures: [], spec: SPEC-001, teste: ["tests/db/test_esquema.py::test_dinheiro_numeric"]}
   - {id: INV-15, enunciado: "Fluxo analítico é unidirecional: o pipeline escreve só no analítico, que contém apenas agregados e nunca escreve no transacional.", fixtures: [], spec: SPEC-014, teste: []}
   - {id: INV-16, enunciado: "(Futuro) Importar o mesmo arquivo duas vezes não duplica transações.", fixtures: [], spec: futura, teste: []}
   - {id: INV-17, enunciado: "Nível da reserva muda exatamente nos cortes: <50% crítica; 50% a <100% atenção; >=100% saudável.", fixtures: [F-RES-01], spec: SPEC-009, teste: []}
@@ -29,7 +29,7 @@ invariantes:
   - {id: INV-24, enunciado: "Receita total = caixa + vale; a tela principal mostra somente a de caixa.", fixtures: [F-VALE-05], spec: SPEC-013, teste: []}
   - {id: INV-25, enunciado: "Sobra do vale = Σ max(resta, 0) por bolso, sem compensar estouros; o destino soma exatamente o valor decidido no mês seguinte; sem decisão, sem ajuste; decisão nunca altera saldo.", fixtures: [F-VALE-02, F-VALE-03, F-VALE-04], spec: SPEC-013, teste: []}
   - {id: INV-26, enunciado: "Total da fatura = própria + terceiros; o R2 usa só a própria.", fixtures: [F-FAT-01, F-LIM-01, F-R2-03], spec: SPEC-005, teste: []}
-  - {id: INV-27, enunciado: "Cada entidade versionada tem no máximo uma versão vigente (unicidade parcial); inserir uma segunda vigente falha.", fixtures: [], spec: SPEC-001, teste: []}
+  - {id: INV-27, enunciado: "Cada entidade versionada tem no máximo uma versão vigente (unicidade parcial); inserir uma segunda vigente falha.", fixtures: [], spec: SPEC-001, teste: ["tests/db/test_versao_vigente.py::test_segunda_vigente_falha"]}
   - {id: INV-28, enunciado: "Repetir a criação com a mesma chave de idempotência não cria segunda transação e devolve o resultado da primeira.", fixtures: [], spec: SPEC-004, teste: []}
   - {id: INV-29, enunciado: "Atualização com versão desatualizada é rejeitada com conflito explícito e não cria nova versão.", fixtures: [], spec: SPEC-004, teste: []}
   - {id: INV-30, enunciado: "Edição retroativa de transação anterior a um snapshot não altera o snapshot; o R4 compara cada snapshot com o saldo derivado calculado a partir do snapshot imediatamente anterior (ou do saldo inicial) mais as transações vigentes até a data dele, e sinaliza se divergir.", fixtures: [], spec: SPEC-003, teste: []}
