@@ -233,3 +233,45 @@ def test_specs_entregues_do_repositorio_estao_em_dia() -> None:
     from scripts.rastreabilidade import ENTREGUES, specs_faltando
 
     assert specs_faltando(RAIZ / "tasks" / "abako", ENTREGUES) == []
+
+
+def _args(inv: Path, crit: Path, ent: Path, raiz: Path, *extra: str) -> list[str]:
+    base = ["--invariantes", str(inv), "--criterios", str(crit), "--entregues", str(ent)]
+    return [*extra, *base, "--raiz", str(raiz)]
+
+
+def test_waiver_pendente_nao_cobre(tmp_path: Path) -> None:
+    # Regressão: placeholder de evidência ainda não preenchida não pode contar como coberto.
+    crit_pend = {
+        "id": "SPEC-001-AC-14",
+        "spec": "SPEC-001",
+        "waiver": "humano: PENDENTE: evidência",
+    }
+    inv, crit, ent = _contratos(tmp_path, [], [crit_pend], [])
+    r = analisar(inv, crit, ent, tmp_path)
+    assert r.pendentes == ["SPEC-001-AC-14"] and r.quebrados == []
+    assert main(_args(inv, crit, ent, tmp_path, "--estrito")) == 1
+
+    inv, crit, ent = _contratos(tmp_path, [], [crit_pend], ["SPEC-001"])
+    assert analisar(inv, crit, ent, tmp_path).quebrados == ["SPEC-001-AC-14"]
+
+    preenchido = {**crit_pend, "waiver": "humano: restauração conferida em 2026-11-02"}
+    inv, crit, ent = _contratos(tmp_path, [], [preenchido], [])
+    r = analisar(inv, crit, ent, tmp_path)
+    assert r.sem_teste == [] and "SPEC-001-AC-14" in r.waivers
+
+
+def test_estrito_por_spec(tmp_path: Path) -> None:
+    ref = _teste_existente(tmp_path)
+    inv, crit, ent = _contratos(
+        tmp_path,
+        [
+            {"id": "INV-01", "spec": "SPEC-001", "teste": [ref]},
+            {"id": "INV-05", "spec": "SPEC-008", "teste": []},
+        ],
+        [],
+        [],
+    )
+    assert main(_args(inv, crit, ent, tmp_path, "--estrito")) == 1
+    assert main(_args(inv, crit, ent, tmp_path, "--estrito", "--spec", "SPEC-001")) == 0
+    assert main(_args(inv, crit, ent, tmp_path, "--estrito", "--spec", "SPEC-008")) == 1

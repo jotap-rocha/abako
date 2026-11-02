@@ -26,6 +26,14 @@
       "Bash(curl https:*)",
       "Bash(gh repo edit --visibility:*)",
       "Bash(psql -p 5432:*)",
+      "Bash(*abako-backup-chave*)",
+      "Read(//d/backups/**)",
+      "Read(//e/abako-backup-chave.txt)",
+      "Read(**/abako-backup-chave*.txt)",
+      "Edit(//d/backups/**)",
+      "Edit(//e/abako-backup-chave.txt)",
+      "Write(//d/backups/**)",
+      "Write(//e/abako-backup-chave.txt)",
       "Read(./.env)",
       "Read(./.env.local)",
       "Read(./.env.prd)",
@@ -82,7 +90,11 @@
       "Bash(gh issue view:*)",
       "Bash(gh issue list:*)",
       "Bash(gh pr view:*)",
-      "Bash(gh pr list:*)"
+      "Bash(gh pr list:*)",
+      "Bash(*--alvo prd*)",
+      "Bash(*ABAKO_CONFIRMA_PRD*)",
+      "Bash(*scripts.restaurar*)",
+      "Bash(age -d:*)"
     ]
   },
   "hooks": {

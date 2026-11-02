@@ -45,3 +45,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [034](034-reserva-bruto-liquido.md) | Reserva em bruto e líquido, com imposto retido | Aceita | 2026-10-19 |
 | [035](035-endereco-abako-localhost.md) | Endereço local `abako.localhost` | Aceita | 2026-10-19 |
 | [036](036-papeis-do-banco-e-fechamento-de-versao.md) | Papéis do banco criados fora da migração e fechamento de versão | Aceita | 2026-11-01 |
+| [037](037-backup-age-retencao-e-restauracao.md) | Backup com age, retenção 7+4 e restauração no banco descartável | Aceita | 2026-11-02 |

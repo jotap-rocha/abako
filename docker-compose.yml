@@ -18,6 +18,8 @@ services:
       # Senhas dos donos de prd/tst (não são a de admin); usadas só pelo init.
       ABAKO_OWNER_TST_PASSWORD: ${ABAKO_OWNER_TST_PASSWORD:?defina no .env}
       ABAKO_OWNER_PRD_PASSWORD: ${ABAKO_OWNER_PRD_PASSWORD:?defina no .env}
+      # Dono do banco descartável `restauracao` (ADR 037). Opcional: vazio = não cria no init.
+      ABAKO_OWNER_RESTAURACAO_PASSWORD: ${ABAKO_OWNER_RESTAURACAO_PASSWORD:-}
     secrets:
       - pg_admin_password
     volumes:

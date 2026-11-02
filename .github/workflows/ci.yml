@@ -130,6 +130,8 @@ jobs:
       ABAKO_PIPELINE_PASSWORD: ci-pipeline-efemero
       ABAKO_DB_APP_URL: postgresql://abako_app:ci-app-efemero@127.0.0.1:5433/tst
       ABAKO_DB_PIPELINE_URL: postgresql://abako_pipeline:ci-pipeline-efemero@127.0.0.1:5433/tst
+      ABAKO_OWNER_RESTAURACAO_PASSWORD: ci-restauracao-efemero
+      ABAKO_DB_RESTAURACAO_URL: postgresql://abako_owner_restauracao:ci-restauracao-efemero@127.0.0.1:5433/restauracao
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -150,6 +152,21 @@ jobs:
         run: |
           printf '%s' 'ci-efemero' > "$ABAKO_ADMIN_PASSWORD_FILE"
           python -m scripts.criar_papeis
+          # Descartável de restauração (ADR 037): a 2ª execução tem de ser idempotente.
+          python -m scripts.criar_descartavel | tee "$RUNNER_TEMP/descartavel-1.txt"
+          grep -q "banco restauracao: criado (vazio)" "$RUNNER_TEMP/descartavel-1.txt"
+          python -m scripts.criar_descartavel | tee "$RUNNER_TEMP/descartavel-2.txt"
+          grep -q "já existe com o dono certo (nada alterado)" "$RUNNER_TEMP/descartavel-2.txt"
+
+      # Backup (SPEC-001d): o teste usa par de chaves age efêmero e roda pg_dump dentro do
+      # contêiner do serviço (mesma versão do servidor), achado pelo id do job.
+      - name: Instalar age (pacote do Ubuntu)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q age
+          age --version
 
       - name: check completo (exige o banco tst)
+        env:
+          ABAKO_PG_CONTAINER: ${{ job.services.postgres.id }}
         run: python -m scripts.check --com-banco

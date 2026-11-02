@@ -2,4 +2,5 @@
 # "quebrado" (falha o check); se a spec não está aqui, é "pendente" (aviso).
 # Adicione a SPEC ao fechar a sua última task. Ver scripts/rastreabilidade.py.
 versao: 1
-entregues: []
+entregues:
+  - SPEC-001

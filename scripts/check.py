@@ -6,6 +6,7 @@ Uso (na raiz do repositório, chamando o python do venv):
     .venv\Scripts\python.exe -m scripts.check --com-banco  # exige o `tst` no ar (CI, fechamento de task, DoD)
     .venv\Scripts\python.exe -m scripts.check --sem-banco  # pula os testes de banco
     .venv\Scripts\python.exe -m scripts.check --estrito    # rastreabilidade estrita (DoD final)
+    .venv\Scripts\python.exe -m scripts.check --com-banco --estrito --spec SPEC-001  # fecha 1 SPEC
 
 Todas as etapas rodam; o exit code é 1 se qualquer uma falhar. Testes de banco (marcador
 `banco`) usam o `tst` real, nunca mock: no modo automático rodam se 127.0.0.1:5433 responder
@@ -40,7 +41,9 @@ def banco_no_ar() -> bool:
         return False
 
 
-def etapas_padrao(banco: str = "nao", estrito: bool = False) -> list[Etapa]:
+def etapas_padrao(
+    banco: str = "nao", estrito: bool = False, spec: str | None = None
+) -> list[Etapa]:
     """`banco`: 'sim' inclui os testes de banco, 'nao' omite."""
     py = sys.executable
     etapas = [
@@ -55,6 +58,8 @@ def etapas_padrao(banco: str = "nao", estrito: bool = False) -> list[Etapa]:
     rastro = [py, "-m", "scripts.rastreabilidade"]
     if estrito:
         rastro.append("--estrito")
+        if spec:
+            rastro += ["--spec", spec]
     etapas.append(Etapa("rastreabilidade", rastro))
     return etapas
 
@@ -87,8 +92,11 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--com-banco", action="store_true", help="exige o tst no ar; senão, falha")
     g.add_argument("--sem-banco", action="store_true", help="não roda os testes de banco")
     p.add_argument("--estrito", action="store_true", help="rastreabilidade estrita (DoD final)")
+    p.add_argument("--spec", default=None, help="com --estrito: fechamento de uma SPEC")
     p.add_argument("--so-pre-requisitos", action="store_true", help=argparse.SUPPRESS)
     a = p.parse_args(argv)
+    if a.spec and not a.estrito:
+        p.error("--spec só vale com --estrito")
 
     if a.sem_banco:
         banco = "nao"
@@ -109,7 +117,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     if a.so_pre_requisitos:
         return 0
-    return executar(etapas_padrao(banco, a.estrito))
+    return executar(etapas_padrao(banco, a.estrito, a.spec))
 
 
 if __name__ == "__main__":

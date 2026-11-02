@@ -23,8 +23,15 @@ files = [
   "tests/conftest.py",
   "tests/test_check.py",
   "tests/test_rastreabilidade.py",
+  "tests/test_retencao_backup.py",
+  "tests/test_conteiner.py",
+  "tests/test_agent_policies_backup.py",
   "scripts/check.py",
   "scripts/rastreabilidade.py",
+  "scripts/backup.py",
+  "scripts/restaurar.py",
+  "scripts/resumo_banco.py",
+  "scripts/criar_descartavel.py",
 ]
 strict = true
 
