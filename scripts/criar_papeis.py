@@ -4,7 +4,8 @@ Papéis são do cluster, compartilhados por `tst` e `prd`; o dono do banco não 
 então este passo é de ADMIN e roda uma vez, pelo usuário, antes das migrações da task 03.
 Senhas vêm do ambiente (`ABAKO_APP_PASSWORD`, `ABAKO_PIPELINE_PASSWORD`, via .env); a senha de
 admin vem do arquivo apontado por `ABAKO_ADMIN_PASSWORD_FILE` (fora do repositório). Nada é
-impresso além dos nomes dos papéis. Uso: `python -m scripts.criar_papeis`.
+impresso além dos nomes dos papéis. O usuário admin é `abako_admin`, ou o de
+`ABAKO_ADMIN_USER` (o CI usa o superusuário do Postgres efêmero). Uso: `python -m scripts.criar_papeis`.
 """
 
 from __future__ import annotations
@@ -23,7 +24,8 @@ PAPEL_PIPELINE = "abako_pipeline"
 VAR_SENHA_APP = "ABAKO_APP_PASSWORD"
 VAR_SENHA_PIPELINE = "ABAKO_PIPELINE_PASSWORD"
 VAR_ARQ_ADMIN = "ABAKO_ADMIN_PASSWORD_FILE"
-ADMIN = "abako_admin"
+VAR_USUARIO_ADMIN = "ABAKO_ADMIN_USER"
+ADMIN_PADRAO = "abako_admin"
 
 
 def comandos_papel(nome: str, senha: str, somente_leitura: bool) -> list[sql.Composed]:
@@ -60,7 +62,7 @@ def main() -> int:
         host="127.0.0.1",
         port=PORTA_ABAKO,
         dbname="postgres",
-        user=ADMIN,
+        user=os.environ.get(VAR_USUARIO_ADMIN) or ADMIN_PADRAO,
         password=senha_admin,
     ) as conn:
         for nome, senha, somente_leitura in papeis:
