@@ -1,0 +1,25 @@
+task_id: "2"
+criteria:
+  SPEC-001-AC-4:
+    id: SPEC-001-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/test_check.py::test_check_falha_quando_etapa_falha"
+    test_paths:
+      - "tests/test_check.py::test_check_falha_quando_etapa_falha"
+    exit_code: 0
+    log_path: "logs/2/SPEC-001-AC-4.log"
+  SPEC-001-AC-5:
+    id: SPEC-001-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/test_rastreabilidade.py::test_lista_sem_teste"
+    test_paths:
+      - "tests/test_rastreabilidade.py::test_lista_sem_teste"
+    exit_code: 0
+    log_path: "logs/2/SPEC-001-AC-5.log"
+  SPEC-001-AC-6:
+    id: SPEC-001-AC-6
+    command: "zizmor --offline --format plain .github"
+    test_paths: []
+    waiver:
+      human: true
+      reason: "No test: o run real do job check so existe no GitHub apos o push. Prova local = zizmor limpo no workflow. Usuario verifica o run (job check verde) e registra o link na task 02."
+    exit_code: 0
+    log_path: "logs/2/SPEC-001-AC-6.log"

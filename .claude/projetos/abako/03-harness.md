@@ -60,11 +60,11 @@ Sem skill pronta no skills.sh para: ledger/dinheiro com precisão decimal, migra
 
 ## CI mínimo (ADR 022)
 
-`.github/workflows/ci.yml`: `gitleaks` (histórico + árvore, binário com checksum fixo), `workflows` (actionlint + zizmor) e `contratos` (`scripts/validar_contratos.py` + `agent_policies check`). Ações fixadas por SHA, permissões mínimas, sem segredos; Dependabot semanal para ações. O `check` completo (ruff, mypy, pytest, Vitest, Playwright, Postgres efêmero) entra com a SPEC-001. Branch protection exige os 3 checks depois do primeiro run.
+`.github/workflows/ci.yml`: `gitleaks` (histórico + árvore, binário com checksum fixo), `workflows` (actionlint + zizmor) e `contratos` (`scripts/validar_contratos.py` + `agent_policies check`). Ações fixadas por SHA, permissões mínimas, sem segredos; Dependabot semanal para ações. Job `check` (task 02): `python -m scripts.check --com-banco` com Postgres efêmero como service container (loopback 5433). Vitest e Playwright entram em jobs próprios quando existir `frontend/`. Branch protection exige os 3 checks depois do primeiro run.
 
 ## Pendente
 
-- Definir o comando `check` e o script de rastreabilidade (SPEC-001).
+- `check` e rastreabilidade definidos (task 02); falta o waiver do primeiro run do CI.
 - Backup criptografado (age) com teste de restauração num banco descartável dedicado do mesmo contêiner, recusando o alvo `prd` (D7, ADR 032); definir na SPEC-001 retenção, local da chave e se roda no `check` ou na rotina de deploy local.
 - SPECs renumeradas 001..014 (2026-10-18, revisão adversarial): login na 002, gasto real na 008, vale e R5 na 013, pipeline na 014. Ver `02-prd.md`.
 - Fixar versões das dependências (SPEC-001). Porta do Postgres do projeto: **5433**.

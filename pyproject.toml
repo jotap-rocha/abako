@@ -2,6 +2,7 @@
 pythonpath = ["."]
 testpaths = ["tests"]
 addopts = "-ra"
+markers = ["banco: exige o Postgres tst no ar (127.0.0.1:5433); nunca com mock"]
 
 [tool.ruff]
 line-length = 100
@@ -16,7 +17,15 @@ select = ["E", "F", "I", "B", "UP"]
 
 [tool.mypy]
 python_version = "3.12"
-files = ["db", "tests/db", "tests/conftest.py"]
+files = [
+  "db",
+  "tests/db",
+  "tests/conftest.py",
+  "tests/test_check.py",
+  "tests/test_rastreabilidade.py",
+  "scripts/check.py",
+  "scripts/rastreabilidade.py",
+]
 strict = true
 
 [[tool.mypy.overrides]]

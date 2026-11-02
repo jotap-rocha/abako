@@ -5,10 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import psycopg
+import pytest
 from alembic import command
 from alembic.config import Config
 
 RAIZ = Path(__file__).resolve().parents[2]
+
+pytestmark = pytest.mark.banco
 
 
 def _cfg() -> Config:
