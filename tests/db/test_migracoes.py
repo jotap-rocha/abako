@@ -24,14 +24,29 @@ def _funcao_baseline(url: str) -> bool:
         return bool(row and row[0])
 
 
+def _tabelas_do_ledger(url: str) -> set[str]:
+    with psycopg.connect(url) as conn:
+        linhas = conn.execute(
+            "SELECT table_name FROM information_schema.tables "
+            "WHERE table_schema = 'public' "
+            "AND table_name IN ('usuario', 'conta_versao', 'transacao_versao')"
+        ).fetchall()
+    return {r[0] for r in linhas}
+
+
 def test_aplica_e_reverte(url_tst: str) -> None:
     cfg = _cfg()
+    esperadas = {"usuario", "conta_versao", "transacao_versao"}
     command.downgrade(cfg, "base")  # parte de um tst limpo
     command.upgrade(cfg, "head")
     assert _funcao_baseline(url_tst)
+    assert _tabelas_do_ledger(url_tst) == esperadas
     command.downgrade(cfg, "base")
     assert not _funcao_baseline(url_tst)
+    assert _tabelas_do_ledger(url_tst) == set()
     command.upgrade(cfg, "head")  # reaplica do zero
     assert _funcao_baseline(url_tst)
+    assert _tabelas_do_ledger(url_tst) == esperadas
     command.downgrade(cfg, "base")
     assert not _funcao_baseline(url_tst)
+    assert _tabelas_do_ledger(url_tst) == set()

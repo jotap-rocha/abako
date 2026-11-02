@@ -124,6 +124,12 @@ jobs:
     env:
       ABAKO_ENV: tst
       ABAKO_DB_MIGRATE_URL_TST: postgresql://ci_owner:ci-efemero@127.0.0.1:5433/tst
+      # Papéis de runtime (task 03): senhas fictícias de uso único, só neste banco efêmero.
+      ABAKO_ADMIN_USER: ci_owner
+      ABAKO_APP_PASSWORD: ci-app-efemero
+      ABAKO_PIPELINE_PASSWORD: ci-pipeline-efemero
+      ABAKO_DB_APP_URL: postgresql://abako_app:ci-app-efemero@127.0.0.1:5433/tst
+      ABAKO_DB_PIPELINE_URL: postgresql://abako_pipeline:ci-pipeline-efemero@127.0.0.1:5433/tst
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -137,6 +143,13 @@ jobs:
 
       - name: Dependências (versões exatas)
         run: python -m pip install --disable-pip-version-check -r requirements-dev.txt
+
+      - name: Papéis do banco (passo de admin, como no ambiente local)
+        env:
+          ABAKO_ADMIN_PASSWORD_FILE: ${{ runner.temp }}/admin-efemero.txt
+        run: |
+          printf '%s' 'ci-efemero' > "$ABAKO_ADMIN_PASSWORD_FILE"
+          python -m scripts.criar_papeis
 
       - name: check completo (exige o banco tst)
         run: python -m scripts.check --com-banco

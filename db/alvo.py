@@ -19,6 +19,15 @@ BANCO_PRD = "prd"
 VAR_URL_TST = "ABAKO_DB_MIGRATE_URL_TST"
 VAR_URL_PRD = "ABAKO_DB_MIGRATE_URL_PRD"
 VAR_CONFIRMA_PRD = "ABAKO_CONFIRMA_PRD"
+VAR_URL_APP = "ABAKO_DB_APP_URL"
+VAR_URL_PIPELINE = "ABAKO_DB_PIPELINE_URL"
+USUARIO_APP = "abako_app"
+USUARIO_PIPELINE = "abako_pipeline"
+# Papel de runtime -> (variável com a URL, usuário esperado). Passam pelo mesmo guarda do tst.
+PAPEIS_RUNTIME = {
+    "app": (VAR_URL_APP, USUARIO_APP),
+    "pipeline": (VAR_URL_PIPELINE, USUARIO_PIPELINE),
+}
 # Confirmação humana não pode vir de arquivo: só do ambiente real do processo.
 NAO_IMPORTAR_DO_ENV = {VAR_CONFIRMA_PRD}
 
@@ -76,6 +85,15 @@ def verificar_url_tst(url: str) -> None:
     _verificar_url(url, BANCO_TST, VAR_URL_TST)
 
 
+def verificar_url_papel(url: str, var: str, usuario_esperado: str) -> None:
+    """URL de papel de runtime: mesmas regras do tst (host local, 5433, banco tst, sem query)
+    e o usuário tem de ser o papel esperado (não o dono nem o admin)."""
+    _verificar_url(url, BANCO_TST, var)
+    usuario = urlsplit(url).username
+    if usuario != usuario_esperado:
+        raise AlvoInvalido(f"{var}: usuário {usuario!r} != {usuario_esperado!r}")
+
+
 def verificar_url_prd(url: str) -> None:
     """Idem para `prd`; só usada após a confirmação humana (ADR 019)."""
     _verificar_url(url, BANCO_PRD, VAR_URL_PRD)
@@ -122,6 +140,14 @@ def verificar_banco_conectado(esperado: str, banco: object) -> None:
 def verificar_conexao_tst(conn: Any) -> None:
     """Confere no servidor que `current_database()` é `tst`."""
     verificar_banco_conectado(BANCO_TST, conn.execute("SELECT current_database()").fetchone()[0])
+
+
+def verificar_conexao_papel(conn: Any, usuario_esperado: str) -> None:
+    """Confere no servidor o banco (`tst`) e o `current_user` do papel de runtime."""
+    verificar_conexao_tst(conn)
+    usuario = conn.execute("SELECT current_user").fetchone()[0]
+    if usuario != usuario_esperado:
+        raise AlvoInvalido(f"conectado como {usuario!r}, esperado {usuario_esperado!r}")
 
 
 def url_psycopg(url: str) -> str:

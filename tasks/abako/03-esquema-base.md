@@ -1,6 +1,6 @@
 # SPEC-001c: esquema base e garantias
 
-**Status:** not started  
+**Status:** done  
 **Blocked by:** tasks/abako/02-check-rastreabilidade.md
 
 ## What to build
@@ -9,11 +9,11 @@ Esquema base do ledger: `user_id` em toda tabela, papéis do banco (aplicação 
 
 ## Acceptance criteria
 
-- [ ] SPEC-001-AC-7: toda tabela tem `user_id` (INV-13) — tested by: tests/db/test_esquema.py::test_toda_tabela_tem_user_id
-- [ ] SPEC-001-AC-8: inserir segunda versão vigente da mesma entidade falha (INV-27) — tested by: tests/db/test_versao_vigente.py::test_segunda_vigente_falha
-- [ ] SPEC-001-AC-9: o papel da aplicação não tem UPDATE/DELETE nas tabelas de versão — tested by: tests/db/test_papeis.py::test_app_sem_update_delete
-- [ ] SPEC-001-AC-10: nenhuma coluna monetária usa tipo de ponto flutuante (INV-14) — tested by: tests/db/test_esquema.py::test_dinheiro_numeric
-- [ ] SPEC-001-AC-11: existe campo de versão e a chave de idempotência é única por usuário — tested by: tests/db/test_idempotencia_esquema.py::test_chave_unica_por_usuario
+- [x] SPEC-001-AC-7: toda tabela tem `user_id` (INV-13) — tested by: tests/db/test_esquema.py::test_toda_tabela_tem_user_id
+- [x] SPEC-001-AC-8: inserir segunda versão vigente da mesma entidade falha (INV-27) — tested by: tests/db/test_versao_vigente.py::test_segunda_vigente_falha
+- [x] SPEC-001-AC-9: o papel da aplicação não tem UPDATE/DELETE nas tabelas de versão — tested by: tests/db/test_papeis.py::test_app_sem_update_delete
+- [x] SPEC-001-AC-10: nenhuma coluna monetária usa tipo de ponto flutuante (INV-14) — tested by: tests/db/test_esquema.py::test_dinheiro_numeric
+- [x] SPEC-001-AC-11: existe campo de versão e a chave de idempotência é única por usuário — tested by: tests/db/test_idempotencia_esquema.py::test_chave_unica_por_usuario
 
 ## Notes
 

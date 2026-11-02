@@ -55,3 +55,42 @@ criterios:
     invariantes: []
     teste: []
     waiver: "humano: job check verde no primeiro run do CI, https://github.com/jotap-rocha/abako/actions/runs/41051543297/job/124048547371"
+  - id: SPEC-001-AC-7
+    spec: SPEC-001
+    dado: "o esquema base migrado em tst"
+    quando: "se listam as tabelas do ledger"
+    entao: "toda tabela (exceto a de controle do Alembic) tem user_id"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_esquema.py::test_toda_tabela_tem_user_id"]
+  - id: SPEC-001-AC-8
+    spec: SPEC-001
+    dado: "uma entidade versionada com uma versão vigente"
+    quando: "se insere uma segunda versão vigente da mesma entidade"
+    entao: "a inserção falha por violação de unicidade"
+    invariantes: [INV-27]
+    teste: ["tests/db/test_versao_vigente.py::test_segunda_vigente_falha"]
+  - id: SPEC-001-AC-9
+    spec: SPEC-001
+    dado: "conexão com o papel da aplicação"
+    quando: "se tenta UPDATE ou DELETE nas tabelas de versão"
+    entao: "o banco nega (a aplicação só tem SELECT e INSERT)"
+    invariantes: []
+    teste:
+      - "tests/db/test_papeis.py::test_app_sem_update_delete"
+      - "tests/db/test_papeis.py::test_pipeline_somente_leitura"
+  - id: SPEC-001-AC-10
+    spec: SPEC-001
+    dado: "o esquema base migrado"
+    quando: "se inspecionam os tipos das colunas"
+    entao: "nenhuma coluna monetária usa ponto flutuante; valor é NUMERIC"
+    invariantes: [INV-14]
+    teste: ["tests/db/test_esquema.py::test_dinheiro_numeric"]
+  - id: SPEC-001-AC-11
+    spec: SPEC-001
+    dado: "o esquema base migrado"
+    quando: "se repete a mesma chave de idempotência para o mesmo usuário"
+    entao: "a segunda falha; existe campo de versão; a chave se repete só entre usuários"
+    invariantes: []
+    teste:
+      - "tests/db/test_idempotencia_esquema.py::test_chave_unica_por_usuario"
+      - "tests/db/test_idempotencia_esquema.py::test_campo_de_versao_existe"

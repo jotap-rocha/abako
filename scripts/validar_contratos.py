@@ -32,7 +32,9 @@ def carregar(caminho: Path) -> dict:
     return dados
 
 
-def ids_unicos(itens: list[dict], rotulo: str, padrao: re.Pattern[str], erros: list[str]) -> set[str]:
+def ids_unicos(
+    itens: list[dict], rotulo: str, padrao: re.Pattern[str], erros: list[str]
+) -> set[str]:
     vistos: set[str] = set()
     for item in itens:
         ident = str(item.get("id", ""))

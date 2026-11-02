@@ -44,3 +44,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [033](033-frontend-fino-antecipado.md) | Frontend fino antecipado (SPEC-012 em incrementos) | Aceita | 2026-10-19 |
 | [034](034-reserva-bruto-liquido.md) | Reserva em bruto e líquido, com imposto retido | Aceita | 2026-10-19 |
 | [035](035-endereco-abako-localhost.md) | Endereço local `abako.localhost` | Aceita | 2026-10-19 |
+| [036](036-papeis-do-banco-e-fechamento-de-versao.md) | Papéis do banco criados fora da migração e fechamento de versão | Aceita | 2026-11-01 |
