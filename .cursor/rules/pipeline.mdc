@@ -13,6 +13,7 @@ O pipeline alimenta a camada analítica (ADR 008). Fluxo **unidirecional**: lê 
 - **Só agregados.** Nenhuma linha de transação, descrição ou estabelecimento no analítico. Views: `saldo_diario`, `gasto_mensal`, `fatura_resumo`, `limite_linha`, `a_receber_por_pessoa`, `cobertura_reserva`.
 - **Dinheiro:** `DECIMAL`/`Decimal`, nunca float (INV-14).
 - **Idempotente:** reexecutar sobre os mesmos dados produz o mesmo arquivo analítico.
+- **Execução única:** `pg_advisory_lock` impede duas execuções simultâneas do pipeline (ADR 029, SPEC-014).
 - **`user_id` preservado** nos agregados (INV-13).
 - **Config via settings/`.env`;** nenhum caminho, host ou senha hardcoded.
 - **Logs:** por etapa (`etapa`, `run_id`, `registros_lidos`, `registros_escritos`, `duracao_ms`), sem dado pessoal nem valores.

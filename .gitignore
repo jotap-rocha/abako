@@ -113,3 +113,7 @@ logs/
 backups/
 *.dump
 *.age
+
+# Revisão adversarial externa (texto bruto de terceiros, não versionar)
+.claude/projetos/*/adversarial-*.md
+.claude/projetos/*/pacote-revisao-adversarial.md

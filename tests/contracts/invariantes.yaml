@@ -3,29 +3,40 @@
 # "teste" fica vazio até a SPEC correspondente ser implementada.
 versao: 1
 invariantes:
-  - {id: INV-01, enunciado: "Transferência tem exatamente duas pernas e a soma dos valores é zero.", fixtures: [F-TRANSF-01], spec: SPEC-003, teste: []}
-  - {id: INV-02, enunciado: "A soma das parcelas de uma compra é igual ao valor total; a última parcela absorve os centavos.", fixtures: [F-PARC-01, F-PARC-02], spec: SPEC-004, teste: []}
-  - {id: INV-03, enunciado: "Saldo derivado = último snapshot + soma das transações válidas posteriores (versão vigente, não excluídas).", fixtures: [F-SALDO-01, F-SALDO-02], spec: SPEC-002, teste: []}
-  - {id: INV-04, enunciado: "Gasto real exclui transferência, investimento, repasse, rendimento e pagamento de fatura.", fixtures: [F-TRANSF-01, F-GASTO-01], spec: SPEC-003, teste: []}
-  - {id: INV-05, enunciado: "Pagamento de fatura nunca é gasto; o gasto é contado nas compras/parcelas, no mês da fatura.", fixtures: [F-GASTO-01], spec: SPEC-004, teste: []}
-  - {id: INV-06, enunciado: "Limite usado = soma das dívidas dos cartões da linha, incluindo parcelas futuras e terceiros; compras consomem o valor total.", fixtures: [F-LIM-01, F-EST-01, F-EST-02], spec: SPEC-004, teste: []}
-  - {id: INV-07, enunciado: "Cada parcela pertence à fatura da sua competência; o total da fatura é a soma das parcelas dessa competência.", fixtures: [F-FAT-01], spec: SPEC-004, teste: []}
-  - {id: INV-08, enunciado: "Estorno integral devolve o limite total e não movimenta conta corrente; estorno com parcelas pagas devolve o limite das não pagas e gera crédito do valor pago na próxima fatura aberta; líquido da compra = zero.", fixtures: [F-EST-01, F-EST-02], spec: SPEC-005, teste: []}
-  - {id: INV-09, enunciado: "Editar transação cria nova versão, preserva o histórico e só a versão vigente conta; exclusão é lógica.", fixtures: [F-SALDO-02], spec: SPEC-003, teste: []}
-  - {id: INV-10, enunciado: "A receber por pessoa = despesas de terceiros no cartão − repasses da pessoa.", fixtures: [F-FAT-01], spec: SPEC-006, teste: []}
-  - {id: INV-11, enunciado: "Despesa de terceiro não é gasto real do usuário, mas entra no limite usado e no total da fatura.", fixtures: [F-GASTO-01, F-LIM-01], spec: SPEC-006, teste: []}
-  - {id: INV-12, enunciado: "Cobertura da reserva = saldo da reserva ÷ gasto essencial; repasse, rendimento e aporte não são receita nem despesa.", fixtures: [F-RES-01, F-RES-02], spec: SPEC-007, teste: []}
+  - {id: INV-01, enunciado: "Transferência tem exatamente duas pernas e a soma dos valores é zero.", fixtures: [F-TRANSF-01], spec: SPEC-004, teste: []}
+  - {id: INV-02, enunciado: "A soma das parcelas de uma compra é igual ao valor total; a última parcela absorve os centavos.", fixtures: [F-PARC-01, F-PARC-02], spec: SPEC-005, teste: []}
+  - {id: INV-03, enunciado: "Saldo derivado = último snapshot + soma das transações válidas posteriores (versão vigente, não excluídas).", fixtures: [F-SALDO-01, F-SALDO-02], spec: SPEC-003, teste: []}
+  - {id: INV-04, enunciado: "Gasto real exclui transferência, investimento, repasse, rendimento e pagamento de fatura.", fixtures: [F-TRANSF-01, F-GASTO-01], spec: SPEC-008, teste: []}
+  - {id: INV-05, enunciado: "Pagamento de fatura nunca é gasto; o gasto é contado nas compras/parcelas, no mês da fatura.", fixtures: [F-GASTO-01], spec: SPEC-008, teste: []}
+  - {id: INV-06, enunciado: "Limite usado = soma das dívidas dos cartões da linha, incluindo parcelas futuras e terceiros; compras consomem o valor total.", fixtures: [F-LIM-01, F-EST-01, F-EST-02], spec: SPEC-005, teste: []}
+  - {id: INV-07, enunciado: "Cada parcela pertence à fatura da sua competência; o total da fatura é a soma das parcelas dessa competência.", fixtures: [F-FAT-01], spec: SPEC-005, teste: []}
+  - {id: INV-08, enunciado: "Estorno integral devolve o limite total e não movimenta conta corrente; estorno com parcelas pagas devolve o limite das não pagas e gera crédito do valor pago na próxima fatura aberta; líquido da compra = zero.", fixtures: [F-EST-01, F-EST-02], spec: SPEC-006, teste: []}
+  - {id: INV-09, enunciado: "Editar transação cria nova versão, preserva o histórico e só a versão vigente conta; exclusão é lógica.", fixtures: [F-SALDO-02], spec: SPEC-004, teste: []}
+  - {id: INV-10, enunciado: "A receber por pessoa = despesas de terceiros no cartão − repasses da pessoa.", fixtures: [F-FAT-01], spec: SPEC-007, teste: []}
+  - {id: INV-11, enunciado: "Despesa de terceiro não é gasto real do usuário, mas entra no limite usado e no total da fatura.", fixtures: [F-GASTO-01, F-LIM-01], spec: SPEC-008, teste: []}
+  - {id: INV-12, enunciado: "Cobertura da reserva = saldo da reserva ÷ gasto essencial; repasse, rendimento e aporte não são receita nem despesa.", fixtures: [F-RES-01, F-RES-02], spec: SPEC-009, teste: []}
   - {id: INV-13, enunciado: "Isolamento: nenhuma consulta retorna dados de outro user_id; toda tabela tem user_id.", fixtures: [], spec: SPEC-001, teste: []}
   - {id: INV-14, enunciado: "Nenhum valor monetário usa ponto flutuante (NUMERIC/Decimal; JSON de valores como texto).", fixtures: [], spec: SPEC-001, teste: []}
-  - {id: INV-15, enunciado: "Fluxo analítico é unidirecional: o pipeline escreve só no analítico, que contém apenas agregados e nunca escreve no transacional.", fixtures: [], spec: SPEC-009, teste: []}
+  - {id: INV-15, enunciado: "Fluxo analítico é unidirecional: o pipeline escreve só no analítico, que contém apenas agregados e nunca escreve no transacional.", fixtures: [], spec: SPEC-014, teste: []}
   - {id: INV-16, enunciado: "(Futuro) Importar o mesmo arquivo duas vezes não duplica transações.", fixtures: [], spec: futura, teste: []}
-  - {id: INV-17, enunciado: "Nível da reserva muda exatamente nos cortes: <50% crítica; 50% a <100% atenção; >=100% saudável.", fixtures: [F-RES-01], spec: SPEC-007, teste: []}
-  - {id: INV-18, enunciado: "A sobra do R2 exclui terceiros, 'a receber' e crédito do vale; usa só a fatura própria.", fixtures: [F-R2-01, F-R2-02, F-R2-03], spec: SPEC-012, teste: []}
-  - {id: INV-19, enunciado: "R2 conta apenas ocorrências recorrentes não vinculadas com data >= hoje dentro do horizonte; vencidas não vinculadas ficam em lista separada.", fixtures: [F-R2-01, F-R2-04], spec: SPEC-012, teste: []}
-  - {id: INV-20, enunciado: "Despesa de conta de benefício nunca entra no gasto real; receita de conta de benefício nunca entra na receita de caixa.", fixtures: [F-GASTO-01], spec: SPEC-013, teste: []}
+  - {id: INV-17, enunciado: "Nível da reserva muda exatamente nos cortes: <50% crítica; 50% a <100% atenção; >=100% saudável.", fixtures: [F-RES-01], spec: SPEC-009, teste: []}
+  - {id: INV-18, enunciado: "A sobra do R2 exclui terceiros, 'a receber' e crédito do vale; usa só a fatura própria.", fixtures: [F-R2-01, F-R2-02, F-R2-03], spec: SPEC-010, teste: []}
+  - {id: INV-19, enunciado: "R2 conta apenas ocorrências recorrentes não vinculadas com data >= hoje dentro do horizonte; vencidas não vinculadas ficam em lista separada.", fixtures: [F-R2-01, F-R2-04], spec: SPEC-010, teste: []}
+  - {id: INV-20, enunciado: "Despesa de conta de benefício nunca entra no gasto real; receita de conta de benefício nunca entra na receita de caixa.", fixtures: [F-GASTO-01], spec: SPEC-008, teste: []}
   - {id: INV-21, enunciado: "Pessoal = crédito do mês − base de trabalho; alocação efetiva = base + ajuste de sobra decidida; resta = alocação efetiva − consumo; não acumula entre meses.", fixtures: [F-VALE-01, F-VALE-02, F-VALE-04], spec: SPEC-013, teste: []}
   - {id: INV-22, enunciado: "Saldo total da conta de benefício = saldo derivado normal (acumula), conferido por snapshot.", fixtures: [F-VALE-01, F-VALE-05], spec: SPEC-013, teste: []}
-  - {id: INV-23, enunciado: "R4 lista exatamente as contas/faturas em que derivado ≠ snapshot.", fixtures: [F-SALDO-01], spec: SPEC-002, teste: []}
+  - {id: INV-23, enunciado: "R4 lista exatamente as contas/faturas em que derivado ≠ snapshot.", fixtures: [F-SALDO-01], spec: SPEC-003, teste: []}
   - {id: INV-24, enunciado: "Receita total = caixa + vale; a tela principal mostra somente a de caixa.", fixtures: [F-VALE-05], spec: SPEC-013, teste: []}
   - {id: INV-25, enunciado: "Sobra do vale = Σ max(resta, 0) por bolso, sem compensar estouros; o destino soma exatamente o valor decidido no mês seguinte; sem decisão, sem ajuste; decisão nunca altera saldo.", fixtures: [F-VALE-02, F-VALE-03, F-VALE-04], spec: SPEC-013, teste: []}
-  - {id: INV-26, enunciado: "Total da fatura = própria + terceiros; o R2 usa só a própria.", fixtures: [F-FAT-01, F-LIM-01, F-R2-03], spec: SPEC-004, teste: []}
+  - {id: INV-26, enunciado: "Total da fatura = própria + terceiros; o R2 usa só a própria.", fixtures: [F-FAT-01, F-LIM-01, F-R2-03], spec: SPEC-005, teste: []}
+  - {id: INV-27, enunciado: "Cada entidade versionada tem no máximo uma versão vigente (unicidade parcial); inserir uma segunda vigente falha.", fixtures: [], spec: SPEC-001, teste: []}
+  - {id: INV-28, enunciado: "Repetir a criação com a mesma chave de idempotência não cria segunda transação e devolve o resultado da primeira.", fixtures: [], spec: SPEC-004, teste: []}
+  - {id: INV-29, enunciado: "Atualização com versão desatualizada é rejeitada com conflito explícito e não cria nova versão.", fixtures: [], spec: SPEC-004, teste: []}
+  - {id: INV-30, enunciado: "Edição retroativa de transação anterior a um snapshot não altera o snapshot; o R4 compara cada snapshot com o saldo derivado calculado a partir do snapshot imediatamente anterior (ou do saldo inicial) mais as transações vigentes até a data dele, e sinaliza se divergir.", fixtures: [], spec: SPEC-003, teste: []}
+  - {id: INV-31, enunciado: "Fechamento de cartão em dia inexistente no mês usa o último dia válido do mês.", fixtures: [], spec: SPEC-005, teste: []}
+  - {id: INV-32, enunciado: "Na v1 a compra é 100% própria ou 100% de terceiro; divisão entre os dois é rejeitada.", fixtures: [], spec: SPEC-007, teste: []}
+  - {id: INV-33, enunciado: "Repasse acima da dívida da pessoa nunca gera 'a receber' negativo silencioso (regra exata definida na SPEC-007).", fixtures: [], spec: SPEC-007, teste: []}
+  - {id: INV-34, enunciado: "Requisição com cabeçalho Host fora da lista permitida é rejeitada.", fixtures: [], spec: SPEC-002, teste: []}
+  - {id: INV-35, enunciado: "Duas execuções simultâneas do pipeline são impedidas por trava; a segunda falha sem tocar o arquivo analítico.", fixtures: [], spec: SPEC-014, teste: []}
+  - {id: INV-36, enunciado: "Rendimento registra valor bruto e imposto retido; o valor creditado na conta é bruto − imposto; o imposto não é gasto real.", fixtures: [], spec: SPEC-004, teste: []}
+  - {id: INV-37, enunciado: "A reserva exibe líquido (saldo da conta), imposto acumulado e bruto = líquido + imposto acumulado; a cobertura usa o líquido.", fixtures: [], spec: SPEC-009, teste: []}

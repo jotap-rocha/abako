@@ -21,7 +21,7 @@ React + TypeScript (PWA) → FastAPI → PostgreSQL (`prd`/`tst`) → pipeline P
 
 ## Documentação
 
-- `docs/adr/` — decisões (ADRs 006–023)
+- `docs/adr/` — decisões (ADRs 006–035)
 - `tests/contracts/` e `fixtures/` — invariantes, critérios e fixtures numéricas
 - `CONTEXT.md` — glossário do domínio e da web
 - `docs/revisao/rubrica-adversarial.md` — rubrica da revisão adversarial
