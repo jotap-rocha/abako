@@ -1,0 +1,25 @@
+task_id: "4"
+criteria:
+  SPEC-001-AC-12:
+    id: SPEC-001-AC-12
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_restore.py::test_recusa_alvo_prd"
+    test_paths:
+      - "tests/db/test_restore.py::test_recusa_alvo_prd"
+    exit_code: 0
+    log_path: "logs/4/SPEC-001-AC-12.log"
+  SPEC-001-AC-13:
+    id: SPEC-001-AC-13
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_backup.py::test_backup_criptografado"
+    test_paths:
+      - "tests/db/test_backup.py::test_backup_criptografado"
+    exit_code: 0
+    log_path: "logs/4/SPEC-001-AC-13.log"
+  SPEC-001-AC-14:
+    id: SPEC-001-AC-14
+    command: ".venv\\Scripts\\python.exe -m scripts.check --com-banco --estrito --spec SPEC-001"
+    test_paths: []
+    waiver:
+      human: true
+      reason: "No test: restauracao so pelo usuario (ADR 032). Executada em 2026-11-02 com backup sintetico do tst; resumo da origem e conferencia do descartavel identicos (2 contas, 5 transacoes, soma 1526.59). Waiver registrado em tests/contracts/criterios.yaml; o comando prova que a rastreabilidade estrita da SPEC-001 aceita o waiver."
+    exit_code: 0
+    log_path: "logs/4/SPEC-001-AC-14.log"

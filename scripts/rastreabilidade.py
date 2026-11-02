@@ -5,7 +5,8 @@ Estados de cada item (invariante ou critério de aceite):
 - coberto: `teste` não vazio e cada referência é `arquivo.py::test_nome` com a função
   existente, nome iniciado por `test_` e sem skip/skipif/xfail; ou `waiver` humano
   (`humano: <motivo ou link>`, só para critério sem teste automático, ex.: CI). Todo waiver
-  ativo é listado na saída, no modo padrão e no estrito.
+  ativo é listado na saída, no modo padrão e no estrito. Waiver com `PENDENTE` é marcador
+  de evidência ainda não preenchida e NÃO cobre: o item conta como sem teste.
 - pendente: sem teste e a `spec` do item ainda NÃO consta em `specs_entregues.yaml`
   (ou é `futura`). É dívida planejada: aviso, não falha, no modo padrão.
 - quebrado: sem teste mas a spec JÁ foi entregue; `spec` ausente/inválida; referência de
@@ -16,10 +17,11 @@ todas `Status: done` precisa constar em `specs_entregues.yaml`, senão falha. SP
 fecha com as 4 tasks 01-04 done e a SPEC-012 com as 5.
 
 `--estrito` (DoD final): qualquer item sem teste, mesmo pendente, falha; sem waiver, saída
-vazia = ok. O fechamento de cada SPEC roda `check --com-banco --estrito`. Sem `--estrito`,
-só quebrados falham.
+vazia = ok. `--spec SPEC-NNN` restringe o estrito aos itens dessa SPEC (fechamento de
+SPEC: `check --com-banco --estrito --spec SPEC-NNN`); quebrados de qualquer SPEC continuam
+falhando. Sem `--estrito`, só quebrados falham.
 
-Uso: python -m scripts.rastreabilidade [--estrito]
+Uso: python -m scripts.rastreabilidade [--estrito [--spec SPEC-NNN]]
 """
 
 from __future__ import annotations
@@ -41,6 +43,7 @@ ENTREGUES = RAIZ / "tests" / "contracts" / "specs_entregues.yaml"
 TASKS = RAIZ / "tasks" / "abako"
 RE_SPEC = re.compile(r"^(SPEC-\d{3}|futura)$")
 RE_WAIVER = re.compile(r"^humano:\s*\S")
+MARCA_WAIVER_PENDENTE = "PENDENTE"
 RE_CAB = re.compile(r"^#\s+(SPEC-\d{3})")
 RE_STATUS = re.compile(r"^\*\*Status:\*\*\s*(\S.*?)\s*$", re.MULTILINE)
 MARCAS_PULO = ("mark.skip", "mark.skipif", "mark.xfail", "pytest.skip", "pytest.xfail")
@@ -53,6 +56,7 @@ class Resultado:
     quebrados: list[str] = field(default_factory=list)
     motivos: dict[str, str] = field(default_factory=dict)
     waivers: dict[str, str] = field(default_factory=dict)
+    specs: dict[str, str] = field(default_factory=dict)
 
 
 def _carregar(caminho: Path, chave: str) -> list[dict[str, Any]]:
@@ -127,12 +131,13 @@ def analisar(
         testes = list(item.get("teste") or [])
         spec = str(item.get("spec") or "")
         waiver = str(item.get("waiver") or "").strip()
+        r.specs[ident] = spec
         problemas: list[str] = []
         if not RE_SPEC.match(spec):
             problemas.append(f"spec ausente ou inválida ({spec!r})")
         if "waiver" in item and not RE_WAIVER.match(waiver):
             problemas.append("waiver deve ser 'humano: <motivo ou link>'")
-        elif waiver:
+        elif waiver and MARCA_WAIVER_PENDENTE not in waiver:
             r.waivers[ident] = waiver
         if problemas:
             r.quebrados.append(ident)
@@ -144,28 +149,36 @@ def analisar(
                 r.quebrados.append(ident)
                 r.motivos[ident] = f"teste inválido: {', '.join(map(str, ruins))}"
             continue
-        if waiver:
+        waiver_pendente = MARCA_WAIVER_PENDENTE in waiver  # marcador em maiúsculas, de propósito
+        if waiver and not waiver_pendente:
             continue
         r.sem_teste.append(ident)
+        sufixo = " (waiver com evidência PENDENTE)" if waiver_pendente else ""
         if spec in ent:
             r.quebrados.append(ident)
-            r.motivos[ident] = f"{spec} entregue, mas sem teste"
+            r.motivos[ident] = f"{spec} entregue, mas sem teste{sufixo}"
         else:
             r.pendentes.append(ident)
-            r.motivos[ident] = f"pendente de {spec}"
+            r.motivos[ident] = f"pendente de {spec}{sufixo}"
     return r
 
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     p.add_argument("--estrito", action="store_true", help="falha com qualquer item sem teste")
+    p.add_argument("--spec", default=None, help="com --estrito: só os itens desta SPEC")
     p.add_argument("--invariantes", type=Path, default=INVARIANTES)
     p.add_argument("--criterios", type=Path, default=CRITERIOS)
     p.add_argument("--entregues", type=Path, default=ENTREGUES)
     p.add_argument("--raiz", type=Path, default=RAIZ)
     p.add_argument("--tasks", type=Path, default=None, help="pasta das tasks (padrão tasks/abako)")
     a = p.parse_args(argv)
+    if a.spec and not a.estrito:
+        p.error("--spec só vale com --estrito")
+    if a.spec and not RE_SPEC.match(a.spec):
+        p.error(f"--spec inválida: {a.spec!r}")
     r = analisar(a.invariantes, a.criterios, a.entregues, a.raiz)
+    no_escopo = [i for i in r.sem_teste if not a.spec or r.specs.get(i) == a.spec]
     tasks = a.tasks or (TASKS if a.raiz == RAIZ else a.raiz / "tasks" / "abako")
     faltando = specs_faltando(tasks, a.entregues) if tasks.is_dir() else []
 
@@ -175,16 +188,19 @@ def main(argv: list[str] | None = None) -> int:
         print(f"QUEBRADO {spec}: todas as tasks done, mas ausente de specs_entregues.yaml")
     for ident, texto in r.waivers.items():
         print(f"waiver ativo {ident}: {texto}")
-    rotulo = "SEM TESTE" if a.estrito else "aviso (pendente)"
     for ident in r.pendentes:
+        rotulo = "SEM TESTE" if a.estrito and ident in no_escopo else "aviso (pendente)"
         print(f"{rotulo} {ident}: {r.motivos[ident]}")
-    if r.quebrados or faltando or (a.estrito and r.sem_teste):
+    if r.quebrados or faltando or (a.estrito and no_escopo):
         print(
             f"rastreabilidade: FALHOU ({len(r.quebrados) + len(faltando)} quebrados, "
-            f"{len(r.sem_teste)} sem teste)",
+            f"{len(no_escopo)} sem teste)",
             file=sys.stderr,
         )
         return 1
+    if a.spec:
+        print(f"rastreabilidade: {a.spec} ok no modo estrito")
+        return 0
     if r.pendentes:
         print(f"rastreabilidade: ok com {len(r.pendentes)} pendentes (use --estrito no DoD final)")
     return 0

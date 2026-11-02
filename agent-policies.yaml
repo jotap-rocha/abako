@@ -101,7 +101,7 @@ families:
     patterns:
       dropdb:
         severity: deny
-        match: '(^|[;&|]\s*)dropdb\b'
+        match: '(^|[;&|]\s*|\bdocker\s+exec\b[^|;&]*\s)dropdb\b'
         tool_deny: "Bash(dropdb:*)"
         message: "dropdb bloqueado"
       mysqladmin-drop:
@@ -238,6 +238,26 @@ families:
         match: '(?i)\b(alembic|migrate)\b[^|;&]*\bprd\b|\b(abako_env|env)=prd\b'
         tool_deny: "Bash(alembic upgrade prd:*)"
         message: "Migracao em prd exige confirmacao (ADR 019 B)"
+      backup-chave-age:
+        severity: deny
+        match: '(?i)abako-backup-chave'
+        tool_deny: "Bash(*abako-backup-chave*)"
+        message: "A chave privada age (pendrive) so e usada pelo usuario (ADR 037)"
+      confirma-prd:
+        severity: ask
+        match: '(?i)\babako_confirma_prd\b|--alvo[=\s]+prd\b'
+        tool_deny: "Bash(*--alvo prd*)"
+        message: "Backup/resumo de prd so pelo usuario: le dado real (ADR 019 B, 032, 037)"
+      restaurar-backup:
+        severity: ask
+        match: '(?i)\bscripts[./\\]restaurar\b'
+        tool_deny: "Bash(*scripts.restaurar*)"
+        message: "Restauracao de backup so pelo usuario (ADR 032, 037)"
+      age-decrypt:
+        severity: ask
+        match: '(?i)\bage(\.exe)?\b[^|;&]*\s(-d|--decrypt)\b'
+        tool_deny: "Bash(age -d:*)"
+        message: "Decifrar backup so pelo usuario (ADR 019 A, 037)"
       deploy-local:
         severity: ask
         match: '(?i)deploy-local'

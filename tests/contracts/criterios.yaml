@@ -94,3 +94,25 @@ criterios:
     teste:
       - "tests/db/test_idempotencia_esquema.py::test_chave_unica_por_usuario"
       - "tests/db/test_idempotencia_esquema.py::test_campo_de_versao_existe"
+  - id: SPEC-001-AC-12
+    spec: SPEC-001
+    dado: "o script de restauração"
+    quando: "o alvo é prd (ou qualquer banco que não seja o descartável restauracao)"
+    entao: "recusa antes de ler .env, chamar processo externo ou conectar"
+    invariantes: []
+    teste: ["tests/db/test_restore.py::test_recusa_alvo_prd"]
+  - id: SPEC-001-AC-13
+    spec: SPEC-001
+    dado: "um backup do tst sintético com par de chaves age efêmero"
+    quando: "o script de backup roda"
+    entao: "o arquivo tem cabeçalho age, não contém texto do dump nem segredo/.env, e nenhum dump em claro fica no disco"
+    invariantes: []
+    teste: ["tests/db/test_backup.py::test_backup_criptografado"]
+  - id: SPEC-001-AC-14
+    spec: SPEC-001
+    dado: "um backup sintético (do tst) e o banco descartável restauracao vazio"
+    quando: "o usuário roda scripts.restaurar (ADR 032: só o usuário executa)"
+    entao: "contagem de linhas e somas por tabela iguais às de scripts.resumo_banco na origem"
+    invariantes: []
+    teste: []
+    waiver: "humano: executado pelo usuário em 2026-11-02 (docs/operacao/backup-restore.md, passos 4-7) com backup sintético do tst abako-tst-20261102-104657.dump.age; scripts.resumo_banco na origem e a conferência de scripts.restaurar no descartável idênticas: alembic_version 1, conta_versao 2, transacao_versao 5 com soma(valor)=1526.59, usuario 1"

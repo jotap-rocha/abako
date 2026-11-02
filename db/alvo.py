@@ -23,6 +23,10 @@ VAR_URL_APP = "ABAKO_DB_APP_URL"
 VAR_URL_PIPELINE = "ABAKO_DB_PIPELINE_URL"
 USUARIO_APP = "abako_app"
 USUARIO_PIPELINE = "abako_pipeline"
+# Banco descartável de teste de restauração (ADR 032/037): nunca tst, nunca prd.
+BANCO_RESTAURACAO = "restauracao"
+VAR_URL_RESTAURACAO = "ABAKO_DB_RESTAURACAO_URL"
+USUARIO_RESTAURACAO = "abako_owner_restauracao"
 # Papel de runtime -> (variável com a URL, usuário esperado). Passam pelo mesmo guarda do tst.
 PAPEIS_RUNTIME = {
     "app": (VAR_URL_APP, USUARIO_APP),
@@ -97,6 +101,27 @@ def verificar_url_papel(url: str, var: str, usuario_esperado: str) -> None:
 def verificar_url_prd(url: str) -> None:
     """Idem para `prd`; só usada após a confirmação humana (ADR 019)."""
     _verificar_url(url, BANCO_PRD, VAR_URL_PRD)
+
+
+def verificar_alvo_restauracao(alvo: str) -> None:
+    """Só o banco descartável é alvo de restauração; `prd` (e qualquer outro) é recusado.
+
+    Puro: roda antes de ler `.env` ou conectar em qualquer coisa (ADR 032).
+    """
+    if alvo == BANCO_PRD:
+        raise AlvoInvalido("restauração em prd é recusada (ADR 032); o alvo é o descartável")
+    if alvo != BANCO_RESTAURACAO:
+        raise AlvoInvalido(
+            f"alvo de restauração {alvo!r} recusado: só {BANCO_RESTAURACAO!r} (descartável)"
+        )
+
+
+def verificar_url_restauracao(url: str) -> None:
+    """URL do descartável: host local, 5433, banco `restauracao`, usuário dono dele."""
+    _verificar_url(url, BANCO_RESTAURACAO, VAR_URL_RESTAURACAO)
+    usuario = urlsplit(url).username
+    if usuario != USUARIO_RESTAURACAO:
+        raise AlvoInvalido(f"{VAR_URL_RESTAURACAO}: usuário {usuario!r} != {USUARIO_RESTAURACAO!r}")
 
 
 def decidir_alvo(environ: Mapping[str, str]) -> tuple[str, str]:

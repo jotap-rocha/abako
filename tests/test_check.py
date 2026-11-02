@@ -70,7 +70,7 @@ def test_banco_fora_do_ar_gera_resumo_parcial(
     monkeypatch.setattr("scripts.check.banco_no_ar", lambda: False)
     monkeypatch.setattr(
         "scripts.check.etapas_padrao",
-        lambda banco, estrito: [
+        lambda banco, estrito, spec: [
             Etapa("ruff", [PY, "-c", "pass"]),
             Etapa("pytest (banco)", [], pulada=banco != "sim"),
         ],
@@ -78,3 +78,18 @@ def test_banco_fora_do_ar_gera_resumo_parcial(
     assert main([]) == 0
     saida = capsys.readouterr().out
     assert "pytest (banco): PULADO" in saida and "verde parcial" in saida
+
+
+def test_spec_e_propagada_a_rastreabilidade() -> None:
+    rastro = {e.nome: e for e in etapas_padrao(banco="nao", estrito=True, spec="SPEC-001")}
+    cmd = rastro["rastreabilidade"].cmd
+    assert cmd[-3:] == ["--estrito", "--spec", "SPEC-001"]
+    sem_spec = {e.nome: e for e in etapas_padrao(banco="nao", estrito=True)}
+    assert "--spec" not in sem_spec["rastreabilidade"].cmd
+
+
+def test_spec_sem_estrito_e_erro(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["--spec", "SPEC-001", "--so-pre-requisitos"])
+    assert exc.value.code == 2
+    assert "--spec só vale com --estrito" in capsys.readouterr().err
