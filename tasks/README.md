@@ -8,7 +8,7 @@
 
 | # | Task | Status | Bloqueada por |
 |---|---|---|---|
-| 01 | [SPEC-001a: ambiente do banco e guarda de teste](01-ambiente-banco.md) | not started | — |
+| 01 | [SPEC-001a: ambiente do banco e guarda de teste](01-ambiente-banco.md) | done | — |
 | 02 | [SPEC-001b: check, rastreabilidade e CI](02-check-rastreabilidade.md) | not started | 01 |
 | 03 | [SPEC-001c: esquema base e garantias](03-esquema-base.md) | not started | 02 |
 | 04 | [SPEC-001d: backup e restauração](04-backup-restore.md) | not started | 03 |
@@ -31,3 +31,5 @@
 | 21 | [SPEC-014: pipeline e analítico](21-pipeline-analitico.md) | not started | 20 |
 
 A SPEC-012 (frontend) é entregue em 5 incrementos (tasks 06, 08, 10, 18 e 19); o frontend fino começa logo após o login. Os critérios são rascunho e viram `SPEC-NNN-AC-N` em `tests/contracts/criterios.yaml` quando cada SPEC for escrita.
+
+> Nota: a linha da task 01 do abako usa `issue: 1`, que coincide com uma linha herdada do harness canônico (decisão do usuário em 2026-10-19: manter assim; o `check` pega a última linha com o número).

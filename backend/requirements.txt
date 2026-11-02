@@ -1,0 +1,9 @@
+# Dependências do backend, versões exatas (SPEC-001a). Atualizar só com revisão.
+fastapi==0.149.0
+uvicorn==0.54.0
+pydantic==2.14.1
+pydantic-settings==2.16.0
+argon2-cffi==25.1.0
+psycopg[binary]==3.3.6
+SQLAlchemy==2.0.34
+alembic==1.20.0

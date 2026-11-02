@@ -1,0 +1,38 @@
+# Postgres dedicado ao abako (ADR 014). Bancos `prd` e `tst` no mesmo contêiner.
+# Nomes de projeto, contêiner e volume vêm de COMPOSE_PROJECT_NAME (.env).
+# Porta publicada só em 127.0.0.1:5433 (a 5432 é de outro projeto).
+name: ${COMPOSE_PROJECT_NAME:?defina COMPOSE_PROJECT_NAME no .env}
+
+services:
+  postgres:
+    image: postgres:17.6
+    container_name: ${COMPOSE_PROJECT_NAME}-postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${ABAKO_PG_PORT:-5433}:5432"
+    environment:
+      POSTGRES_USER: abako_admin
+      # Senha de admin NUNCA no .env (ADR 018): vem de arquivo fora do repositório.
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_admin_password
+      POSTGRES_DB: postgres
+      # Senhas dos donos de prd/tst (não são a de admin); usadas só pelo init.
+      ABAKO_OWNER_TST_PASSWORD: ${ABAKO_OWNER_TST_PASSWORD:?defina no .env}
+      ABAKO_OWNER_PRD_PASSWORD: ${ABAKO_OWNER_PRD_PASSWORD:?defina no .env}
+    secrets:
+      - pg_admin_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U abako_admin -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+secrets:
+  pg_admin_password:
+    file: ${ABAKO_ADMIN_PASSWORD_FILE:?defina ABAKO_ADMIN_PASSWORD_FILE (arquivo fora do repo)}
+
+volumes:
+  pgdata:
+    name: ${COMPOSE_PROJECT_NAME}_pgdata

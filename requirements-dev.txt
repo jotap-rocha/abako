@@ -1,0 +1,8 @@
+# Ferramentas de desenvolvimento e teste, versões exatas.
+-r backend/requirements.txt
+pytest==9.1.1
+hypothesis==6.170.2
+httpx==0.28.1
+PyYAML==6.0.3
+ruff==0.17.1
+mypy==2.4.0

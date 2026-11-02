@@ -1,0 +1,23 @@
+task_id: "1"
+criteria:
+  SPEC-001-AC-1:
+    id: SPEC-001-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_guarda_tst.py::test_aborta_fora_de_tst"
+    test_paths:
+      - "tests/db/test_guarda_tst.py::test_aborta_fora_de_tst"
+    exit_code: 0
+    log_path: "logs/1/SPEC-001-AC-1.log"
+  SPEC-001-AC-2:
+    id: SPEC-001-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_rede.py::test_escuta_apenas_localhost"
+    test_paths:
+      - "tests/db/test_rede.py::test_escuta_apenas_localhost"
+    exit_code: 0
+    log_path: "logs/1/SPEC-001-AC-2.log"
+  SPEC-001-AC-3:
+    id: SPEC-001-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_migracoes.py::test_aplica_e_reverte"
+    test_paths:
+      - "tests/db/test_migracoes.py::test_aplica_e_reverte"
+    exit_code: 0
+    log_path: "logs/1/SPEC-001-AC-3.log"
