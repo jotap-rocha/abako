@@ -46,3 +46,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [035](035-endereco-abako-localhost.md) | Endereço local `abako.localhost` | Aceita | 2026-10-19 |
 | [036](036-papeis-do-banco-e-fechamento-de-versao.md) | Papéis do banco criados fora da migração e fechamento de versão | Aceita | 2026-11-01 |
 | [037](037-backup-age-retencao-e-restauracao.md) | Backup com age, retenção 7+4 e restauração no banco descartável | Aceita | 2026-11-02 |
+| [038](038-login-sessao-e-defesas-da-api.md) | Login, sessão no Postgres e defesas da API | Aceita | 2026-11-02 |

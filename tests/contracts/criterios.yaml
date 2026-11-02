@@ -116,3 +116,38 @@ criterios:
     invariantes: []
     teste: []
     waiver: "humano: executado pelo usuário em 2026-11-02 (docs/operacao/backup-restore.md, passos 4-7) com backup sintético do tst abako-tst-20261102-104657.dump.age; scripts.resumo_banco na origem e a conferência de scripts.restaurar no descartável idênticas: alembic_version 1, conta_versao 2, transacao_versao 5 com soma(valor)=1526.59, usuario 1"
+  - id: SPEC-002-AC-1
+    spec: SPEC-002
+    dado: "um usuário com senha definida pelo comando local"
+    quando: "o login usa senha errada repetidas vezes"
+    entao: "cada tentativa é rejeitada com 401 e, passado o limite, até a senha certa recebe 429"
+    invariantes: []
+    teste: ["tests/backend/test_login.py::test_rate_limit"]
+  - id: SPEC-002-AC-2
+    spec: SPEC-002
+    dado: "dois usuários, cada um com suas contas"
+    quando: "um deles lista ou busca contas, inclusive passando o id ou o user_id do outro"
+    entao: "só recebe as próprias; a conta do outro responde 404"
+    invariantes: [INV-13]
+    teste: ["tests/backend/test_isolamento.py::test_acesso_cruzado_negado"]
+  - id: SPEC-002-AC-3
+    spec: SPEC-002
+    dado: "a API no ar"
+    quando: "a requisição chega com Host abako.localhost, localhost, 127.0.0.1 ou outro"
+    entao: "os três primeiros são aceitos e qualquer outro recebe 400"
+    invariantes: [INV-34]
+    teste: ["tests/backend/test_host.py::test_host_permitido_e_invalido"]
+  - id: SPEC-002-AC-4
+    spec: SPEC-002
+    dado: "uma sessão válida"
+    quando: "uma escrita chega sem token CSRF, com token errado ou com Origin fora da lista"
+    entao: "é rejeitada com 403; com token e Origin corretos, passa"
+    invariantes: []
+    teste: ["tests/backend/test_csrf.py::test_csrf_e_origin"]
+  - id: SPEC-002-AC-5
+    spec: SPEC-002
+    dado: "login com sucesso, login com falha, uso da sessão e logout"
+    quando: "os logs de todos os loggers são capturados"
+    entao: "nem a senha, nem o token de sessão, nem o token CSRF aparecem"
+    invariantes: []
+    teste: ["tests/backend/test_logs.py::test_sem_segredo_em_log"]

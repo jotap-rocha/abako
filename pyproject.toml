@@ -19,6 +19,8 @@ select = ["E", "F", "I", "B", "UP"]
 python_version = "3.12"
 files = [
   "db",
+  "backend",
+  "tests/backend",
   "tests/db",
   "tests/conftest.py",
   "tests/test_check.py",
