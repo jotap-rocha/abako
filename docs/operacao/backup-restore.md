@@ -100,6 +100,8 @@ docker exec -it <COMPOSE_PROJECT_NAME>-postgres dropdb -U abako_admin restauraca
 .venv\Scripts\python.exe -m scripts.criar_descartavel
 ```
 
+Com o scram ativo (ADR 039, `docs/operacao/postgres-scram.md`), o primeiro comando pede a senha de admin.
+
 Depois restaure:
 
 ```powershell

@@ -15,6 +15,10 @@ services:
       # Senha de admin NUNCA no .env (ADR 018): vem de arquivo fora do repositório.
       POSTGRES_PASSWORD_FILE: /run/secrets/pg_admin_password
       POSTGRES_DB: postgres
+      # Sem isto o initdb deixa `local` e 127.0.0.1 como trust: quem roda `docker exec` vira
+      # superusuário sem senha. Vale só para volume novo; o existente segue
+      # docs/operacao/postgres-scram.md (ADR 039).
+      POSTGRES_INITDB_ARGS: "--auth-local=scram-sha-256 --auth-host=scram-sha-256"
       # Senhas dos donos de prd/tst (não são a de admin); usadas só pelo init.
       ABAKO_OWNER_TST_PASSWORD: ${ABAKO_OWNER_TST_PASSWORD:?defina no .env}
       ABAKO_OWNER_PRD_PASSWORD: ${ABAKO_OWNER_PRD_PASSWORD:?defina no .env}
