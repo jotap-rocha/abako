@@ -27,6 +27,7 @@ files = [
   "tests/test_rastreabilidade.py",
   "tests/test_retencao_backup.py",
   "tests/test_conteiner.py",
+  "tests/test_evidence_gate_ref.py",
   "tests/test_agent_policies_backup.py",
   "scripts/check.py",
   "scripts/rastreabilidade.py",
