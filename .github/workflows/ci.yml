@@ -114,6 +114,8 @@ jobs:
           POSTGRES_USER: ci_owner
           POSTGRES_PASSWORD: ci-efemero
           POSTGRES_DB: tst
+          # Mesma autenticação do compose local (ADR 039).
+          POSTGRES_INITDB_ARGS: "--auth-local=scram-sha-256 --auth-host=scram-sha-256"
         ports:
           - 127.0.0.1:5433:5432
         options: >-
