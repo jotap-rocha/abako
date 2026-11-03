@@ -53,6 +53,12 @@ def main(argv: list[str] | None = None) -> int:
         help="Path de metrics/entregas.jsonl para validar evidencias_ref",
     )
     check_p.add_argument(
+        "--ref-base",
+        type=Path,
+        default=None,
+        help="Base dos evidencias_ref relativos (padrão: pasta de --entregas, depois a raiz)",
+    )
+    check_p.add_argument(
         "--issue",
         type=int,
         default=None,
@@ -146,7 +152,7 @@ def _cmd_check_manifest(args: argparse.Namespace) -> int:
             contract_path=args.path,
             entregas_path=args.entregas,
             issue=args.issue,
-            ref_base=args.entregas.parent if args.entregas else None,
+            ref_base=args.ref_base or (args.entregas.parent if args.entregas else None),
         )
     except Exception as exc:  # noqa: BLE001 — boundary CLI
         print(f"check failed: {exc}", file=sys.stderr)

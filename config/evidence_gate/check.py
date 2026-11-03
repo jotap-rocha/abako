@@ -137,7 +137,11 @@ def _check_evidencias_ref(
 
     ref_path = Path(ref.strip())
     if not ref_path.is_absolute():
-        ref_path = (ref_base / ref_path).resolve()
+        # Linhas antigas gravam o ref relativo a metrics/ (``../.claude/...``); as do abako
+        # gravam a partir da raiz do repositório. Vale a base explícita; se o arquivo não
+        # está lá, tenta a raiz (diretório de trabalho), onde o gate roda.
+        candidato = (ref_base / ref_path).resolve()
+        ref_path = candidato if candidato.is_file() else (Path.cwd() / ref_path).resolve()
     else:
         ref_path = ref_path.resolve()
 
