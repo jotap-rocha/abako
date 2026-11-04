@@ -172,6 +172,31 @@ criterios:
     entao: "não há nenhuma, e um valor decimal acima de 2^53 é exibido sem perder dígitos"
     invariantes: [INV-14]
     teste: ["frontend/src/dinheiro.test.ts::sem_float"]
+  - id: SPEC-012-AC-4
+    spec: SPEC-012
+    dado: "a API devolve o saldo de cada conta como texto (inclusive acima de 2^53 e negativo)"
+    quando: "a tela de contas é aberta"
+    entao: "cada conta mostra exatamente o saldo da API, só formatado como moeda, sem recalcular, com os estados carregando, vazio e erro tratados"
+    invariantes: [INV-14]
+    teste:
+      - "frontend/src/saldos/Saldos.test.tsx::mostra_saldo_da_api"
+      - "frontend/src/saldos/Saldos.test.tsx::mostra_carregando_ate_a_api_responder"
+      - "frontend/src/saldos/Saldos.test.tsx::mostra_estado_vazio"
+      - "frontend/src/saldos/Saldos.test.tsx::mostra_erro_e_tenta_de_novo"
+  - id: SPEC-012-AC-5
+    spec: SPEC-012
+    dado: "uma conta com saldo calculado"
+    quando: "o usuário informa o saldo do banco (snapshot) e a API responde com divergência"
+    entao: "a tela mostra a divergência, o saldo calculado e o informado como a API devolveu, avisa que nada foi corrigido e recarrega a lista"
+    invariantes: [INV-03, INV-23]
+    teste: ["frontend/src/saldos/Snapshot.test.tsx::mostra_divergencia"]
+  - id: SPEC-012-AC-6
+    spec: SPEC-012
+    dado: "o servidor de verdade no tst e um usuário de teste"
+    quando: "no navegador, o usuário entra, cria uma conta, informa o saldo e recarrega a página"
+    entao: "o saldo da API aparece na lista e continua depois de recarregar, Alertas não mostra divergência e Sair volta ao login"
+    invariantes: []
+    teste: ["tests/e2e/test_saldos.py::test_login_e_saldos"]
   - id: SPEC-003-AC-1
     spec: SPEC-003
     dado: "uma conta com snapshot e transações vigentes posteriores (F-SALDO-01), versões editadas e excluídas (F-SALDO-02)"

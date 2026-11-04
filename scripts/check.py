@@ -11,6 +11,7 @@ Uso (na raiz do repositório, chamando o python do venv):
 Todas as etapas rodam; o exit code é 1 se qualquer uma falhar. Testes de banco (marcador
 `banco`) usam o `tst` real, nunca mock: no modo automático rodam se 127.0.0.1:5433 responder
 (senão, aviso explícito); com `--com-banco`, banco fora do ar é falha. Nunca toca `prd`.
+As jornadas e2e (marcador `e2e`, Playwright) rodam em etapa própria, sempre junto do banco.
 """
 
 from __future__ import annotations
@@ -50,10 +51,18 @@ def etapas_padrao(
     etapas = [
         Etapa("ruff", [py, "-m", "ruff", "check", "."]),
         Etapa("mypy", [py, "-m", "mypy"]),
-        Etapa("pytest (sem banco)", [py, "-m", "pytest", "-q", "-m", "not banco"]),
+        Etapa("pytest (sem banco)", [py, "-m", "pytest", "-q", "-m", "not banco and not e2e"]),
     ]
     etapas.append(
-        Etapa("pytest (banco)", [py, "-m", "pytest", "-q", "-m", "banco"], pulada=banco != "sim")
+        Etapa(
+            "pytest (banco)",
+            [py, "-m", "pytest", "-q", "-m", "banco and not e2e"],
+            pulada=banco != "sim",
+        )
+    )
+    # Jornadas no navegador (Playwright) contra o tst: precisam do banco, então pulam junto.
+    etapas.append(
+        Etapa("e2e (navegador)", [py, "-m", "pytest", "-q", "-m", "e2e"], pulada=banco != "sim")
     )
     # Front (Node 22.12+; `npm ci` em frontend/). Sem npm ou sem node_modules, a etapa falha.
     npm = shutil.which("npm") or "npm"

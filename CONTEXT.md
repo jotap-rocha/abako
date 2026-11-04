@@ -33,8 +33,9 @@ Finanças pessoais de um único usuário (modelo já preparado com `user_id` par
 | Disponível (R2) | Saldos correntes + receitas recorrentes pendentes no horizonte do R2 (parâmetro, inicial 10 dias) | | Inclui reserva, vale ou crédito do vale |
 | Compromissos (R2) | Fixos pendentes + faturas **próprias** com vencimento no horizonte | | Inclui terceiros |
 | Sobra (R2) | Disponível − compromissos; alerta se < 0 | | |
-| Conta de benefício / vale | Conta única cujas despesas não entram no gasto real nem na tela principal | | Despesa comum |
-| Bolso | Divisão do vale: trabalho / pessoal | envelope | |
+| Conta de benefício | Conta cujas despesas não entram no gasto real nem na tela principal. Pode haver mais de uma | | Despesa comum |
+| Vale | A conta de benefício de **refeição**: só ela tem bolsos, sobra e R5 | vale-refeição | Outra conta de benefício (ex.: alimentação), que não tem bolsos |
+| Bolso | Divisão do vale (só o de refeição): trabalho / pessoal | envelope | |
 | Base de trabalho | Parâmetro com vigência (inicial R$ 200); pessoal = crédito do mês − base | | |
 | Sobra do vale | Σ max(resta, 0) por bolso, sem compensar estouro; decisão é evento com histórico e não move saldo | | Saldo do vale |
 

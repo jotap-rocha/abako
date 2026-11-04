@@ -1,4 +1,4 @@
-import { formatarMoeda } from "./dinheiro";
+import { formatarMoeda, lerValorDigitado } from "./dinheiro";
 
 // Todo código de produção do front, exceto o cliente gerado, testes e a configuração dos testes.
 const fontes = import.meta.glob(
@@ -13,6 +13,32 @@ describe("dinheiro", () => {
     expect(formatarMoeda("-1526.59")).toBe("-R$ 1.526,59");
     expect(formatarMoeda("abc")).toBe("abc");
     expect(formatarMoeda("1.5")).toBe("1.5");
+  });
+
+  it("le_valor_digitado_no_jeito_brasileiro", () => {
+    const casos: [string, string | null][] = [
+      ["1.234,56", "1234.56"],
+      ["1234,56", "1234.56"],
+      ["R$ 1.234,56", "1234.56"],
+      ["-50,5", "-50.5"],
+      ["-R$ 50,00", "-50.00"],
+      ["1000", "1000"],
+      ["12.5", "12.5"],
+      ["1.234", "1234"],
+      ["1.234.567", "1234567"],
+      ["0,30", "0.30"],
+      ["123456789012,34", "123456789012.34"],
+      ["1234567890123", null], // 13 dígitos: a API aceita até 12
+      ["1,234", null], // 3 casas decimais
+      ["1.23,45", null], // milhar mal agrupado
+      ["dez", null],
+      ["", null],
+      ["-", null],
+      ["1e3", null],
+    ];
+    for (const [digitado, esperado] of casos) {
+      expect([digitado, lerValorDigitado(digitado)]).toEqual([digitado, esperado]);
+    }
   });
 
   it("sem_float", () => {
