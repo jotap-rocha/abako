@@ -59,6 +59,32 @@ fixtures:
       saldo_derivado: "440.00"
       historico_t1: 2
 
+  - id: F-SALDO-03
+    invariantes: [INV-03, INV-23, INV-30]
+    descricao: >-
+      Edição retroativa de transação anterior a um snapshot não altera o snapshot; o R4
+      compara o snapshot com o derivado desde o snapshot anterior e sinaliza a divergência.
+      Snapshot vale para o fim do dia; divergência = derivado - snapshot (ADR 041).
+    entrada:
+      snapshot_1: {data: "2026-01-10", valor: "1000.00"}
+      transacao: {id: t1, data: "2026-01-11", versoes: [{valor: "-50.00"}, {valor: "-60.00"}]}
+      snapshot_2: {data: "2026-01-14", valor: "950.00"}
+    esperado:
+      antes_da_edicao:
+        saldo_derivado_em_2026_01_12: "950.00"
+        saldo_derivado_em_2026_01_14: "950.00"
+        r4: []
+      depois_da_edicao:
+        saldo_derivado_em_2026_01_12: "940.00"
+        # No dia do snapshot a âncora é o próprio snapshot (INV-03); os 940.00 do derivado
+        # desde o snapshot anterior aparecem no R4 abaixo.
+        saldo_em_2026_01_14: "950.00"
+        saldo_atual: "950.00"
+        snapshot_2_valor: "950.00"
+        r4:
+          - {data_snapshot: "2026-01-14", valor_snapshot: "950.00", saldo_derivado: "940.00", divergencia: "-10.00"}
+        corrigida_automaticamente: false
+
   - id: F-GASTO-01
     invariantes: [INV-04, INV-05, INV-11, INV-20]
     descricao: O gasto real do mês exclui tudo que não é consumo próprio.

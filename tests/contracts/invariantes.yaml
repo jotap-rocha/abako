@@ -5,7 +5,7 @@ versao: 1
 invariantes:
   - {id: INV-01, enunciado: "Transferência tem exatamente duas pernas e a soma dos valores é zero.", fixtures: [F-TRANSF-01], spec: SPEC-004, teste: []}
   - {id: INV-02, enunciado: "A soma das parcelas de uma compra é igual ao valor total; a última parcela absorve os centavos.", fixtures: [F-PARC-01, F-PARC-02], spec: SPEC-005, teste: []}
-  - {id: INV-03, enunciado: "Saldo derivado = último snapshot + soma das transações válidas posteriores (versão vigente, não excluídas).", fixtures: [F-SALDO-01, F-SALDO-02], spec: SPEC-003, teste: []}
+  - {id: INV-03, enunciado: "Saldo derivado = último snapshot + soma das transações válidas posteriores (versão vigente, não excluídas).", fixtures: [F-SALDO-01, F-SALDO-02], spec: SPEC-003, teste: ["tests/db/test_saldo.py::test_saldo_derivado_f_saldo_01", "tests/db/test_saldo.py::test_saldo_versao_vigente_e_exclusao_f_saldo_02"]}
   - {id: INV-04, enunciado: "Gasto real exclui transferência, investimento, repasse, rendimento e pagamento de fatura.", fixtures: [F-TRANSF-01, F-GASTO-01], spec: SPEC-008, teste: []}
   - {id: INV-05, enunciado: "Pagamento de fatura nunca é gasto; o gasto é contado nas compras/parcelas, no mês da fatura.", fixtures: [F-GASTO-01], spec: SPEC-008, teste: []}
   - {id: INV-06, enunciado: "Limite usado = soma das dívidas dos cartões da linha, incluindo parcelas futuras e terceiros; compras consomem o valor total.", fixtures: [F-LIM-01, F-EST-01, F-EST-02], spec: SPEC-005, teste: []}
@@ -25,14 +25,14 @@ invariantes:
   - {id: INV-20, enunciado: "Despesa de conta de benefício nunca entra no gasto real; receita de conta de benefício nunca entra na receita de caixa.", fixtures: [F-GASTO-01], spec: SPEC-008, teste: []}
   - {id: INV-21, enunciado: "Pessoal = crédito do mês − base de trabalho; alocação efetiva = base + ajuste de sobra decidida; resta = alocação efetiva − consumo; não acumula entre meses.", fixtures: [F-VALE-01, F-VALE-02, F-VALE-04], spec: SPEC-013, teste: []}
   - {id: INV-22, enunciado: "Saldo total da conta de benefício = saldo derivado normal (acumula), conferido por snapshot.", fixtures: [F-VALE-01, F-VALE-05], spec: SPEC-013, teste: []}
-  - {id: INV-23, enunciado: "R4 lista exatamente as contas/faturas em que derivado ≠ snapshot.", fixtures: [F-SALDO-01], spec: SPEC-003, teste: []}
+  - {id: INV-23, enunciado: "R4 lista exatamente as contas/faturas em que derivado ≠ snapshot.", fixtures: [F-SALDO-01], spec: SPEC-003, teste: ["tests/db/test_r4.py::test_r4_lista_divergencias"]}
   - {id: INV-24, enunciado: "Receita total = caixa + vale; a tela principal mostra somente a de caixa.", fixtures: [F-VALE-05], spec: SPEC-013, teste: []}
   - {id: INV-25, enunciado: "Sobra do vale = Σ max(resta, 0) por bolso, sem compensar estouros; o destino soma exatamente o valor decidido no mês seguinte; sem decisão, sem ajuste; decisão nunca altera saldo.", fixtures: [F-VALE-02, F-VALE-03, F-VALE-04], spec: SPEC-013, teste: []}
   - {id: INV-26, enunciado: "Total da fatura = própria + terceiros; o R2 usa só a própria.", fixtures: [F-FAT-01, F-LIM-01, F-R2-03], spec: SPEC-005, teste: []}
   - {id: INV-27, enunciado: "Cada entidade versionada tem no máximo uma versão vigente (unicidade parcial); inserir uma segunda vigente falha.", fixtures: [], spec: SPEC-001, teste: ["tests/db/test_versao_vigente.py::test_segunda_vigente_falha"]}
   - {id: INV-28, enunciado: "Repetir a criação com a mesma chave de idempotência não cria segunda transação e devolve o resultado da primeira.", fixtures: [], spec: SPEC-004, teste: []}
   - {id: INV-29, enunciado: "Atualização com versão desatualizada é rejeitada com conflito explícito e não cria nova versão.", fixtures: [], spec: SPEC-004, teste: []}
-  - {id: INV-30, enunciado: "Edição retroativa de transação anterior a um snapshot não altera o snapshot; o R4 compara cada snapshot com o saldo derivado calculado a partir do snapshot imediatamente anterior (ou do saldo inicial) mais as transações vigentes até a data dele, e sinaliza se divergir.", fixtures: [], spec: SPEC-003, teste: []}
+  - {id: INV-30, enunciado: "Edição retroativa de transação anterior a um snapshot não altera o snapshot; o R4 compara cada snapshot com o saldo derivado calculado a partir do snapshot imediatamente anterior (ou do saldo inicial) mais as transações vigentes até a data dele, e sinaliza se divergir.", fixtures: [F-SALDO-03], spec: SPEC-003, teste: ["tests/db/test_retroativa.py::test_edicao_retroativa_sinaliza_r4"]}
   - {id: INV-31, enunciado: "Fechamento de cartão em dia inexistente no mês usa o último dia válido do mês.", fixtures: [], spec: SPEC-005, teste: []}
   - {id: INV-32, enunciado: "Na v1 a compra é 100% própria ou 100% de terceiro; divisão entre os dois é rejeitada.", fixtures: [], spec: SPEC-007, teste: []}
   - {id: INV-33, enunciado: "Repasse acima da dívida da pessoa nunca gera 'a receber' negativo silencioso (regra exata definida na SPEC-007).", fixtures: [], spec: SPEC-007, teste: []}

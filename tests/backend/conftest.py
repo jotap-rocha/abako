@@ -39,7 +39,13 @@ def criar_usuario(url_dono: str, prefixo: str) -> Usuario:
 def apagar_usuarios(url_dono: str, usuarios: list[Usuario]) -> None:
     ids = [u.user_id for u in usuarios]
     with psycopg.connect(url_dono) as conn:
-        for tabela in ("sessao", "credencial", "conta_versao"):
+        for tabela in (
+            "sessao",
+            "credencial",
+            "snapshot_saldo",
+            "transacao_versao",
+            "conta_versao",
+        ):
             conn.execute(f"DELETE FROM {tabela} WHERE user_id = ANY(%s)", (ids,))  # noqa: S608
         conn.execute("DELETE FROM usuario WHERE user_id = ANY(%s)", (ids,))
 

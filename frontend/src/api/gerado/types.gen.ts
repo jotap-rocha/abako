@@ -5,6 +5,20 @@ export type ClientOptions = {
 };
 
 /**
+ * ContaEntrada
+ */
+export type ContaEntrada = {
+    /**
+     * Conta Beneficio
+     */
+    conta_beneficio?: boolean;
+    /**
+     * Nome
+     */
+    nome: string;
+};
+
+/**
  * ContaSaida
  */
 export type ContaSaida = {
@@ -20,6 +34,36 @@ export type ContaSaida = {
      * Nome
      */
     nome: string;
+};
+
+/**
+ * DivergenciaSaida
+ */
+export type DivergenciaSaida = {
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Conta Nome
+     */
+    conta_nome: string;
+    /**
+     * Data Snapshot
+     */
+    data_snapshot: string;
+    /**
+     * Divergencia
+     */
+    divergencia: string;
+    /**
+     * Saldo Derivado
+     */
+    saldo_derivado: string;
+    /**
+     * Valor Snapshot
+     */
+    valor_snapshot: string;
 };
 
 /**
@@ -54,6 +98,84 @@ export type LoginSaida = {
      * Csrf Token
      */
     csrf_token: string;
+};
+
+/**
+ * SaldoSaida
+ */
+export type SaldoSaida = {
+    /**
+     * Conta Beneficio
+     */
+    conta_beneficio: boolean;
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Saldo
+     */
+    saldo: string;
+    /**
+     * Snapshot Data
+     */
+    snapshot_data: string | null;
+    /**
+     * Snapshot Valor
+     */
+    snapshot_valor: string | null;
+};
+
+/**
+ * SnapshotEntrada
+ */
+export type SnapshotEntrada = {
+    /**
+     * Data
+     */
+    data: string;
+    /**
+     * Valor
+     */
+    valor: string;
+};
+
+/**
+ * SnapshotSaida
+ */
+export type SnapshotSaida = {
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Data
+     */
+    data: string;
+    /**
+     * Divergencia
+     */
+    divergencia: string | null;
+    /**
+     * Saldo Derivado
+     */
+    saldo_derivado: string | null;
+    /**
+     * Saldo Inicial
+     */
+    saldo_inicial: boolean;
+    /**
+     * Snapshot Id
+     */
+    snapshot_id: number;
+    /**
+     * Valor
+     */
+    valor: string;
 };
 
 /**
@@ -174,6 +296,37 @@ export type ContasListarResponses = {
 
 export type ContasListarResponse = ContasListarResponses[keyof ContasListarResponses];
 
+export type ContasCriarData = {
+    body: ContaEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/contas';
+};
+
+export type ContasCriarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ContasCriarError = ContasCriarErrors[keyof ContasCriarErrors];
+
+export type ContasCriarResponses = {
+    /**
+     * Successful Response
+     */
+    201: ContaSaida;
+};
+
+export type ContasCriarResponse = ContasCriarResponses[keyof ContasCriarResponses];
+
 export type ContasObterData = {
     body?: never;
     path: {
@@ -203,3 +356,89 @@ export type ContasObterResponses = {
 };
 
 export type ContasObterResponse = ContasObterResponses[keyof ContasObterResponses];
+
+export type SaldosRegistrarSnapshotData = {
+    body: SnapshotEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Conta Id
+         */
+        conta_id: number;
+    };
+    query?: never;
+    url: '/api/contas/{conta_id}/snapshots';
+};
+
+export type SaldosRegistrarSnapshotErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SaldosRegistrarSnapshotError = SaldosRegistrarSnapshotErrors[keyof SaldosRegistrarSnapshotErrors];
+
+export type SaldosRegistrarSnapshotResponses = {
+    /**
+     * Successful Response
+     */
+    201: SnapshotSaida;
+};
+
+export type SaldosRegistrarSnapshotResponse = SaldosRegistrarSnapshotResponses[keyof SaldosRegistrarSnapshotResponses];
+
+export type SaldosR4Data = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/r4';
+};
+
+export type SaldosR4Responses = {
+    /**
+     * Response Saldos R4
+     *
+     * Successful Response
+     */
+    200: Array<DivergenciaSaida>;
+};
+
+export type SaldosR4Response = SaldosR4Responses[keyof SaldosR4Responses];
+
+export type SaldosListarData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Em
+         */
+        em?: string | null;
+    };
+    url: '/api/saldos';
+};
+
+export type SaldosListarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SaldosListarError = SaldosListarErrors[keyof SaldosListarErrors];
+
+export type SaldosListarResponses = {
+    /**
+     * Response Saldos Listar
+     *
+     * Successful Response
+     */
+    200: Array<SaldoSaida>;
+};
+
+export type SaldosListarResponse = SaldosListarResponses[keyof SaldosListarResponses];

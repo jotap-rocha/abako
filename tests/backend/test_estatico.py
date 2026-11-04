@@ -50,7 +50,7 @@ def test_cabecalhos_tambem_no_estatico(cliente_spa: TestClient) -> None:
     assert "default-src 'self'" in r.headers["Content-Security-Policy"]
 
 
-def test_contrato_nao_muda_com_ou_sem_build(cliente_spa: TestClient) -> None:
+def test_contrato_so_tem_rotas_da_api_e_nao_a_da_spa(cliente_spa: TestClient) -> None:
     """A rota da SPA não entra no contrato: o cliente TS depende dele (SPEC-012-AC-1)."""
     caminhos = set(cliente_spa.get("/api/openapi.json").json()["paths"])
     assert caminhos == {
@@ -59,6 +59,9 @@ def test_contrato_nao_muda_com_ou_sem_build(cliente_spa: TestClient) -> None:
         "/api/auth/eu",
         "/api/contas",
         "/api/contas/{conta_id}",
+        "/api/contas/{conta_id}/snapshots",
+        "/api/saldos",
+        "/api/r4",
     }
 
 

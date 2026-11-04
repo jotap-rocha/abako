@@ -1,6 +1,26 @@
 {
   "components": {
     "schemas": {
+      "ContaEntrada": {
+        "properties": {
+          "conta_beneficio": {
+            "default": false,
+            "title": "Conta Beneficio",
+            "type": "boolean"
+          },
+          "nome": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome"
+        ],
+        "title": "ContaEntrada",
+        "type": "object"
+      },
       "ContaSaida": {
         "properties": {
           "conta_beneficio": {
@@ -22,6 +42,45 @@
           "conta_beneficio"
         ],
         "title": "ContaSaida",
+        "type": "object"
+      },
+      "DivergenciaSaida": {
+        "properties": {
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "conta_nome": {
+            "title": "Conta Nome",
+            "type": "string"
+          },
+          "data_snapshot": {
+            "format": "date",
+            "title": "Data Snapshot",
+            "type": "string"
+          },
+          "divergencia": {
+            "title": "Divergencia",
+            "type": "string"
+          },
+          "saldo_derivado": {
+            "title": "Saldo Derivado",
+            "type": "string"
+          },
+          "valor_snapshot": {
+            "title": "Valor Snapshot",
+            "type": "string"
+          }
+        },
+        "required": [
+          "conta_id",
+          "conta_nome",
+          "data_snapshot",
+          "valor_snapshot",
+          "saldo_derivado",
+          "divergencia"
+        ],
+        "title": "DivergenciaSaida",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -70,6 +129,137 @@
           "csrf_token"
         ],
         "title": "LoginSaida",
+        "type": "object"
+      },
+      "SaldoSaida": {
+        "properties": {
+          "conta_beneficio": {
+            "title": "Conta Beneficio",
+            "type": "boolean"
+          },
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "saldo": {
+            "title": "Saldo",
+            "type": "string"
+          },
+          "snapshot_data": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Data"
+          },
+          "snapshot_valor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Valor"
+          }
+        },
+        "required": [
+          "conta_id",
+          "nome",
+          "conta_beneficio",
+          "saldo",
+          "snapshot_data",
+          "snapshot_valor"
+        ],
+        "title": "SaldoSaida",
+        "type": "object"
+      },
+      "SnapshotEntrada": {
+        "properties": {
+          "data": {
+            "format": "date",
+            "title": "Data",
+            "type": "string"
+          },
+          "valor": {
+            "pattern": "^-?[0-9]{1,12}(\\.[0-9]{1,2})?$",
+            "title": "Valor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "valor"
+        ],
+        "title": "SnapshotEntrada",
+        "type": "object"
+      },
+      "SnapshotSaida": {
+        "properties": {
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "data": {
+            "format": "date",
+            "title": "Data",
+            "type": "string"
+          },
+          "divergencia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Divergencia"
+          },
+          "saldo_derivado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saldo Derivado"
+          },
+          "saldo_inicial": {
+            "title": "Saldo Inicial",
+            "type": "boolean"
+          },
+          "snapshot_id": {
+            "title": "Snapshot Id",
+            "type": "integer"
+          },
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "conta_id",
+          "data",
+          "valor",
+          "saldo_inicial",
+          "saldo_derivado",
+          "divergencia"
+        ],
+        "title": "SnapshotSaida",
         "type": "object"
       },
       "ValidationError": {
@@ -248,6 +438,63 @@
         "tags": [
           "contas"
         ]
+      },
+      "post": {
+        "operationId": "contas_criar",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContaEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Criar",
+        "tags": [
+          "contas"
+        ]
       }
     },
     "/api/contas/{conta_id}": {
@@ -259,6 +506,8 @@
             "name": "conta_id",
             "required": true,
             "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
               "title": "Conta Id",
               "type": "integer"
             }
@@ -289,6 +538,158 @@
         "summary": "Obter",
         "tags": [
           "contas"
+        ]
+      }
+    },
+    "/api/contas/{conta_id}/snapshots": {
+      "post": {
+        "description": "Informa o saldo que o app do banco mostra. A divergência (R4) volta na resposta.",
+        "operationId": "saldos_registrar_snapshot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conta_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Conta Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SnapshotEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Registrar Snapshot",
+        "tags": [
+          "saldos"
+        ]
+      }
+    },
+    "/api/r4": {
+      "get": {
+        "description": "Contas em que o saldo derivado difere do snapshot. Só sinaliza; nunca corrige.",
+        "operationId": "saldos_r4",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DivergenciaSaida"
+                  },
+                  "title": "Response Saldos R4",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "R4",
+        "tags": [
+          "saldos"
+        ]
+      }
+    },
+    "/api/saldos": {
+      "get": {
+        "description": "Saldo derivado de cada conta em `em` (padrão: hoje). Não aceita data futura.",
+        "operationId": "saldos_listar",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "em",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Em"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SaldoSaida"
+                  },
+                  "title": "Response Saldos Listar",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar",
+        "tags": [
+          "saldos"
         ]
       }
     }
