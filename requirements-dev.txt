@@ -6,3 +6,7 @@ httpx==0.28.1
 PyYAML==6.0.3
 ruff==0.17.1
 mypy==2.4.0
+# Jornadas e2e (tests/e2e). Navegador: Edge local (canal msedge) ou o Chromium do Playwright no CI.
+playwright==1.64.1
+greenlet==3.5.6
+pyee==14.0.0

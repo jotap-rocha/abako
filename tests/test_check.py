@@ -34,12 +34,13 @@ def test_etapas_padrao_cobrem_o_contrato() -> None:
         "mypy",
         "pytest (sem banco)",
         "pytest (banco)",
+        "e2e (navegador)",
         "front: tipos",
         "front: testes",
         "contratos",
         "rastreabilidade",
     ]
-    assert [e.nome for e in sem if e.pulada] == ["pytest (banco)"]
+    assert [e.nome for e in sem if e.pulada] == ["pytest (banco)", "e2e (navegador)"]
     assert not any(e.pulada for e in etapas_padrao(banco="sim"))
 
 

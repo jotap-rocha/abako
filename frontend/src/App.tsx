@@ -4,11 +4,12 @@ import { Route, Routes } from "react-router";
 import { recuperarSessao, sair } from "./api/sessao";
 import { Casca } from "./layout/Casca";
 import { Login } from "./login/Login";
-import { Contas } from "./paginas/Contas";
 import { EmBreve } from "./paginas/EmBreve";
 import { Inicio } from "./paginas/Inicio";
 import { NaoEncontrada } from "./paginas/NaoEncontrada";
 import { limparCachesDoApp } from "./pwa/cache";
+import { Alertas } from "./saldos/Alertas";
+import { Saldos } from "./saldos/Saldos";
 import { Carregando } from "./ui/componentes";
 
 type Estado = "carregando" | "anonimo" | "autenticado";
@@ -54,7 +55,7 @@ export function App() {
     <Routes>
       <Route element={<Casca aoSair={() => void aoSair()} aoSessaoExpirar={aoSessaoExpirar} />}>
         <Route index element={<Inicio />} />
-        <Route path="contas" element={<Contas />} />
+        <Route path="contas" element={<Saldos />} />
         <Route
           path="lancamentos"
           element={
@@ -65,16 +66,7 @@ export function App() {
             />
           }
         />
-        <Route
-          path="alertas"
-          element={
-            <EmBreve
-              titulo="Alertas"
-              descricao="O que pede a sua atenção."
-              texto="Os alertas chegam depois de saldo, gasto real e recorrentes."
-            />
-          }
-        />
+        <Route path="alertas" element={<Alertas />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Route>
     </Routes>

@@ -2,7 +2,10 @@
 pythonpath = ["."]
 testpaths = ["tests"]
 addopts = "-ra"
-markers = ["banco: exige o Postgres tst no ar (127.0.0.1:5433); nunca com mock"]
+markers = [
+  "banco: exige o Postgres tst no ar (127.0.0.1:5433); nunca com mock",
+  "e2e: jornada no navegador (Playwright) contra o tst; roda em etapa própria do check",
+]
 
 [tool.ruff]
 line-length = 100
@@ -22,6 +25,7 @@ files = [
   "backend",
   "tests/backend",
   "tests/db",
+  "tests/e2e",
   "tests/conftest.py",
   "tests/test_check.py",
   "tests/test_rastreabilidade.py",

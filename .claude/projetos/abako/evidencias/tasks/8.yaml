@@ -1,0 +1,26 @@
+task_id: "8"
+criteria:
+  SPEC-012-AC-4:
+    id: SPEC-012-AC-4
+    command: "npm --prefix frontend test -- src/saldos/Saldos.test.tsx"
+    test_paths:
+      - "frontend/src/saldos/Saldos.test.tsx::mostra_saldo_da_api"
+      - "frontend/src/saldos/Saldos.test.tsx::mostra_carregando_ate_a_api_responder"
+      - "frontend/src/saldos/Saldos.test.tsx::mostra_estado_vazio"
+      - "frontend/src/saldos/Saldos.test.tsx::mostra_erro_e_tenta_de_novo"
+    exit_code: 0
+    log_path: "logs/8/SPEC-012-AC-4.log"
+  SPEC-012-AC-5:
+    id: SPEC-012-AC-5
+    command: "npm --prefix frontend test -- src/saldos/Snapshot.test.tsx -t mostra_divergencia"
+    test_paths:
+      - "frontend/src/saldos/Snapshot.test.tsx::mostra_divergencia"
+    exit_code: 0
+    log_path: "logs/8/SPEC-012-AC-5.log"
+  SPEC-012-AC-6:
+    id: SPEC-012-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -m e2e tests/e2e/test_saldos.py::test_login_e_saldos"
+    test_paths:
+      - "tests/e2e/test_saldos.py::test_login_e_saldos"
+    exit_code: 0
+    log_path: "logs/8/SPEC-012-AC-6.log"

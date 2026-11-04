@@ -16,6 +16,8 @@
   --sobre-destaque: #ffffff;
   --erro: #b3261e;
   --erro-fundo: #fdeceb;
+  --atencao: #8a5a00;
+  --atencao-fundo: #fff4dc;
   --foco: #5b8bd9;
   --raio: 12px;
   --raio-pequeno: 8px;
@@ -40,6 +42,8 @@
     --sobre-destaque: #10141b;
     --erro: #f3b5b0;
     --erro-fundo: #3a1f1d;
+    --atencao: #f1cf8a;
+    --atencao-fundo: #3a2e14;
     --foco: #8fb0dc;
     --sombra: 0 1px 2px rgb(0 0 0 / 40%), 0 4px 16px rgb(0 0 0 / 30%);
   }
@@ -544,6 +548,99 @@ p {
 
 .lista-item + .lista-item {
   border-top: 1px solid var(--borda);
+}
+
+/* ---------- saldos e formulários de dados ---------- */
+/* Texto só para leitor de tela: some da vista, continua no texto da página. */
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.campo-marcar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.campo-marcar input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.2rem;
+}
+
+.campo-marcar label {
+  font-weight: 600;
+}
+
+.ajuda {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.linha-campos {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.lista-item-coluna {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.conta-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.conta-nome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.conta-saldo {
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.texto-suave {
+  font-size: 0.875rem;
+  color: var(--texto-suave);
+}
+
+.resultado {
+  padding: 0.75rem 1rem;
+  background: var(--destaque-suave);
+  border-radius: var(--raio-pequeno);
+}
+
+.resultado-atencao {
+  color: var(--atencao);
+  background: var(--atencao-fundo);
+}
+
+.resultado p + p {
+  margin-top: 0.35rem;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .etiqueta {

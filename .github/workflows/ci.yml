@@ -3,8 +3,8 @@ name: CI
 # CI mínimo (ADR 022): sem segredos, permissões mínimas, ações fixadas por SHA.
 # Job `check` (SPEC-001b): ruff, mypy, pytest com Postgres efêmero, contratos e rastreabilidade.
 # O `check` também roda tipos e Vitest do `frontend/` (task 06; Node 24, `npm ci
-# --ignore-scripts`, setup-node fixado por SHA). Playwright entra em job próprio quando houver
-# jornadas e2e.
+# --ignore-scripts`, setup-node fixado por SHA). As jornadas e2e (Playwright, task 08) rodam
+# dentro do `check`, porque precisam do mesmo Postgres efêmero; aqui com o Chromium do Playwright.
 on:
   pull_request:
   push:
@@ -179,7 +179,12 @@ jobs:
           sudo apt-get install -y -q age
           age --version
 
+      # Navegador das jornadas e2e: o Chromium da versão fixa do Playwright (requirements-dev).
+      - name: Navegador do Playwright (Chromium)
+        run: python -m playwright install --with-deps chromium
+
       - name: check completo (exige o banco tst)
         env:
           ABAKO_PG_CONTAINER: ${{ job.services.postgres.id }}
+          ABAKO_E2E_NAVEGADOR: chromium
         run: python -m scripts.check --com-banco
