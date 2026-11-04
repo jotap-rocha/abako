@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from backend.routers import auth, contas
+from backend.routers import auth, contas, saldos
 from backend.seguranca import LimitadorLogin
 from backend.settings import Settings, obter_settings
 
@@ -75,6 +75,7 @@ def criar_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(auth.router, prefix="/api")
     app.include_router(contas.router, prefix="/api")
+    app.include_router(saldos.router, prefix="/api")
     _servir_spa(app, cfg.frontend_dist)
     return app
 

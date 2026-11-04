@@ -1,0 +1,30 @@
+task_id: "7"
+criteria:
+  SPEC-003-AC-1:
+    id: SPEC-003-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_saldo.py::test_saldo_derivado_f_saldo_01"
+    test_paths:
+      - "tests/db/test_saldo.py::test_saldo_derivado_f_saldo_01"
+    exit_code: 0
+    log_path: "logs/7/SPEC-003-AC-1.log"
+  SPEC-003-AC-2:
+    id: SPEC-003-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_r4.py::test_r4_lista_divergencias"
+    test_paths:
+      - "tests/db/test_r4.py::test_r4_lista_divergencias"
+    exit_code: 0
+    log_path: "logs/7/SPEC-003-AC-2.log"
+  SPEC-003-AC-3:
+    id: SPEC-003-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_retroativa.py::test_edicao_retroativa_sinaliza_r4"
+    test_paths:
+      - "tests/db/test_retroativa.py::test_edicao_retroativa_sinaliza_r4"
+    exit_code: 0
+    log_path: "logs/7/SPEC-003-AC-3.log"
+  SPEC-003-AC-4:
+    id: SPEC-003-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/db/test_saldo.py::test_saldo_em_data_passada"
+    test_paths:
+      - "tests/db/test_saldo.py::test_saldo_em_data_passada"
+    exit_code: 0
+    log_path: "logs/7/SPEC-003-AC-4.log"

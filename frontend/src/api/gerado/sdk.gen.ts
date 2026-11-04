@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses } from './types.gen';
+import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -48,6 +48,46 @@ export const authLogout = <ThrowOnError extends boolean = false>(options?: Optio
 export const contasListar = <ThrowOnError extends boolean = false>(options?: Options<ContasListarData, ThrowOnError>): RequestResult<ContasListarResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ContasListarResponses, unknown, ThrowOnError>({ url: '/api/contas', ...options });
 
 /**
+ * Criar
+ */
+export const contasCriar = <ThrowOnError extends boolean = false>(options: Options<ContasCriarData, ThrowOnError>): RequestResult<ContasCriarResponses, ContasCriarErrors, ThrowOnError> => (options.client ?? client).post<ContasCriarResponses, ContasCriarErrors, ThrowOnError>({
+    url: '/api/contas',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Obter
  */
 export const contasObter = <ThrowOnError extends boolean = false>(options: Options<ContasObterData, ThrowOnError>): RequestResult<ContasObterResponses, ContasObterErrors, ThrowOnError> => (options.client ?? client).get<ContasObterResponses, ContasObterErrors, ThrowOnError>({ url: '/api/contas/{conta_id}', ...options });
+
+/**
+ * Registrar Snapshot
+ *
+ * Informa o saldo que o app do banco mostra. A divergência (R4) volta na resposta.
+ */
+export const saldosRegistrarSnapshot = <ThrowOnError extends boolean = false>(options: Options<SaldosRegistrarSnapshotData, ThrowOnError>): RequestResult<SaldosRegistrarSnapshotResponses, SaldosRegistrarSnapshotErrors, ThrowOnError> => (options.client ?? client).post<SaldosRegistrarSnapshotResponses, SaldosRegistrarSnapshotErrors, ThrowOnError>({
+    url: '/api/contas/{conta_id}/snapshots',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * R4
+ *
+ * Contas em que o saldo derivado difere do snapshot. Só sinaliza; nunca corrige.
+ */
+export const saldosR4 = <ThrowOnError extends boolean = false>(options?: Options<SaldosR4Data, ThrowOnError>): RequestResult<SaldosR4Responses, unknown, ThrowOnError> => (options?.client ?? client).get<SaldosR4Responses, unknown, ThrowOnError>({ url: '/api/r4', ...options });
+
+/**
+ * Listar
+ *
+ * Saldo derivado de cada conta em `em` (padrão: hoje). Não aceita data futura.
+ */
+export const saldosListar = <ThrowOnError extends boolean = false>(options?: Options<SaldosListarData, ThrowOnError>): RequestResult<SaldosListarResponses, SaldosListarErrors, ThrowOnError> => (options?.client ?? client).get<SaldosListarResponses, SaldosListarErrors, ThrowOnError>({ url: '/api/saldos', ...options });

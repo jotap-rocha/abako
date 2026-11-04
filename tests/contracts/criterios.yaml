@@ -172,3 +172,35 @@ criterios:
     entao: "não há nenhuma, e um valor decimal acima de 2^53 é exibido sem perder dígitos"
     invariantes: [INV-14]
     teste: ["frontend/src/dinheiro.test.ts::sem_float"]
+  - id: SPEC-003-AC-1
+    spec: SPEC-003
+    dado: "uma conta com snapshot e transações vigentes posteriores (F-SALDO-01), versões editadas e excluídas (F-SALDO-02)"
+    quando: "o saldo derivado é consultado"
+    entao: "é o último snapshot mais as transações vigentes e não excluídas posteriores a ele, cada transação contando uma vez"
+    invariantes: [INV-03]
+    fixtures: [F-SALDO-01, F-SALDO-02]
+    teste: ["tests/db/test_saldo.py::test_saldo_derivado_f_saldo_01", "tests/db/test_saldo.py::test_saldo_versao_vigente_e_exclusao_f_saldo_02"]
+  - id: SPEC-003-AC-2
+    spec: SPEC-003
+    dado: "contas com snapshots, uma delas com derivado diferente do snapshot (F-SALDO-01)"
+    quando: "o R4 é consultado"
+    entao: "lista exatamente as contas em que derivado ≠ snapshot, com divergência = derivado − snapshot, e nunca corrige nada"
+    invariantes: [INV-23]
+    fixtures: [F-SALDO-01]
+    teste: ["tests/db/test_r4.py::test_r4_lista_divergencias"]
+  - id: SPEC-003-AC-3
+    spec: SPEC-003
+    dado: "uma transação anterior a um snapshot é editada retroativamente (F-SALDO-03)"
+    quando: "o R4 é consultado"
+    entao: "o snapshot permanece intacto, o saldo atual segue o último snapshot e o R4 sinaliza a divergência"
+    invariantes: [INV-30]
+    fixtures: [F-SALDO-03]
+    teste: ["tests/db/test_retroativa.py::test_edicao_retroativa_sinaliza_r4"]
+  - id: SPEC-003-AC-4
+    spec: SPEC-003
+    dado: "uma conta com dois snapshots em datas diferentes (F-SALDO-03)"
+    quando: "o saldo é consultado para um dia passado"
+    entao: "usa o snapshot daquela época como âncora, e antes de qualquer snapshot parte de zero"
+    invariantes: [INV-03]
+    fixtures: [F-SALDO-03]
+    teste: ["tests/db/test_saldo.py::test_saldo_em_data_passada"]
