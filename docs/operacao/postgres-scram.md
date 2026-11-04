@@ -74,9 +74,11 @@ docker exec -u postgres abako-postgres pg_ctl reload -D /var/lib/postgresql/data
 
 ## Passo 5: verificar
 
-Sem senha tem de falhar, com a senha de admin tem de entrar. (O segundo bloco lê o arquivo da
-senha de admin; a variável `ABAKO_ADMIN_PASSWORD_FILE` só existe no terminal se você a
-definir, então troque-a pelo caminho completo do arquivo, que está no seu `.env`.)
+Sem senha tem de falhar, com a senha de admin tem de entrar. (O segundo bloco, rodado da raiz
+do repositório, lê no `.env` só o caminho do arquivo da senha de admin e depois lê a senha
+desse arquivo. O `.env` não vira variável do terminal, então não use
+`$env:ABAKO_ADMIN_PASSWORD_FILE` direto: ela vem vazia e o teste falha com
+`no password supplied`.)
 
 ```powershell
 docker exec abako-postgres psql -U abako_admin -d postgres --no-password -Atc "select 1"
@@ -85,7 +87,8 @@ docker exec abako-postgres psql -U abako_admin -d postgres --no-password -Atc "s
 Esperado: `fe_sendauth: no password supplied`.
 
 ```powershell
-$env:PGPASSWORD = (Get-Content -Raw $env:ABAKO_ADMIN_PASSWORD_FILE).Trim()
+$arq = ((Select-String -Path .env -Pattern '^ABAKO_ADMIN_PASSWORD_FILE=').Line -split '=',2)[1].Split('#')[0].Trim().Trim('"').Trim("'")
+$env:PGPASSWORD = (Get-Content -Raw $arq).Trim()
 docker exec -e PGPASSWORD abako-postgres psql -h 127.0.0.1 -U abako_admin -d postgres --no-password -Atc "select 1"
 Remove-Item Env:PGPASSWORD
 ```
