@@ -2,8 +2,9 @@ name: CI
 
 # CI mínimo (ADR 022): sem segredos, permissões mínimas, ações fixadas por SHA.
 # Job `check` (SPEC-001b): ruff, mypy, pytest com Postgres efêmero, contratos e rastreabilidade.
-# Vitest e Playwright entram em jobs próprios quando existir `frontend/` (task do frontend);
-# até lá o `check` não os executa. Esses jobs devem usar setup-node fixado por SHA.
+# O `check` também roda tipos e Vitest do `frontend/` (task 06; Node 24, `npm ci
+# --ignore-scripts`, setup-node fixado por SHA). Playwright entra em job próprio quando houver
+# jornadas e2e.
 on:
   pull_request:
   push:
@@ -147,6 +148,16 @@ jobs:
 
       - name: Dependências (versões exatas)
         run: python -m pip install --disable-pip-version-check -r requirements-dev.txt
+
+      # Front (task 06): versões exatas no package-lock; sem scripts de instalação.
+      - name: Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: Dependências do front (npm ci)
+        working-directory: frontend
+        run: npm ci --ignore-scripts
 
       - name: Papéis do banco (passo de admin, como no ambiente local)
         env:

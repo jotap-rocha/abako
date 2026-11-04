@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
+from pathlib import Path
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.routing import APIRoute
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from backend.routers import auth, contas
@@ -22,10 +24,22 @@ CSP = (
 )
 
 
+def _id_operacao(rota: APIRoute) -> str:
+    """`auth_login`, `contas_listar`: nomes curtos e estáveis para as funções do cliente TS."""
+    return f"{rota.tags[0]}_{rota.name}" if rota.tags else rota.name
+
+
 def criar_app(settings: Settings | None = None) -> FastAPI:
     cfg = settings or obter_settings()
-    # Sem /docs e /redoc: dependem de CDN, que a CSP bloquearia. O /openapi.json fica.
-    app = FastAPI(title="abako", docs_url=None, redoc_url=None)
+    # Sem /docs e /redoc: dependem de CDN, que a CSP bloquearia. O contrato fica em
+    # /api/openapi.json (fonte do cliente TS). Tudo da API vive sob /api; o resto é a SPA.
+    app = FastAPI(
+        title="abako",
+        docs_url=None,
+        redoc_url=None,
+        openapi_url="/api/openapi.json",
+        generate_unique_id_function=_id_operacao,
+    )
     app.state.settings = cfg
     app.state.limitador = LimitadorLogin(cfg.login_max_falhas, cfg.login_janela_s)
     origens = set(cfg.origens)
@@ -59,6 +73,28 @@ def criar_app(settings: Settings | None = None) -> FastAPI:
         resposta.headers["Referrer-Policy"] = "no-referrer"
         return resposta
 
-    app.include_router(auth.router)
-    app.include_router(contas.router)
+    app.include_router(auth.router, prefix="/api")
+    app.include_router(contas.router, prefix="/api")
+    _servir_spa(app, cfg.frontend_dist)
     return app
+
+
+def _servir_spa(app: FastAPI, dist: Path) -> None:
+    """Serve o build do front na mesma origem da API (ADR 035). Sem build, a API roda sozinha."""
+    indice = dist / "index.html"
+    if not indice.is_file():
+        return
+    raiz = dist.resolve()
+
+    @app.api_route("/{caminho:path}", methods=["GET", "HEAD"], include_in_schema=False)
+    async def spa(caminho: str) -> FileResponse:
+        if caminho == "api" or caminho.startswith("api/"):
+            raise HTTPException(404, "não encontrado")
+        try:
+            arquivo = (raiz / caminho).resolve()
+            # Só arquivos dentro do build (bloqueia ../); qualquer outra rota é da SPA.
+            if caminho and arquivo.is_file() and raiz in arquivo.parents:
+                return FileResponse(arquivo)
+        except (ValueError, OSError):
+            pass  # caminho impossível no sistema de arquivos (ex.: byte NUL): é rota da SPA
+        return FileResponse(indice)

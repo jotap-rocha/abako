@@ -35,14 +35,14 @@ def test_criar_redefinir_e_senha_fraca(
         assert main(["criar-usuario", login]) == 1  # login duplicado
 
         corpo = {"login": login, "senha": "primeira-senha-123"}
-        assert client.post("/auth/login", json=corpo, headers=ORIGEM).status_code == 200
+        assert client.post("/api/auth/login", json=corpo, headers=ORIGEM).status_code == 200
         _senhas(monkeypatch, "segunda-senha-1234")
         assert main(["redefinir-senha", login]) == 0
         # a sessão aberta caiu e a senha antiga não vale mais
-        assert client.get("/auth/eu").status_code == 401
-        assert client.post("/auth/login", json=corpo, headers=ORIGEM).status_code == 401
+        assert client.get("/api/auth/eu").status_code == 401
+        assert client.post("/api/auth/login", json=corpo, headers=ORIGEM).status_code == 401
         novo = {"login": login, "senha": "segunda-senha-1234"}
-        assert client.post("/auth/login", json=novo, headers=ORIGEM).status_code == 200
+        assert client.post("/api/auth/login", json=novo, headers=ORIGEM).status_code == 200
 
         _senhas(monkeypatch, "qualquer-senha-123")
         assert main(["redefinir-senha", "nao_existe_xyz"]) == 1
@@ -53,3 +53,13 @@ def test_criar_redefinir_e_senha_fraca(
             ).fetchone()
         if linha:
             apagar_usuarios(esquema, [Usuario(linha[0], login)])
+
+
+def test_senha_de_7_caracteres_e_recusada_e_a_de_8_e_aceita(esquema: str) -> None:
+    from backend.services.usuarios import SenhaFraca, definir_senha
+
+    with psycopg.connect(esquema) as conn:
+        with pytest.raises(SenhaFraca):
+            definir_senha(conn, "limite_senha", "1234567", criar=True)
+        assert definir_senha(conn, "limite_senha", "12345678", criar=True) > 0
+        conn.rollback()  # nada fica gravado

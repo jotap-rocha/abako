@@ -34,6 +34,8 @@ def test_etapas_padrao_cobrem_o_contrato() -> None:
         "mypy",
         "pytest (sem banco)",
         "pytest (banco)",
+        "front: tipos",
+        "front: testes",
         "contratos",
         "rastreabilidade",
     ]
@@ -93,3 +95,12 @@ def test_spec_sem_estrito_e_erro(capsys: pytest.CaptureFixture[str]) -> None:
         main(["--spec", "SPEC-001", "--so-pre-requisitos"])
     assert exc.value.code == 2
     assert "--spec só vale com --estrito" in capsys.readouterr().err
+
+
+def test_programa_ausente_falha_sem_derrubar_o_check(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    ausente = Etapa("front: ausente", ["programa-que-nao-existe-abako"])
+    assert executar([ausente, _etapa("depois", 0)]) == 1
+    saida = capsys.readouterr().out
+    assert "front: ausente: FALHOU" in saida and "depois: ok" in saida

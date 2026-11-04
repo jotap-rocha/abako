@@ -19,19 +19,21 @@ def test_sem_segredo_em_log(
     senha_errada = "senha-errada-xyz-987"
     with caplog.at_level(logging.DEBUG):
         client.post(
-            "/auth/login", json={"login": usuario.login, "senha": senha_errada}, headers=ORIGEM
+            "/api/auth/login", json={"login": usuario.login, "senha": senha_errada}, headers=ORIGEM
         )
         r = client.post(
-            "/auth/login", json={"login": usuario.login, "senha": usuario.senha}, headers=ORIGEM
+            "/api/auth/login", json={"login": usuario.login, "senha": usuario.senha}, headers=ORIGEM
         )
         csrf = r.json()["csrf_token"]
         cookie = client.cookies["abako_sessao"]
-        client.get("/contas")
-        client.post("/auth/logout", headers={"Origin": BASE, "X-CSRF-Token": csrf})
+        client.get("/api/contas")
+        client.post("/api/auth/logout", headers={"Origin": BASE, "X-CSRF-Token": csrf})
         # força bloqueio para exercitar o log do 429
         for _ in range(4):  # limite 3: a quarta já encontra o bloqueio
             bloqueio = client.post(
-                "/auth/login", json={"login": usuario.login, "senha": senha_errada}, headers=ORIGEM
+                "/api/auth/login",
+                json={"login": usuario.login, "senha": senha_errada},
+                headers=ORIGEM,
             )
         assert bloqueio.status_code == 429
 
@@ -52,7 +54,7 @@ def test_token_nao_fica_em_claro_no_banco(
     client: TestClient, usuario: Usuario, esquema: str
 ) -> None:
     r = client.post(
-        "/auth/login", json={"login": usuario.login, "senha": usuario.senha}, headers=ORIGEM
+        "/api/auth/login", json={"login": usuario.login, "senha": usuario.senha}, headers=ORIGEM
     )
     assert r.status_code == 200
     token = client.cookies["abako_sessao"]

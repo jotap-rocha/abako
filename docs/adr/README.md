@@ -48,3 +48,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [037](037-backup-age-retencao-e-restauracao.md) | Backup com age, retenção 7+4 e restauração no banco descartável | Aceita | 2026-11-02 |
 | [038](038-login-sessao-e-defesas-da-api.md) | Login, sessão no Postgres e defesas da API | Aceita | 2026-11-02 |
 | [039](039-postgres-scram-no-conteiner.md) | Autenticação scram dentro do contêiner do Postgres | Aceita | 2026-11-03 |
+| [040](040-front-casca-e-servico-estatico.md) | Casca do front: servida pela API, cliente gerado e service worker enxuto | Aceita | 2026-11-04 |

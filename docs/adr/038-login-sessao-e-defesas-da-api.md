@@ -19,7 +19,7 @@ formar o token CSRF.
   Nenhuma das duas é tabela de versão do ledger (ADR 036).
 - **Senha só pelo comando local** (`python -m backend.cli criar-usuario|redefinir-senha`), que
   conecta como **dono** do banco e pede a senha sem eco. `abako_app` tem só `SELECT` em
-  `credencial`: uma falha na API não consegue trocar senha. Mínimo de 12 caracteres.
+  `credencial`: uma falha na API não consegue trocar senha. Mínimo de 8 caracteres (decisão do usuário em 2026-11-04, antes 12; o limite de tentativas e o Argon2id compensam em uso local).
   Redefinir derruba as sessões abertas do usuário.
 - **Sessão:** o cookie `abako_sessao` (HttpOnly, `SameSite=Strict`, sem `Secure` porque a v1 é
   `http://` em localhost) carrega um token de 256 bits; o banco guarda **só o SHA-256**. Duração

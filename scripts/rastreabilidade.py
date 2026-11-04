@@ -69,13 +69,30 @@ def _pula(no: ast.AST) -> bool:
     return any(m in texto for m in MARCAS_PULO)
 
 
+def _referencia_vitest_ok(caminho: Path, nome: str) -> bool:
+    """Teste Vitest: o título (`it("nome")`/`test("nome")`) existe e não está pulado."""
+    if not caminho.name.endswith((".test.ts", ".test.tsx")) or not nome:
+        return False
+    # Título em comentário não conta: tira comentários de bloco e de linha antes de procurar.
+    texto = re.sub(r"/\*.*?\*/", "", caminho.read_text(encoding="utf-8"), flags=re.DOTALL)
+    texto = "\n".join(ln for ln in texto.splitlines() if not ln.lstrip().startswith("//"))
+    titulo = re.escape(nome)
+    achou = re.search(rf"""\b(?:it|test)\(\s*(["'`]){titulo}\1""", texto)
+    pulado = re.search(
+        rf"""\b(?:it|test)\.(?:skip|todo|fails|skipIf)\b[^\n]*?(["'`]){titulo}\1""", texto
+    )
+    return bool(achou) and not pulado
+
+
 def _referencia_ok(ref: str, raiz: Path) -> bool:
     arq, _, nome = str(ref).partition("::")
     caminho = raiz / arq
     if not caminho.is_file():
         return False
+    if caminho.suffix in {".ts", ".tsx"}:
+        return _referencia_vitest_ok(caminho, nome)
     if caminho.suffix != ".py":
-        return True  # testes não-Python (SQL, TS): só a existência do arquivo é conferida
+        return True  # outros testes (SQL): só a existência do arquivo é conferida
     alvo = nome.split("::")[-1].split("[")[0]
     if not alvo.startswith("test_"):
         return False

@@ -1,0 +1,23 @@
+task_id: "6"
+criteria:
+  SPEC-012-AC-1:
+    id: SPEC-012-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q tests/contracts/test_cliente_openapi.py::test_cliente_atualizado"
+    test_paths:
+      - "tests/contracts/test_cliente_openapi.py::test_cliente_atualizado"
+    exit_code: 0
+    log_path: "logs/6/SPEC-012-AC-1.log"
+  SPEC-012-AC-2:
+    id: SPEC-012-AC-2
+    command: "npm --prefix frontend test -- src/login/Login.test.tsx -t logout_limpa_cache"
+    test_paths:
+      - "frontend/src/login/Login.test.tsx::logout_limpa_cache"
+    exit_code: 0
+    log_path: "logs/6/SPEC-012-AC-2.log"
+  SPEC-012-AC-3:
+    id: SPEC-012-AC-3
+    command: "npm --prefix frontend test -- src/dinheiro.test.ts -t sem_float"
+    test_paths:
+      - "frontend/src/dinheiro.test.ts::sem_float"
+    exit_code: 0
+    log_path: "logs/6/SPEC-012-AC-3.log"

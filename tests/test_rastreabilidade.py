@@ -275,3 +275,44 @@ def test_estrito_por_spec(tmp_path: Path) -> None:
     assert main(_args(inv, crit, ent, tmp_path, "--estrito")) == 1
     assert main(_args(inv, crit, ent, tmp_path, "--estrito", "--spec", "SPEC-001")) == 0
     assert main(_args(inv, crit, ent, tmp_path, "--estrito", "--spec", "SPEC-008")) == 1
+
+
+def test_referencia_vitest_exige_titulo_existente_e_nao_pulado(tmp_path: Path) -> None:
+    (tmp_path / "front").mkdir()
+    (tmp_path / "front" / "a.test.ts").write_text(
+        'import { it } from "vitest";\n'
+        'it("titulo_ok", () => {});\n'
+        'it.skip("titulo_pulado", () => {});\n'
+        'it.todo("titulo_todo");\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "front" / "b.ts").write_text('it("titulo_ok", () => {});\n', encoding="utf-8")
+    ruins = [
+        "front/a.test.ts",  # sem ::titulo
+        "front/a.test.ts::nao_existe",
+        "front/a.test.ts::titulo_pulado",
+        "front/a.test.ts::titulo_todo",
+        "front/b.ts::titulo_ok",  # não é *.test.ts(x)
+    ]
+    for ref in ruins:
+        r = _um_inv(tmp_path, {"id": "INV-01", "spec": "SPEC-008", "teste": [ref]})
+        assert r.quebrados == ["INV-01"], ref
+    ok = _um_inv(
+        tmp_path, {"id": "INV-01", "spec": "SPEC-008", "teste": ["front/a.test.ts::titulo_ok"]}
+    )
+    assert ok.quebrados == [] and ok.sem_teste == []
+
+
+def test_referencia_vitest_ignora_titulo_em_comentario(tmp_path: Path) -> None:
+    (tmp_path / "front").mkdir()
+    (tmp_path / "front" / "c.test.ts").write_text(
+        '// it("so_comentario", () => {});\n'
+        '/* it("em_bloco", () => {}); */\n'
+        'it("real", () => {});\n',
+        encoding="utf-8",
+    )
+    for ref in ("front/c.test.ts::so_comentario", "front/c.test.ts::em_bloco"):
+        r = _um_inv(tmp_path, {"id": "INV-01", "spec": "SPEC-008", "teste": [ref]})
+        assert r.quebrados == ["INV-01"], ref
+    ok = _um_inv(tmp_path, {"id": "INV-01", "spec": "SPEC-008", "teste": ["front/c.test.ts::real"]})
+    assert ok.quebrados == []

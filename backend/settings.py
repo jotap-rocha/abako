@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
+from typing import Literal
+from urllib.parse import urlsplit, urlunsplit
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 HOSTS_PERMITIDOS = ("abako.localhost", "localhost", "127.0.0.1")
+RAIZ = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
@@ -19,7 +23,12 @@ class Settings(BaseSettings):
 
     # Papel `abako_app` (sem UPDATE/DELETE nas tabelas de versão).
     db_app_url: SecretStr
+    # `tst` (padrão) ou `prd`. Com `prd` o servidor usa o banco `prd` com o mesmo papel
+    # `abako_app`: a URL de `db_app_url` aponta para `tst` e só o nome do banco troca.
+    env: Literal["tst", "prd"] = "tst"
     porta: int = 8080
+    # Build do front (`npm run build`); ausente = só API.
+    frontend_dist: Path = RAIZ / "frontend" / "dist"
     # Host aceito (INV-34, ADR 035); a porta não entra na comparação.
     hosts_permitidos: tuple[str, ...] = HOSTS_PERMITIDOS
     # Origens de navegador aceitas em escrita e no CORS; vazio = derivadas de host + porta.
@@ -42,6 +51,17 @@ class Settings(BaseSettings):
         if any(not o.startswith(locais) or "*" in o for o in v):
             raise ValueError("origens_permitidas só aceita origens locais explícitas (ADR 031)")
         return v
+
+    @property
+    def url_banco(self) -> str:
+        """URL do banco do ambiente escolhido (`ABAKO_ENV`)."""
+        url = self.db_app_url.get_secret_value()
+        if self.env == "tst":
+            return url
+        partes = urlsplit(url)
+        if partes.path != "/tst":
+            raise ValueError("ABAKO_ENV=prd espera ABAKO_DB_APP_URL apontando para o banco tst")
+        return urlunsplit(partes._replace(path="/prd"))
 
     @property
     def origens(self) -> tuple[str, ...]:

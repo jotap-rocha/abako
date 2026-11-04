@@ -16,6 +16,7 @@ Todas as etapas rodam; o exit code é 1 se qualquer uma falhar. Testes de banco 
 from __future__ import annotations
 
 import argparse
+import shutil
 import socket
 import subprocess
 import sys
@@ -54,6 +55,10 @@ def etapas_padrao(
     etapas.append(
         Etapa("pytest (banco)", [py, "-m", "pytest", "-q", "-m", "banco"], pulada=banco != "sim")
     )
+    # Front (Node 22.12+; `npm ci` em frontend/). Sem npm ou sem node_modules, a etapa falha.
+    npm = shutil.which("npm") or "npm"
+    etapas.append(Etapa("front: tipos", [npm, "--prefix", "frontend", "run", "typecheck"]))
+    etapas.append(Etapa("front: testes", [npm, "--prefix", "frontend", "test"]))
     etapas.append(Etapa("contratos", [py, "scripts/validar_contratos.py"]))
     rastro = [py, "-m", "scripts.rastreabilidade"]
     if estrito:
@@ -71,7 +76,11 @@ def executar(etapas: list[Etapa]) -> int:
             resultados.append((e.nome, "PULADO"))
             continue
         print(f"\n=== {e.nome} ===", flush=True)
-        ok = subprocess.run(e.cmd, cwd=RAIZ, check=False).returncode == 0
+        try:
+            ok = subprocess.run(e.cmd, cwd=RAIZ, check=False).returncode == 0
+        except OSError as exc:  # programa ausente (ex.: npm fora do PATH): falha, não trava
+            print(f"não foi possível executar {e.cmd[0]!r}: {exc}", file=sys.stderr)
+            ok = False
         resultados.append((e.nome, "ok" if ok else "FALHOU"))
     print("\n=== resumo ===")
     for nome, res in resultados:
