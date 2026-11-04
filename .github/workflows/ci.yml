@@ -2,7 +2,7 @@ name: CI
 
 # CI mínimo (ADR 022): sem segredos, permissões mínimas, ações fixadas por SHA.
 # Job `check` (SPEC-001b): ruff, mypy, pytest com Postgres efêmero, contratos e rastreabilidade.
-# O `check` também roda tipos e Vitest do `frontend/` (task 06; Node 22.12, `npm ci
+# O `check` também roda tipos e Vitest do `frontend/` (task 06; Node 24, `npm ci
 # --ignore-scripts`, setup-node fixado por SHA). Playwright entra em job próprio quando houver
 # jornadas e2e.
 on:
@@ -153,7 +153,7 @@ jobs:
       - name: Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "22.12"
+          node-version: "24"
 
       - name: Dependências do front (npm ci)
         working-directory: frontend

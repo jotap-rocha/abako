@@ -6,7 +6,7 @@ import psycopg
 
 from backend.seguranca import hash_senha
 
-SENHA_MINIMA = 12
+SENHA_MINIMA = 8
 
 
 class SenhaFraca(ValueError):

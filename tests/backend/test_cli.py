@@ -53,3 +53,13 @@ def test_criar_redefinir_e_senha_fraca(
             ).fetchone()
         if linha:
             apagar_usuarios(esquema, [Usuario(linha[0], login)])
+
+
+def test_senha_de_7_caracteres_e_recusada_e_a_de_8_e_aceita(esquema: str) -> None:
+    from backend.services.usuarios import SenhaFraca, definir_senha
+
+    with psycopg.connect(esquema) as conn:
+        with pytest.raises(SenhaFraca):
+            definir_senha(conn, "limite_senha", "1234567", criar=True)
+        assert definir_senha(conn, "limite_senha", "12345678", criar=True) > 0
+        conn.rollback()  # nada fica gravado

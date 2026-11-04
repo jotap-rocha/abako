@@ -71,7 +71,7 @@ guarda o mínimo sem violar o ADR 031.
 ## Consequências
 
 - Mudar o contrato da API exige exportar o contrato e regerar o cliente (a checagem avisa).
-- O `check` e o CI passam a exigir Node 22.12+ e `npm ci` em `frontend/`.
+- O `check` e o CI passam a exigir Node 22.22+ ou 24.15+ (exigência do jsdom 30; o CI usa a 24) e `npm ci` em `frontend/`.
 - Todo caminho de teste e de cliente passou de `/auth/...` para `/api/auth/...`.
 - O service worker usa **lista fechada** (`/`, `/assets/`, `/icone-*`, `/manifest.webmanifest`);
   telas, `/api` e o resto vão direto para a rede. Depois do logout ele segue ativo e volta a

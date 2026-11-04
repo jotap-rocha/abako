@@ -38,7 +38,7 @@ def test_cliente_atualizado(tmp_path: Path) -> None:
     )
 
     npm = shutil.which("npm")
-    assert npm is not None, "npm não encontrado no PATH (instale o Node 22.12 ou superior)"
+    assert npm is not None, "npm não encontrado no PATH (instale o Node 24 ou o 22.22+)"
     assert (FRONT / "node_modules").is_dir(), "rode `npm ci` em frontend/ antes do check"
 
     saida = tmp_path / "gerado"
