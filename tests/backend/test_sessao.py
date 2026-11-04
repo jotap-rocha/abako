@@ -24,16 +24,16 @@ def test_sessao_vencida_nao_autentica_e_e_varrida(
     client: TestClient, usuario: Usuario, esquema: str
 ) -> None:
     logar(client, usuario)
-    assert client.get("/auth/eu").status_code == 200
+    assert client.get("/api/auth/eu").status_code == 200
     with psycopg.connect(esquema) as conn:
         conn.execute(
             "UPDATE sessao SET criada_em = now() - interval '2 hours', "
             "expira_em = now() - interval '1 hour' WHERE user_id = %s",
             (usuario.user_id,),
         )
-    assert client.get("/auth/eu").status_code == 401
+    assert client.get("/api/auth/eu").status_code == 401
     assert _contar(esquema, usuario.user_id) == 1  # ainda lá, só não vale
 
     logar(client, usuario)  # novo login varre a vencida
     assert _contar(esquema, usuario.user_id) == 1
-    assert client.get("/auth/eu").status_code == 200
+    assert client.get("/api/auth/eu").status_code == 200

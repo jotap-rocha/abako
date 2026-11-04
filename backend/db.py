@@ -17,6 +17,6 @@ if sys.platform == "win32":
 
 async def conexao(request: Request) -> AsyncIterator[psycopg.AsyncConnection]:
     """Commit ao fim da requisição; qualquer exceção desfaz."""
-    url = request.app.state.settings.db_app_url.get_secret_value()
+    url = request.app.state.settings.url_banco
     async with await psycopg.AsyncConnection.connect(url) as conn:
         yield conn

@@ -64,7 +64,7 @@ def usuario(esquema: str) -> Iterator[Usuario]:  # noqa: F811
 
 def logar(client: TestClient, u: Usuario) -> str:
     """Faz login e devolve o token CSRF."""
-    r = client.post("/auth/login", json={"login": u.login, "senha": u.senha}, headers=ORIGEM)
+    r = client.post("/api/auth/login", json={"login": u.login, "senha": u.senha}, headers=ORIGEM)
     assert r.status_code == 200, r.text
     token: str = r.json()["csrf_token"]
     return token

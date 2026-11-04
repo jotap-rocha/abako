@@ -12,7 +12,7 @@ pytestmark = pytest.mark.banco
 
 
 def _tentar(client: TestClient, login: str, senha: str) -> int:
-    r = client.post("/auth/login", json={"login": login, "senha": senha}, headers=ORIGEM)
+    r = client.post("/api/auth/login", json={"login": login, "senha": senha}, headers=ORIGEM)
     code: int = r.status_code
     return code
 
@@ -23,7 +23,7 @@ def test_rate_limit(client: TestClient, usuario: Usuario) -> None:
         assert _tentar(client, usuario.login, "errada") == 401
     # bloqueado: nem a senha certa passa
     r = client.post(
-        "/auth/login", json={"login": usuario.login, "senha": usuario.senha}, headers=ORIGEM
+        "/api/auth/login", json={"login": usuario.login, "senha": usuario.senha}, headers=ORIGEM
     )
     assert r.status_code == 429
     assert int(r.headers["Retry-After"]) > 0
@@ -34,7 +34,7 @@ def test_rate_limit(client: TestClient, usuario: Usuario) -> None:
 def test_login_certo_e_login_inexistente(client: TestClient, usuario: Usuario) -> None:
     assert _tentar(client, "nao_existe", "qualquer") == 401
     logar(client, usuario)
-    assert client.get("/auth/eu").status_code == 200
+    assert client.get("/api/auth/eu").status_code == 200
 
 
 def test_sucesso_zera_falhas(client: TestClient, usuario: Usuario) -> None:

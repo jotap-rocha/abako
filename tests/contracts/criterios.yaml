@@ -151,3 +151,24 @@ criterios:
     entao: "nem a senha, nem o token de sessão, nem o token CSRF aparecem"
     invariantes: []
     teste: ["tests/backend/test_logs.py::test_sem_segredo_em_log"]
+  - id: SPEC-012-AC-1
+    spec: SPEC-012
+    dado: "o contrato OpenAPI da API e o cliente TypeScript versionado em frontend/"
+    quando: "a API muda sem que o contrato exportado ou o cliente gerado sejam atualizados"
+    entao: "a checagem falha, apontando o comando que conserta (exportar_openapi e gen:api)"
+    invariantes: []
+    teste: ["tests/contracts/test_cliente_openapi.py::test_cliente_atualizado"]
+  - id: SPEC-012-AC-2
+    spec: SPEC-012
+    dado: "uma sessão aberta no app"
+    quando: "o usuário clica em Sair"
+    entao: "a sessão é encerrada, todos os caches da PWA são apagados (mesmo se o servidor não responder) e a tela de login volta"
+    invariantes: []
+    teste: ["frontend/src/login/Login.test.tsx::logout_limpa_cache"]
+  - id: SPEC-012-AC-3
+    spec: SPEC-012
+    dado: "o código de produção do front (fora do cliente gerado)"
+    quando: "se procura conversão numérica ou aritmética de valor (parseFloat, Number, toFixed, Math, Intl.NumberFormat)"
+    entao: "não há nenhuma, e um valor decimal acima de 2^53 é exibido sem perder dígitos"
+    invariantes: [INV-14]
+    teste: ["frontend/src/dinheiro.test.ts::sem_float"]

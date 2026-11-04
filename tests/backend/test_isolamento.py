@@ -35,16 +35,16 @@ def test_acesso_cruzado_negado(
     a, b, conta_a, conta_b = dois_usuarios
     logar(client, a)
 
-    assert [c["nome"] for c in client.get("/contas").json()] == ["conta de A"]
-    assert client.get(f"/contas/{conta_a}").status_code == 200
+    assert [c["nome"] for c in client.get("/api/contas").json()] == ["conta de A"]
+    assert client.get(f"/api/contas/{conta_a}").status_code == 200
     # conta de B: 404, idêntico a uma conta que não existe
-    assert client.get(f"/contas/{conta_b}").status_code == 404
-    assert client.get("/contas/999999999").status_code == 404
+    assert client.get(f"/api/contas/{conta_b}").status_code == 404
+    assert client.get("/api/contas/999999999").status_code == 404
     # `user_id` na query é ignorado: quem manda é a sessão
-    r = client.get(f"/contas?user_id={b.user_id}")
+    r = client.get(f"/api/contas?user_id={b.user_id}")
     assert [c["nome"] for c in r.json()] == ["conta de A"]
 
 
 def test_sem_sessao_nao_ve_nada(client: TestClient) -> None:
-    assert client.get("/contas").status_code == 401
-    assert client.get("/contas/1").status_code == 401
+    assert client.get("/api/contas").status_code == 401
+    assert client.get("/api/contas/1").status_code == 401

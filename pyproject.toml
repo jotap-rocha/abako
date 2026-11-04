@@ -29,6 +29,8 @@ files = [
   "tests/test_conteiner.py",
   "tests/test_evidence_gate_ref.py",
   "tests/test_compose_scram.py",
+  "tests/contracts/test_cliente_openapi.py",
+  "scripts/exportar_openapi.py",
   "tests/test_agent_policies_backup.py",
   "scripts/check.py",
   "scripts/rastreabilidade.py",
