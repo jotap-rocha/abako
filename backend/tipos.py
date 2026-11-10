@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-TipoConta = Literal["corrente", "reserva", "investimento", "beneficio"]
+TipoConta = Literal["corrente", "reserva", "investimento", "beneficio", "divida"]
 TipoLancamento = Literal[
     "debito", "credito", "receita", "transferencia", "investimento", "repasse", "rendimento"
 ]

@@ -16,10 +16,12 @@ class Conta:
     tipo: str
     conta_mae_id: int | None
     versao: int
+    linha_credito_id: int | None
 
 
 _SELECT = (
-    "SELECT conta_id, nome, conta_beneficio, tipo, conta_mae_id, versao FROM conta_versao "
+    "SELECT conta_id, nome, conta_beneficio, tipo, conta_mae_id, versao, linha_credito_id "
+    "FROM conta_versao "
     "WHERE user_id = %s AND vigente AND NOT excluida"
 )
 
@@ -44,14 +46,15 @@ async def gravar(
     conta_mae_id: int | None,
     conta_id: int | None = None,
     versao: int | None = None,
+    linha_credito_id: int | None = None,
 ) -> int:
     """Cria (sem `conta_id`) ou edita (com a `versao` lida). Devolve o `conta_id`.
 
     Erros de regra saem como `psycopg.Error` com SQLSTATE AB*** (ver `backend.erros_banco`).
     """
     cur = await conn.execute(
-        "SELECT conta_id FROM conta_gravar(%s, %s, %s, %s, %s, %s)",
-        (user_id, conta_id, versao, nome, tipo, conta_mae_id),
+        "SELECT conta_id FROM conta_gravar(%s, %s, %s, %s, %s, %s, %s)",
+        (user_id, conta_id, versao, nome, tipo, conta_mae_id, linha_credito_id),
     )
     linha = await cur.fetchone()
     if linha is None:

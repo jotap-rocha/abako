@@ -151,6 +151,84 @@ criterios:
     entao: "nem a senha, nem o token de sessão, nem o token CSRF aparecem"
     invariantes: []
     teste: ["tests/backend/test_logs.py::test_sem_segredo_em_log"]
+  - id: SPEC-005-AC-1
+    spec: SPEC-005
+    dado: "uma compra parcelada no cartão (F-PARC-01, F-PARC-02, F-PARC-03)"
+    quando: "as parcelas são geradas, para qualquer total e número de parcelas de 1 a 48"
+    entao: "a soma das parcelas é o total, as n-1 primeiras valem o total dividido por n truncado em centavos e a última absorve o resto"
+    invariantes: [INV-02]
+    fixtures: [F-PARC-01, F-PARC-02, F-PARC-03]
+    teste: ["tests/db/test_parcelas.py::test_ultima_absorve_centavos", "tests/db/test_parcelas.py::test_propriedade_soma_e_resto_na_ultima"]
+  - id: SPEC-005-AC-2
+    spec: SPEC-005
+    dado: "compras com data, parcelas e fechamento do cartão (F-FECH-02, F-PARC-03)"
+    quando: "a compra é gravada"
+    entao: "cada parcela pertence à fatura da sua competência (mês do fechamento) e a competência fica gravada na parcela, com a data da compra"
+    invariantes: [INV-07]
+    fixtures: [F-FECH-02, F-PARC-03]
+    teste: ["tests/db/test_fatura.py::test_parcela_na_competencia"]
+  - id: SPEC-005-AC-3
+    spec: SPEC-005
+    dado: "uma linha de crédito com dois cartões, compras parceladas e um pagamento parcial (F-LIM-02)"
+    quando: "o limite é consultado"
+    entao: "o limite usado é o total das compras (com parcelas futuras) menos os pagamentos, o disponível pode ficar negativo e nada bloqueia a compra"
+    invariantes: [INV-06]
+    fixtures: [F-LIM-02]
+    teste: ["tests/db/test_limite.py::test_limite_usado"]
+  - id: SPEC-005-AC-4
+    spec: SPEC-005
+    dado: "compras diferentes com parcelas na mesma competência (F-FAT-02)"
+    quando: "a fatura da competência é consultada"
+    entao: "o total é a soma das parcelas da competência (terceiros só entram na SPEC-013)"
+    invariantes: [INV-07]
+    fixtures: [F-FAT-02]
+    teste: ["tests/db/test_fatura.py::test_total_proprio_mais_terceiros"]
+  - id: SPEC-005-AC-5
+    spec: SPEC-005
+    dado: "um cartão com fechamento no dia 31 (F-FECH-01)"
+    quando: "o fechamento efetivo de um mês curto é calculado"
+    entao: "usa o último dia válido do mês (fevereiro de 2026 é 28, de 2028 é 29, abril é 30)"
+    invariantes: [INV-31]
+    fixtures: [F-FECH-01]
+    teste: ["tests/db/test_fechamento.py::test_dia_inexistente"]
+  - id: SPEC-005-AC-6
+    spec: SPEC-005
+    dado: "um cartão com fechamento no dia 10 (F-FECH-02)"
+    quando: "há compra antes, no dia e depois do fechamento"
+    entao: "a compra no dia do fechamento e depois entra na fatura seguinte; antes, na que fecha (ADR 043)"
+    invariantes: [INV-07, INV-31]
+    fixtures: [F-FECH-02]
+    teste: ["tests/db/test_fechamento.py::test_compra_no_dia_do_fechamento"]
+  - id: SPEC-005-AC-7
+    spec: SPEC-005
+    dado: "um cartão cujo dia de fechamento mudou em uma data (F-FECH-03)"
+    quando: "compras de antes e de depois da mudança são gravadas"
+    entao: "cada compra usa o dia vigente na sua data e mudar o fechamento não recalcula as compras já feitas"
+    invariantes: [INV-07]
+    fixtures: [F-FECH-03]
+    teste: ["tests/db/test_fechamento.py::test_vigencia_do_fechamento"]
+  - id: SPEC-005-AC-8
+    spec: SPEC-005
+    dado: "uma conta corrente, um cartão com compra e um pagamento parcial da fatura (F-PAG-01)"
+    quando: "o pagamento é lançado como transferência da corrente para o cartão"
+    entao: "as pernas somam zero, a dívida diminui e devolve limite, e o pagamento não é gasto real"
+    invariantes: [INV-01, INV-05]
+    fixtures: [F-PAG-01]
+    teste: ["tests/db/test_pagamento_fatura.py::test_pagamento_parcial_abate_a_divida"]
+  - id: SPEC-005-AC-9
+    spec: SPEC-005
+    dado: "o lançamento do tipo crédito pela API (valor total positivo, número de parcelas, cartão)"
+    quando: "é enviado a uma conta de cartão, a uma conta que não é de cartão, repetido com a mesma chave ou com versão desatualizada"
+    entao: "grava uma parcela por mês com valor negativo na dívida; recusa conta que não é cartão; não duplica na repetição; responde 409 na versão desatualizada"
+    invariantes: [INV-28, INV-29]
+    teste: ["tests/backend/test_credito_api.py::test_credito_pela_api"]
+  - id: SPEC-005-AC-10
+    spec: SPEC-005
+    dado: "uma compra parcelada gravada"
+    quando: "é editada ou excluída"
+    entao: "a edição cria nova versão da compra inteira (todas as parcelas), a anterior sai da fatura e do limite, e a exclusão lógica tira a compra de ambos"
+    invariantes: [INV-09]
+    teste: ["tests/db/test_parcelas.py::test_editar_e_excluir_compra_parcelada"]
   - id: SPEC-012-AC-1
     spec: SPEC-012
     dado: "o contrato OpenAPI da API e o cliente TypeScript versionado em frontend/"

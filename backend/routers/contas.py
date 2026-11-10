@@ -1,6 +1,7 @@
 """Contas do usuário da sessão. Não existe parâmetro de `user_id` (INV-13).
 
-Tipo de conta (ADR 042): corrente, reserva, investimento ou benefício. Reserva/investimento pode
+Tipo de conta (ADR 042/043): corrente, reserva, investimento, benefício ou divida (cartão, que
+exige `linha_credito_id`). Reserva/investimento pode
 pertencer a uma conta corrente do mesmo banco (a caixinha/cofre), com saldo próprio.
 """
 
@@ -29,6 +30,8 @@ class ContaSaida(BaseModel):
     # A conta corrente a que esta reserva/investimento pertence (ex.: caixinha do banco).
     conta_mae_id: int | None
     versao: int
+    # A linha de crédito do cartão (só conta do tipo "divida").
+    linha_credito_id: int | None = None
 
 
 class _Nome(BaseModel):
@@ -48,6 +51,7 @@ class ContaEntrada(_Nome):
     conta_beneficio: bool = False
     tipo: TipoConta | None = None
     conta_mae_id: Annotated[int, Field(ge=1, le=2**63 - 1)] | None = None
+    linha_credito_id: Annotated[int, Field(ge=1, le=2**63 - 1)] | None = None
 
     @model_validator(mode="after")
     def _tipo_coerente(self) -> ContaEntrada:
@@ -64,6 +68,7 @@ class ContaEntrada(_Nome):
 class ContaEdicao(_Nome):
     tipo: TipoConta
     conta_mae_id: Annotated[int, Field(ge=1, le=2**63 - 1)] | None = None
+    linha_credito_id: Annotated[int, Field(ge=1, le=2**63 - 1)] | None = None
     # A versão que o front leu; se outra edição veio antes, 409.
     versao: int = Field(ge=1)
 
@@ -81,6 +86,7 @@ async def criar(entrada: ContaEntrada, conn: Conexao, sessao: SessaoEscrita) -> 
             nome=entrada.nome,
             tipo=entrada.tipo_final(),
             conta_mae_id=entrada.conta_mae_id,
+            linha_credito_id=entrada.linha_credito_id,
         )
     conta = await svc_contas.obter(conn, sessao.user_id, conta_id)
     if conta is None:  # a função acabou de gravar: só falta se o banco estiver incoerente
@@ -116,6 +122,7 @@ async def editar(
             nome=entrada.nome,
             tipo=entrada.tipo,
             conta_mae_id=entrada.conta_mae_id,
+            linha_credito_id=entrada.linha_credito_id,
             conta_id=conta_id,
             versao=entrada.versao,
         )

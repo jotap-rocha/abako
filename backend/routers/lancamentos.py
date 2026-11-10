@@ -1,7 +1,8 @@
 """Lançamentos (SPEC-004). Fino: valida, delega ao service, formata. Dinheiro sempre texto.
 
-O valor chega positivo; o sinal e as pernas vêm do tipo, no banco (ADR 042). Crédito e repasse
-são recusados até as SPECs 005 e 007; data futura é recusada.
+O valor chega positivo; o sinal e as pernas vêm do tipo, no banco (ADR 042). Crédito (compra no
+cartão) exige `parcelas` e o valor é o total da compra (ADR 043); repasse é recusado até a
+SPEC-007; data futura é recusada.
 """
 
 from __future__ import annotations
@@ -24,7 +25,7 @@ router = APIRouter(prefix="/lancamentos", tags=["lancamentos"])
 
 IdLancamento = Annotated[int, Path(ge=1, le=2**63 - 1)]
 IdConta = Annotated[int, Field(ge=1, le=2**63 - 1)]
-# Valor sempre positivo na entrada; o tipo dá o sinal.
+# Valor sempre positivo na entrada (no crédito, o total da compra); o tipo dá o sinal.
 PADRAO_POSITIVO = r"^[0-9]{1,12}(\.[0-9]{1,2})?$"
 
 
@@ -38,6 +39,8 @@ class _Campos(BaseModel):
     bruto: str | None = Field(default=None, pattern=PADRAO_POSITIVO)
     imposto: str | None = Field(default=None, pattern=PADRAO_POSITIVO)
     descricao: str | None = None
+    # Só no crédito: de 1 a 48 (o banco recusa crédito sem parcelas e parcelas nos demais).
+    parcelas: int | None = Field(default=None, ge=1, le=48)
 
     @field_validator("descricao")
     @classmethod
@@ -59,6 +62,7 @@ class _Campos(BaseModel):
             bruto=None if self.bruto is None else Decimal(self.bruto),
             imposto=None if self.imposto is None else Decimal(self.imposto),
             descricao=descricao or None,
+            parcelas=self.parcelas,
         )
 
 
@@ -84,6 +88,9 @@ class LancamentoSaida(BaseModel):
     bruto: str | None
     imposto: str | None
     descricao: str | None
+    # Só no crédito: número de parcelas e competência ("YYYY-MM") da primeira.
+    parcelas: int | None = None
+    competencia: str | None = None
 
 
 def _saida(lanc: svc.Lancamento) -> LancamentoSaida:
@@ -98,6 +105,8 @@ def _saida(lanc: svc.Lancamento) -> LancamentoSaida:
         bruto=None if lanc.bruto is None else texto_dinheiro(lanc.bruto),
         imposto=None if lanc.imposto is None else texto_dinheiro(lanc.imposto),
         descricao=lanc.descricao,
+        parcelas=lanc.parcelas,
+        competencia=lanc.competencia,
     )
 
 

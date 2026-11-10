@@ -29,7 +29,7 @@ def test_app_sem_update_delete(esquema: str, url_app: str) -> None:
                 "WHERE table_schema = 'public' AND column_name = 'vigente' ORDER BY 1"
             ).fetchall()
         ]
-        assert tabelas == ["conta_versao", "transacao_versao"]
+        assert tabelas == ["conta_versao", "linha_credito", "transacao_versao"]
         # ADR 042: nas tabelas de versão a aplicação só lê; a escrita passa pelas funções.
         for t in tabelas:
             assert _tem_privilegio(app, t, "SELECT")
@@ -69,11 +69,15 @@ def test_app_sem_update_delete(esquema: str, url_app: str) -> None:
 
 
 FUNCOES_DE_ESCRITA = (
-    "conta_gravar(bigint, bigint, integer, text, text, bigint)",
+    "conta_gravar(bigint, bigint, integer, text, text, bigint, bigint)",
     "lancamento_gravar(bigint, bigint, integer, text, date, numeric, bigint, bigint, numeric, "
-    "numeric, text, text, text)",
+    "numeric, text, text, text, integer)",
     "lancamento_excluir(bigint, bigint, integer)",
+    "linha_credito_gravar(bigint, bigint, integer, text, numeric)",
+    "fechamento_gravar(bigint, bigint, integer, date)",
 )
+
+TABELAS_DO_CARTAO = ("linha_credito", "cartao_fechamento")
 
 
 def test_escrita_so_pelas_funcoes(esquema: str, url_app: str, url_pipeline: str) -> None:
@@ -87,9 +91,39 @@ def test_escrita_so_pelas_funcoes(esquema: str, url_app: str, url_pipeline: str)
         for auxiliar in ("abako_erro(text, text)",):
             linha = app.execute("SELECT has_function_privilege(%s, 'EXECUTE')", (auxiliar,))
             assert linha.fetchone() == (False,), auxiliar
-        for sequencia in ("conta_id_seq", "transacao_id_seq"):
+        for sequencia in ("conta_id_seq", "transacao_id_seq", "linha_credito_id_seq"):
             linha = app.execute("SELECT has_sequence_privilege(%s, 'USAGE')", (sequencia,))
             assert linha.fetchone() == (False,), sequencia
+
+
+def test_tabelas_do_cartao_so_leitura(esquema: str, url_app: str, url_pipeline: str) -> None:
+    """SPEC-005: app e pipeline só leem as tabelas novas; a escrita é pelas funções."""
+    with psycopg.connect(url_app) as app, psycopg.connect(url_pipeline) as pipe:
+        for papel in (app, pipe):
+            for t in TABELAS_DO_CARTAO:
+                assert _tem_privilegio(papel, t, "SELECT"), t
+                for priv in ("INSERT", "UPDATE", "DELETE", "TRUNCATE"):
+                    assert not _tem_privilegio(papel, t, priv), f"{priv} em {t}"
+        # o app grava pelas funções (a SECURITY DEFINER escreve como dono)
+        linha = app.execute(
+            "INSERT INTO usuario (login) VALUES ('u_papel_cartao') RETURNING user_id"
+        ).fetchone()
+        assert linha is not None
+        uid = linha[0]
+        lin = app.execute(
+            "SELECT linha_id FROM linha_credito_gravar(%s, NULL, NULL, 'l', 100.00)", (uid,)
+        ).fetchone()
+        assert lin is not None
+        card = app.execute(
+            "SELECT conta_id FROM conta_gravar(%s, NULL, NULL, 'c', 'divida', NULL, %s)",
+            (uid, lin[0]),
+        ).fetchone()
+        assert card is not None
+        app.execute("SELECT fechamento_gravar(%s, %s, 10, DATE '2025-01-01')", (uid, card[0]))
+        app.rollback()  # nada fica no banco
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            app.execute("INSERT INTO linha_credito (user_id, nome, limite) VALUES (1, 'x', 1.00)")
+        app.rollback()
 
 
 def test_pipeline_somente_leitura(esquema: str, url_pipeline: str) -> None:

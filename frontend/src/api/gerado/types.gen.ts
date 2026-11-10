@@ -13,13 +13,17 @@ export type ContaEdicao = {
      */
     conta_mae_id?: number | null;
     /**
+     * Linha Credito Id
+     */
+    linha_credito_id?: number | null;
+    /**
      * Nome
      */
     nome: string;
     /**
      * Tipo
      */
-    tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio';
+    tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio' | 'divida';
     /**
      * Versao
      */
@@ -39,13 +43,17 @@ export type ContaEntrada = {
      */
     conta_mae_id?: number | null;
     /**
+     * Linha Credito Id
+     */
+    linha_credito_id?: number | null;
+    /**
      * Nome
      */
     nome: string;
     /**
      * Tipo
      */
-    tipo?: 'corrente' | 'reserva' | 'investimento' | 'beneficio' | null;
+    tipo?: 'corrente' | 'reserva' | 'investimento' | 'beneficio' | 'divida' | null;
 };
 
 /**
@@ -65,13 +73,17 @@ export type ContaSaida = {
      */
     conta_mae_id: number | null;
     /**
+     * Linha Credito Id
+     */
+    linha_credito_id?: number | null;
+    /**
      * Nome
      */
     nome: string;
     /**
      * Tipo
      */
-    tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio';
+    tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio' | 'divida';
     /**
      * Versao
      */
@@ -109,6 +121,52 @@ export type DivergenciaSaida = {
 };
 
 /**
+ * FaturaSaida
+ */
+export type FaturaSaida = {
+    /**
+     * Competencia
+     */
+    competencia: string;
+    /**
+     * Itens
+     */
+    itens: Array<ItemFaturaSaida>;
+    /**
+     * Total
+     */
+    total: string;
+};
+
+/**
+ * FechamentoEntrada
+ */
+export type FechamentoEntrada = {
+    /**
+     * Dia
+     */
+    dia: number;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
+ * FechamentoSaida
+ */
+export type FechamentoSaida = {
+    /**
+     * Dia
+     */
+    dia: number;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -116,6 +174,40 @@ export type HttpValidationError = {
      * Detail
      */
     detail?: Array<ValidationError>;
+};
+
+/**
+ * ItemFaturaSaida
+ */
+export type ItemFaturaSaida = {
+    /**
+     * Data Compra
+     */
+    data_compra: string;
+    /**
+     * Descricao
+     */
+    descricao: string | null;
+    /**
+     * Parcela
+     */
+    parcela: number;
+    /**
+     * Parcelas
+     */
+    parcelas: number;
+    /**
+     * Transacao Id
+     */
+    transacao_id: number;
+    /**
+     * Valor
+     */
+    valor: string;
+    /**
+     * Versao
+     */
+    versao: number;
 };
 
 /**
@@ -146,6 +238,10 @@ export type LancamentoEdicao = {
      * Imposto
      */
     imposto?: string | null;
+    /**
+     * Parcelas
+     */
+    parcelas?: number | null;
     /**
      * Tipo
      */
@@ -193,6 +289,10 @@ export type LancamentoEntrada = {
      */
     imposto?: string | null;
     /**
+     * Parcelas
+     */
+    parcelas?: number | null;
+    /**
      * Tipo
      */
     tipo: 'debito' | 'credito' | 'receita' | 'transferencia' | 'investimento' | 'repasse' | 'rendimento';
@@ -210,6 +310,10 @@ export type LancamentoSaida = {
      * Bruto
      */
     bruto: string | null;
+    /**
+     * Competencia
+     */
+    competencia?: string | null;
     /**
      * Conta Destino Id
      */
@@ -231,6 +335,10 @@ export type LancamentoSaida = {
      */
     imposto: string | null;
     /**
+     * Parcelas
+     */
+    parcelas?: number | null;
+    /**
      * Tipo
      */
     tipo: string;
@@ -242,6 +350,78 @@ export type LancamentoSaida = {
      * Valor
      */
     valor: string;
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
+ * LimiteSaida
+ */
+export type LimiteSaida = {
+    /**
+     * Disponivel
+     */
+    disponivel: string;
+    /**
+     * Limite
+     */
+    limite: string;
+    /**
+     * Usado
+     */
+    usado: string;
+};
+
+/**
+ * LinhaEdicao
+ */
+export type LinhaEdicao = {
+    /**
+     * Limite
+     */
+    limite: string;
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
+ * LinhaEntrada
+ */
+export type LinhaEntrada = {
+    /**
+     * Limite
+     */
+    limite: string;
+    /**
+     * Nome
+     */
+    nome: string;
+};
+
+/**
+ * LinhaSaida
+ */
+export type LinhaSaida = {
+    /**
+     * Limite
+     */
+    limite: string;
+    /**
+     * Linha Id
+     */
+    linha_id: number;
+    /**
+     * Nome
+     */
+    nome: string;
     /**
      * Versao
      */
@@ -307,7 +487,7 @@ export type SaldoSaida = {
     /**
      * Tipo
      */
-    tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio';
+    tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio' | 'divida';
 };
 
 /**
@@ -457,6 +637,108 @@ export type AuthLogoutResponses = {
 };
 
 export type AuthLogoutResponse = AuthLogoutResponses[keyof AuthLogoutResponses];
+
+export type CartoesFaturaData = {
+    body?: never;
+    path: {
+        /**
+         * Conta Id
+         */
+        conta_id: number;
+        /**
+         * Competencia
+         */
+        competencia: string;
+    };
+    query?: never;
+    url: '/api/cartoes/{conta_id}/faturas/{competencia}';
+};
+
+export type CartoesFaturaErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CartoesFaturaError = CartoesFaturaErrors[keyof CartoesFaturaErrors];
+
+export type CartoesFaturaResponses = {
+    /**
+     * Successful Response
+     */
+    200: FaturaSaida;
+};
+
+export type CartoesFaturaResponse = CartoesFaturaResponses[keyof CartoesFaturaResponses];
+
+export type CartoesListarFechamentosData = {
+    body?: never;
+    path: {
+        /**
+         * Conta Id
+         */
+        conta_id: number;
+    };
+    query?: never;
+    url: '/api/cartoes/{conta_id}/fechamentos';
+};
+
+export type CartoesListarFechamentosErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CartoesListarFechamentosError = CartoesListarFechamentosErrors[keyof CartoesListarFechamentosErrors];
+
+export type CartoesListarFechamentosResponses = {
+    /**
+     * Response Cartoes Listar Fechamentos
+     *
+     * Successful Response
+     */
+    200: Array<FechamentoSaida>;
+};
+
+export type CartoesListarFechamentosResponse = CartoesListarFechamentosResponses[keyof CartoesListarFechamentosResponses];
+
+export type CartoesRegistrarFechamentoData = {
+    body: FechamentoEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Conta Id
+         */
+        conta_id: number;
+    };
+    query?: never;
+    url: '/api/cartoes/{conta_id}/fechamentos';
+};
+
+export type CartoesRegistrarFechamentoErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CartoesRegistrarFechamentoError = CartoesRegistrarFechamentoErrors[keyof CartoesRegistrarFechamentoErrors];
+
+export type CartoesRegistrarFechamentoResponses = {
+    /**
+     * Successful Response
+     */
+    201: FechamentoSaida;
+};
+
+export type CartoesRegistrarFechamentoResponse = CartoesRegistrarFechamentoResponses[keyof CartoesRegistrarFechamentoResponses];
 
 export type ContasListarData = {
     body?: never;
@@ -794,6 +1076,126 @@ export type LancamentosEditarResponses = {
 };
 
 export type LancamentosEditarResponse = LancamentosEditarResponses[keyof LancamentosEditarResponses];
+
+export type LinhasCreditoListarData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/linhas-credito';
+};
+
+export type LinhasCreditoListarResponses = {
+    /**
+     * Response Linhas Credito Listar
+     *
+     * Successful Response
+     */
+    200: Array<LinhaSaida>;
+};
+
+export type LinhasCreditoListarResponse = LinhasCreditoListarResponses[keyof LinhasCreditoListarResponses];
+
+export type LinhasCreditoCriarData = {
+    body: LinhaEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/linhas-credito';
+};
+
+export type LinhasCreditoCriarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LinhasCreditoCriarError = LinhasCreditoCriarErrors[keyof LinhasCreditoCriarErrors];
+
+export type LinhasCreditoCriarResponses = {
+    /**
+     * Successful Response
+     */
+    201: LinhaSaida;
+};
+
+export type LinhasCreditoCriarResponse = LinhasCreditoCriarResponses[keyof LinhasCreditoCriarResponses];
+
+export type LinhasCreditoEditarData = {
+    body: LinhaEdicao;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Linha Id
+         */
+        linha_id: number;
+    };
+    query?: never;
+    url: '/api/linhas-credito/{linha_id}';
+};
+
+export type LinhasCreditoEditarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LinhasCreditoEditarError = LinhasCreditoEditarErrors[keyof LinhasCreditoEditarErrors];
+
+export type LinhasCreditoEditarResponses = {
+    /**
+     * Successful Response
+     */
+    200: LinhaSaida;
+};
+
+export type LinhasCreditoEditarResponse = LinhasCreditoEditarResponses[keyof LinhasCreditoEditarResponses];
+
+export type LinhasCreditoLimiteData = {
+    body?: never;
+    path: {
+        /**
+         * Linha Id
+         */
+        linha_id: number;
+    };
+    query?: {
+        /**
+         * Em
+         */
+        em?: string | null;
+    };
+    url: '/api/linhas-credito/{linha_id}/limite';
+};
+
+export type LinhasCreditoLimiteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LinhasCreditoLimiteError = LinhasCreditoLimiteErrors[keyof LinhasCreditoLimiteErrors];
+
+export type LinhasCreditoLimiteResponses = {
+    /**
+     * Successful Response
+     */
+    200: LimiteSaida;
+};
+
+export type LinhasCreditoLimiteResponse = LinhasCreditoLimiteResponses[keyof LinhasCreditoLimiteResponses];
 
 export type SaldosR4Data = {
     body?: never;
