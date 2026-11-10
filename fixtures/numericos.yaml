@@ -291,3 +291,120 @@ fixtures:
       creditado: "77.50"
       saldo_derivado: "1077.50"
       gasto_real: "0.00"
+
+  # ---- SPEC-005 (ADR 043): fechamento, parcelas, fatura, limite e pagamento ----
+
+  - id: F-FECH-01
+    invariantes: [INV-31]
+    descricao: Fechamento cadastrado em dia inexistente no mês usa o último dia válido.
+    entrada:
+      dia_fechamento: 31
+      meses: ["2026-01", "2026-02", "2026-04", "2028-02"]
+    esperado:
+      fechamento_efetivo: ["2026-01-31", "2026-02-28", "2026-04-30", "2028-02-29"]
+
+  - id: F-FECH-02
+    invariantes: [INV-07, INV-31]
+    descricao: >-
+      Competência = mês do fechamento. Compra antes do dia do fechamento entra na fatura que fecha;
+      no dia do fechamento ou depois, entra na seguinte (ADR 043, decisão 1). Inclui o dia
+      inexistente (fechamento 31 vira 28 em fevereiro de 2026).
+    entrada:
+      cartao: {dia_fechamento: 10}
+      compras:
+        - {data: "2026-03-09", total: "10.00", parcelas: 1}
+        - {data: "2026-03-10", total: "10.00", parcelas: 1}
+        - {data: "2026-03-11", total: "10.00", parcelas: 1}
+        - {data: "2026-12-10", total: "10.00", parcelas: 1}
+      cartao_dia_31:
+        dia_fechamento: 31
+        compras:
+          - {data: "2026-02-27", total: "10.00", parcelas: 1}
+          - {data: "2026-02-28", total: "10.00", parcelas: 1}
+    esperado:
+      competencias: ["2026-03", "2026-04", "2026-04", "2027-01"]
+      competencias_dia_31: ["2026-02", "2026-03"]
+
+  - id: F-FECH-03
+    invariantes: [INV-07, INV-31]
+    descricao: >-
+      O dia de fechamento usado é o vigente na data da compra; mudar o fechamento não recalcula
+      compras já feitas (ADR 043, decisão 5).
+    entrada:
+      vigencias: [{desde: "2026-01-01", dia: 10}, {desde: "2026-04-01", dia: 20}]
+      compras:
+        - {data: "2026-03-15", total: "10.00", parcelas: 1}
+        - {data: "2026-04-15", total: "10.00", parcelas: 1}
+        - {data: "2026-04-20", total: "10.00", parcelas: 1}
+    esperado:
+      competencias: ["2026-04", "2026-04", "2026-05"]
+
+  - id: F-PARC-03
+    invariantes: [INV-02, INV-07]
+    descricao: >-
+      Parcelamento que cruza o ano, à vista (1 parcela), divisão exata e resto de centavos.
+      Fechamento dia 10; compra em 15/11/2026 cai na competência 2026-12.
+    entrada:
+      cartao: {dia_fechamento: 10}
+      casos:
+        - {data: "2026-11-15", total: "300.00", parcelas: 3}
+        - {data: "2026-11-15", total: "50.00", parcelas: 1}
+        - {data: "2026-11-15", total: "0.10", parcelas: 3}
+    esperado:
+      caso_1: {parcelas: ["100.00", "100.00", "100.00"], competencias: ["2026-12", "2027-01", "2027-02"], soma: "300.00"}
+      caso_2: {parcelas: ["50.00"], competencias: ["2026-12"], soma: "50.00"}
+      caso_3: {parcelas: ["0.03", "0.03", "0.04"], competencias: ["2026-12", "2027-01", "2027-02"], soma: "0.10"}
+
+  - id: F-FAT-02
+    invariantes: [INV-07, INV-26]
+    descricao: >-
+      Total da fatura = soma das parcelas da competência, de compras diferentes. Sem terceiros
+      (terceiros entram na SPEC-013; F-FAT-01 cobre própria + terceiros).
+    entrada:
+      cartao: {dia_fechamento: 10}
+      compras:
+        - {data: "2026-03-05", total: "600.00", parcelas: 3}
+        - {data: "2026-03-15", total: "100.00", parcelas: 1}
+    esperado:
+      faturas:
+        "2026-03": "200.00"
+        "2026-04": "300.00"
+        "2026-05": "200.00"
+
+  - id: F-LIM-02
+    invariantes: [INV-06]
+    descricao: >-
+      Linha de crédito compartilhada por dois cartões. Limite usado = dívida acumulada (total das
+      compras, com parcelas futuras) menos pagamentos; pagamento parcial devolve limite; o
+      disponível pode ficar negativo e nada é bloqueado.
+    entrada:
+      linha: {limite: "5000.00"}
+      compras:
+        - {cartao: X, total: "1200.00", parcelas: 4}
+        - {cartao: Y, total: "300.00", parcelas: 1}
+      pagamentos:
+        - {cartao: X, valor: "500.00"}
+      linha_pequena: {limite: "1000.00", compras: [{cartao: X, total: "1200.00", parcelas: 4}]}
+    esperado:
+      antes_do_pagamento: {limite_usado: "1500.00", limite_disponivel: "3500.00"}
+      depois_do_pagamento: {limite_usado: "1000.00", limite_disponivel: "4000.00"}
+      saldo_cartao_x: "-700.00"
+      saldo_cartao_y: "-300.00"
+      linha_pequena: {limite_usado: "1200.00", limite_disponivel: "-200.00"}
+
+  - id: F-PAG-01
+    invariantes: [INV-01, INV-04, INV-05]
+    descricao: >-
+      Pagamento de fatura é transferência da conta corrente para o cartão, pode ser parcial, abate
+      a dívida e não é gasto real (a compra é o gasto, na competência).
+    entrada:
+      corrente: {snapshot: {data: "2026-03-01", valor: "1000.00"}}
+      compra_cartao: {data: "2026-03-05", total: "400.00", parcelas: 1}
+      pagamento: {data: "2026-03-20", valor: "150.00", de: corrente, para: cartao}
+    esperado:
+      pernas: ["-150.00", "150.00"]
+      soma_pernas: "0.00"
+      saldo_corrente: "850.00"
+      saldo_cartao: "-250.00"
+      limite_usado: "250.00"
+      gasto_real_do_pagamento: "0.00"

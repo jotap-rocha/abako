@@ -28,6 +28,7 @@ export const ETIQUETA: Record<TipoConta, string | null> = {
   reserva: "Reserva",
   investimento: "Investimento",
   beneficio: "Benefício",
+  divida: "Cartão",
 };
 
 /** Só reserva e investimento pertencem a uma conta corrente do mesmo banco. */

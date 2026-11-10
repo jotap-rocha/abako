@@ -24,6 +24,8 @@ class Dados:
     bruto: Decimal | None
     imposto: Decimal | None
     descricao: str | None
+    # Só na compra a crédito (1 a 48); o banco recusa nos demais tipos.
+    parcelas: int | None = None
 
 
 @dataclass(frozen=True)
@@ -38,6 +40,8 @@ class Lancamento:
     bruto: Decimal | None
     imposto: Decimal | None
     descricao: str | None
+    parcelas: int | None
+    competencia: str | None
 
 
 def _texto(valor: Decimal | None) -> str | None:
@@ -55,6 +59,7 @@ def hash_corpo(dados: Dados) -> str:
         "bruto": _texto(dados.bruto),
         "imposto": _texto(dados.imposto),
         "descricao": dados.descricao,
+        "parcelas": dados.parcelas,
     }
     texto = json.dumps(canonico, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(texto.encode("utf-8")).hexdigest()
@@ -62,7 +67,7 @@ def hash_corpo(dados: Dados) -> str:
 
 _SELECT = (
     "SELECT transacao_id, versao, tipo, data_transacao, valor, conta_id, conta_destino_id, "
-    "bruto, imposto, descricao FROM lancamento_vigente WHERE user_id = %s"
+    "bruto, imposto, descricao, parcelas, competencia FROM lancamento_vigente WHERE user_id = %s"
 )
 
 
@@ -115,7 +120,7 @@ async def gravar(
     """
     cur = await conn.execute(
         "SELECT transacao_id, criado FROM lancamento_gravar("
-        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             user_id,
             transacao_id,
@@ -130,6 +135,7 @@ async def gravar(
             dados.descricao,
             chave,
             hash_corpo(dados) if chave is not None else None,
+            dados.parcelas,
         ),
     )
     linha = await cur.fetchone()

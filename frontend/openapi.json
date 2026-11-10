@@ -16,6 +16,19 @@
             ],
             "title": "Conta Mae Id"
           },
+          "linha_credito_id": {
+            "anyOf": [
+              {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linha Credito Id"
+          },
           "nome": {
             "maxLength": 80,
             "minLength": 1,
@@ -27,7 +40,8 @@
               "corrente",
               "reserva",
               "investimento",
-              "beneficio"
+              "beneficio",
+              "divida"
             ],
             "title": "Tipo",
             "type": "string"
@@ -66,6 +80,19 @@
             ],
             "title": "Conta Mae Id"
           },
+          "linha_credito_id": {
+            "anyOf": [
+              {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linha Credito Id"
+          },
           "nome": {
             "maxLength": 80,
             "minLength": 1,
@@ -79,7 +106,8 @@
                   "corrente",
                   "reserva",
                   "investimento",
-                  "beneficio"
+                  "beneficio",
+                  "divida"
                 ],
                 "type": "string"
               },
@@ -117,6 +145,17 @@
             ],
             "title": "Conta Mae Id"
           },
+          "linha_credito_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linha Credito Id"
+          },
           "nome": {
             "title": "Nome",
             "type": "string"
@@ -126,7 +165,8 @@
               "corrente",
               "reserva",
               "investimento",
-              "beneficio"
+              "beneficio",
+              "divida"
             ],
             "title": "Tipo",
             "type": "string"
@@ -186,6 +226,72 @@
         "title": "DivergenciaSaida",
         "type": "object"
       },
+      "FaturaSaida": {
+        "properties": {
+          "competencia": {
+            "title": "Competencia",
+            "type": "string"
+          },
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/ItemFaturaSaida"
+            },
+            "title": "Itens",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "string"
+          }
+        },
+        "required": [
+          "competencia",
+          "total",
+          "itens"
+        ],
+        "title": "FaturaSaida",
+        "type": "object"
+      },
+      "FechamentoEntrada": {
+        "properties": {
+          "dia": {
+            "maximum": 31.0,
+            "minimum": 1.0,
+            "title": "Dia",
+            "type": "integer"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dia",
+          "vigente_desde"
+        ],
+        "title": "FechamentoEntrada",
+        "type": "object"
+      },
+      "FechamentoSaida": {
+        "properties": {
+          "dia": {
+            "title": "Dia",
+            "type": "integer"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dia",
+          "vigente_desde"
+        ],
+        "title": "FechamentoSaida",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -197,6 +303,57 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "ItemFaturaSaida": {
+        "properties": {
+          "data_compra": {
+            "format": "date",
+            "title": "Data Compra",
+            "type": "string"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "parcela": {
+            "title": "Parcela",
+            "type": "integer"
+          },
+          "parcelas": {
+            "title": "Parcelas",
+            "type": "integer"
+          },
+          "transacao_id": {
+            "title": "Transacao Id",
+            "type": "integer"
+          },
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          },
+          "versao": {
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "transacao_id",
+          "versao",
+          "parcela",
+          "parcelas",
+          "data_compra",
+          "valor",
+          "descricao"
+        ],
+        "title": "ItemFaturaSaida",
         "type": "object"
       },
       "LancamentoEdicao": {
@@ -259,6 +416,19 @@
               }
             ],
             "title": "Imposto"
+          },
+          "parcelas": {
+            "anyOf": [
+              {
+                "maximum": 48.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parcelas"
           },
           "tipo": {
             "enum": [
@@ -368,6 +538,19 @@
             ],
             "title": "Imposto"
           },
+          "parcelas": {
+            "anyOf": [
+              {
+                "maximum": 48.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parcelas"
+          },
           "tipo": {
             "enum": [
               "debito",
@@ -416,6 +599,17 @@
             ],
             "title": "Bruto"
           },
+          "competencia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Competencia"
+          },
           "conta_destino_id": {
             "anyOf": [
               {
@@ -458,6 +652,17 @@
             ],
             "title": "Imposto"
           },
+          "parcelas": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parcelas"
+          },
           "tipo": {
             "title": "Tipo",
             "type": "string"
@@ -488,6 +693,105 @@
           "descricao"
         ],
         "title": "LancamentoSaida",
+        "type": "object"
+      },
+      "LimiteSaida": {
+        "properties": {
+          "disponivel": {
+            "title": "Disponivel",
+            "type": "string"
+          },
+          "limite": {
+            "title": "Limite",
+            "type": "string"
+          },
+          "usado": {
+            "title": "Usado",
+            "type": "string"
+          }
+        },
+        "required": [
+          "limite",
+          "usado",
+          "disponivel"
+        ],
+        "title": "LimiteSaida",
+        "type": "object"
+      },
+      "LinhaEdicao": {
+        "properties": {
+          "limite": {
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+            "title": "Limite",
+            "type": "string"
+          },
+          "nome": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "versao": {
+            "minimum": 1.0,
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nome",
+          "limite",
+          "versao"
+        ],
+        "title": "LinhaEdicao",
+        "type": "object"
+      },
+      "LinhaEntrada": {
+        "properties": {
+          "limite": {
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+            "title": "Limite",
+            "type": "string"
+          },
+          "nome": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "limite"
+        ],
+        "title": "LinhaEntrada",
+        "type": "object"
+      },
+      "LinhaSaida": {
+        "properties": {
+          "limite": {
+            "title": "Limite",
+            "type": "string"
+          },
+          "linha_id": {
+            "title": "Linha Id",
+            "type": "integer"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "versao": {
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "linha_id",
+          "nome",
+          "limite",
+          "versao"
+        ],
+        "title": "LinhaSaida",
         "type": "object"
       },
       "LoginEntrada": {
@@ -582,7 +886,8 @@
               "corrente",
               "reserva",
               "investimento",
-              "beneficio"
+              "beneficio",
+              "divida"
             ],
             "title": "Tipo",
             "type": "string"
@@ -829,6 +1134,178 @@
         "summary": "Logout",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/cartoes/{conta_id}/faturas/{competencia}": {
+      "get": {
+        "description": "Parcelas da competência (mês do fechamento, \"YYYY-MM\") e o total, em valor positivo.",
+        "operationId": "cartoes_fatura",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conta_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Conta Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "competencia",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$",
+              "title": "Competencia",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaturaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fatura",
+        "tags": [
+          "cartoes"
+        ]
+      }
+    },
+    "/api/cartoes/{conta_id}/fechamentos": {
+      "get": {
+        "operationId": "cartoes_listar_fechamentos",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conta_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Conta Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FechamentoSaida"
+                  },
+                  "title": "Response Cartoes Listar Fechamentos",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Fechamentos",
+        "tags": [
+          "cartoes"
+        ]
+      },
+      "post": {
+        "description": "Dia de fechamento a partir de uma data; não recalcula compras já feitas (ADR 043).",
+        "operationId": "cartoes_registrar_fechamento",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conta_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Conta Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FechamentoEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FechamentoSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Registrar Fechamento",
+        "tags": [
+          "cartoes"
         ]
       }
     },
@@ -1439,6 +1916,221 @@
         "summary": "Editar",
         "tags": [
           "lancamentos"
+        ]
+      }
+    },
+    "/api/linhas-credito": {
+      "get": {
+        "operationId": "linhas_credito_listar",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LinhaSaida"
+                  },
+                  "title": "Response Linhas Credito Listar",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Listar",
+        "tags": [
+          "linhas_credito"
+        ]
+      },
+      "post": {
+        "operationId": "linhas_credito_criar",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinhaEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinhaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Criar",
+        "tags": [
+          "linhas_credito"
+        ]
+      }
+    },
+    "/api/linhas-credito/{linha_id}": {
+      "put": {
+        "description": "Nome e limite. Cria nova versão; a anterior fica no histórico.",
+        "operationId": "linhas_credito_editar",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "linha_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Linha Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinhaEdicao"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinhaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Editar",
+        "tags": [
+          "linhas_credito"
+        ]
+      }
+    },
+    "/api/linhas-credito/{linha_id}/limite": {
+      "get": {
+        "description": "Limite, usado (dívida das compras ainda não pagas, com parcelas futuras) e disponível.",
+        "operationId": "linhas_credito_limite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "linha_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Linha Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "em",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Em"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LimiteSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Limite",
+        "tags": [
+          "linhas_credito"
         ]
       }
     },

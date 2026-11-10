@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
+import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -41,6 +41,32 @@ export const authLogin = <ThrowOnError extends boolean = false>(options: Options
  * Logout
  */
 export const authLogout = <ThrowOnError extends boolean = false>(options?: Options<AuthLogoutData, ThrowOnError>): RequestResult<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError> => (options?.client ?? client).post<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError>({ url: '/api/auth/logout', ...options });
+
+/**
+ * Fatura
+ *
+ * Parcelas da competência (mês do fechamento, "YYYY-MM") e o total, em valor positivo.
+ */
+export const cartoesFatura = <ThrowOnError extends boolean = false>(options: Options<CartoesFaturaData, ThrowOnError>): RequestResult<CartoesFaturaResponses, CartoesFaturaErrors, ThrowOnError> => (options.client ?? client).get<CartoesFaturaResponses, CartoesFaturaErrors, ThrowOnError>({ url: '/api/cartoes/{conta_id}/faturas/{competencia}', ...options });
+
+/**
+ * Listar Fechamentos
+ */
+export const cartoesListarFechamentos = <ThrowOnError extends boolean = false>(options: Options<CartoesListarFechamentosData, ThrowOnError>): RequestResult<CartoesListarFechamentosResponses, CartoesListarFechamentosErrors, ThrowOnError> => (options.client ?? client).get<CartoesListarFechamentosResponses, CartoesListarFechamentosErrors, ThrowOnError>({ url: '/api/cartoes/{conta_id}/fechamentos', ...options });
+
+/**
+ * Registrar Fechamento
+ *
+ * Dia de fechamento a partir de uma data; não recalcula compras já feitas (ADR 043).
+ */
+export const cartoesRegistrarFechamento = <ThrowOnError extends boolean = false>(options: Options<CartoesRegistrarFechamentoData, ThrowOnError>): RequestResult<CartoesRegistrarFechamentoResponses, CartoesRegistrarFechamentoErrors, ThrowOnError> => (options.client ?? client).post<CartoesRegistrarFechamentoResponses, CartoesRegistrarFechamentoErrors, ThrowOnError>({
+    url: '/api/cartoes/{conta_id}/fechamentos',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Listar
@@ -136,6 +162,44 @@ export const lancamentosEditar = <ThrowOnError extends boolean = false>(options:
         ...options.headers
     }
 });
+
+/**
+ * Listar
+ */
+export const linhasCreditoListar = <ThrowOnError extends boolean = false>(options?: Options<LinhasCreditoListarData, ThrowOnError>): RequestResult<LinhasCreditoListarResponses, unknown, ThrowOnError> => (options?.client ?? client).get<LinhasCreditoListarResponses, unknown, ThrowOnError>({ url: '/api/linhas-credito', ...options });
+
+/**
+ * Criar
+ */
+export const linhasCreditoCriar = <ThrowOnError extends boolean = false>(options: Options<LinhasCreditoCriarData, ThrowOnError>): RequestResult<LinhasCreditoCriarResponses, LinhasCreditoCriarErrors, ThrowOnError> => (options.client ?? client).post<LinhasCreditoCriarResponses, LinhasCreditoCriarErrors, ThrowOnError>({
+    url: '/api/linhas-credito',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Editar
+ *
+ * Nome e limite. Cria nova versão; a anterior fica no histórico.
+ */
+export const linhasCreditoEditar = <ThrowOnError extends boolean = false>(options: Options<LinhasCreditoEditarData, ThrowOnError>): RequestResult<LinhasCreditoEditarResponses, LinhasCreditoEditarErrors, ThrowOnError> => (options.client ?? client).put<LinhasCreditoEditarResponses, LinhasCreditoEditarErrors, ThrowOnError>({
+    url: '/api/linhas-credito/{linha_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Limite
+ *
+ * Limite, usado (dívida das compras ainda não pagas, com parcelas futuras) e disponível.
+ */
+export const linhasCreditoLimite = <ThrowOnError extends boolean = false>(options: Options<LinhasCreditoLimiteData, ThrowOnError>): RequestResult<LinhasCreditoLimiteResponses, LinhasCreditoLimiteErrors, ThrowOnError> => (options.client ?? client).get<LinhasCreditoLimiteResponses, LinhasCreditoLimiteErrors, ThrowOnError>({ url: '/api/linhas-credito/{linha_id}/limite', ...options });
 
 /**
  * R4

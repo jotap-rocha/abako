@@ -44,11 +44,12 @@ def lancar(
     versao: int | None = None,
     chave: str | None = None,
     hash_corpo: str | None = None,
+    parcelas: int | None = None,
 ) -> tuple[int, int, bool]:
     """Cria ou edita; devolve (transacao_id, versao, criou_agora)."""
     linha = conn.execute(
         "SELECT transacao_id, versao, criado FROM lancamento_gravar("
-        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             user_id,
             transacao_id,
@@ -63,10 +64,82 @@ def lancar(
             descricao,
             chave,
             hash_corpo,
+            parcelas,
         ),
     ).fetchone()
     assert linha is not None
     return int(linha[0]), int(linha[1]), bool(linha[2])
+
+
+def ano_atras(texto: str) -> str:
+    """Desloca uma data ou competência ("2026-11-15", "2026-12") um ano para trás.
+
+    As fixtures de cartão usam datas de 2026 que podem estar no futuro (o banco recusa compra
+    com data futura, ADR 042); o deslocamento de um ano inteiro preserva mês, dia e a ordem.
+    """
+    return f"{int(texto[:4]) - 1}{texto[4:]}"
+
+
+def linha_credito(
+    conn: psycopg.Connection, user_id: int, nome: str, limite: str
+) -> tuple[int, int]:
+    """Cria uma linha de crédito; devolve (linha_id, versao)."""
+    linha = conn.execute(
+        "SELECT linha_id, versao FROM linha_credito_gravar(%s, NULL, NULL, %s, %s)",
+        (user_id, nome, dec(limite)),
+    ).fetchone()
+    assert linha is not None
+    return int(linha[0]), int(linha[1])
+
+
+def cartao(
+    conn: psycopg.Connection,
+    user_id: int,
+    nome: str,
+    linha_id: int,
+    fechamento: int | None = None,
+    desde: str = "2026-01-01",
+) -> int:
+    """Cria a conta de dívida (cartão) e, se pedido, o primeiro dia de fechamento."""
+    linha = conn.execute(
+        "SELECT conta_id FROM conta_gravar(%s, NULL, NULL, %s, 'divida', NULL, %s)",
+        (user_id, nome, linha_id),
+    ).fetchone()
+    assert linha is not None
+    conta_id = int(linha[0])
+    if fechamento is not None:
+        fechar(conn, user_id, conta_id, fechamento, desde)
+    return conta_id
+
+
+def fechar(
+    conn: psycopg.Connection, user_id: int, conta_id: int, dia_fech: int, desde: str
+) -> None:
+    conn.execute(
+        "SELECT fechamento_gravar(%s, %s, %s, %s)", (user_id, conta_id, dia_fech, dia(desde))
+    )
+
+
+def compra(
+    conn: psycopg.Connection,
+    user_id: int,
+    conta_id: int,
+    data: str,
+    total: str,
+    parcelas: int,
+    **extra: object,
+) -> tuple[int, int, bool]:
+    return lancar(conn, user_id, "credito", data, conta_id, total, parcelas=parcelas, **extra)  # type: ignore[arg-type]
+
+
+def parcelas_da(conn: psycopg.Connection, user_id: int, transacao_id: int) -> list[tuple[str, str]]:
+    """(valor, competencia) das parcelas vigentes, em ordem de parcela."""
+    linhas = conn.execute(
+        "SELECT valor, competencia FROM transacao_vigente "
+        "WHERE user_id = %s AND transacao_id = %s ORDER BY parcela",
+        (user_id, transacao_id),
+    ).fetchall()
+    return [(str(r[0]), str(r[1])) for r in linhas]
 
 
 def excluir(conn: psycopg.Connection, user_id: int, transacao_id: int, versao: int) -> int:
@@ -137,7 +210,13 @@ def esperar_trava(observador: psycopg.Connection, pid: int, limite_s: float = 10
 def apagar_usuario(url_dono: str, user_id: int) -> None:
     """Limpa o que um teste com dado commitado criou (teste de concorrência)."""
     with psycopg.connect(url_dono) as limpa:
-        for tabela in ("snapshot_saldo", "transacao_versao", "conta_versao"):
+        for tabela in (
+            "snapshot_saldo",
+            "transacao_versao",
+            "cartao_fechamento",
+            "conta_versao",
+            "linha_credito",
+        ):
             limpa.execute(f"DELETE FROM {tabela} WHERE user_id = %s", (user_id,))  # noqa: S608
         limpa.execute("DELETE FROM usuario WHERE user_id = %s", (user_id,))
 

@@ -51,3 +51,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [040](040-front-casca-e-servico-estatico.md) | Casca do front: servida pela API, cliente gerado e service worker enxuto | Aceita | 2026-11-04 |
 | [041](041-saldo-derivado-snapshot-e-r4.md) | Saldo derivado, snapshot e R4: convenções da SPEC-003 | Aceita | 2026-11-04 |
 | [042](042-lancamento-tipos-de-conta-e-versionamento.md) | Lançamento por tipo, tipos de conta e escrita versionada por função | Aceita | 2026-11-09 |
+| [043](043-cartao-fatura-parcelas-e-limite.md) | Cartão, fatura, parcelas e limite: convenções da SPEC-005 | Aceita | 2026-11-10 |
