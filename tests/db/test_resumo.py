@@ -34,9 +34,10 @@ def _semear(conn: psycopg.Connection[tuple[object, ...]]) -> None:
     assert linha is not None
     for v in VALORES:
         conn.execute(
-            "INSERT INTO transacao_versao (user_id, conta_id, data_transacao, valor) "
-            "VALUES (%s, %s, DATE '2026-10-01', %s::numeric)",
-            (uid, linha[0], v),
+            "INSERT INTO transacao_versao (user_id, conta_id, data_transacao, valor, tipo) "
+            "VALUES (%s, %s, DATE '2026-10-01', %s::numeric, "
+            "CASE WHEN %s::numeric < 0 THEN 'debito' ELSE 'receita' END)",
+            (uid, linha[0], v, v),
         )
 
 
@@ -49,7 +50,11 @@ def test_resumir_confere_contagem_e_soma(conn: psycopg.Connection[tuple[object, 
     assert depois["usuario"].linhas == 1 and depois["usuario"].somas == {}
     assert depois["conta_versao"].linhas == 1 and depois["conta_versao"].somas == {}
     assert depois["transacao_versao"].linhas == 3
-    assert depois["transacao_versao"].somas == {"valor": Decimal("71.00")}
+    assert depois["transacao_versao"].somas == {
+        "valor": Decimal("71.00"),
+        "bruto": Decimal("0"),
+        "imposto": Decimal("0"),
+    }
     assert banco_vazio(conn) is False
 
     texto = "\n".join(formatar(list(depois.values())))

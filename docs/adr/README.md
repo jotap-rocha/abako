@@ -50,3 +50,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [039](039-postgres-scram-no-conteiner.md) | Autenticação scram dentro do contêiner do Postgres | Aceita | 2026-11-03 |
 | [040](040-front-casca-e-servico-estatico.md) | Casca do front: servida pela API, cliente gerado e service worker enxuto | Aceita | 2026-11-04 |
 | [041](041-saldo-derivado-snapshot-e-r4.md) | Saldo derivado, snapshot e R4: convenções da SPEC-003 | Aceita | 2026-11-04 |
+| [042](042-lancamento-tipos-de-conta-e-versionamento.md) | Lançamento por tipo, tipos de conta e escrita versionada por função | Aceita | 2026-11-09 |

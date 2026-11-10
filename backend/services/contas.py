@@ -1,4 +1,5 @@
-"""Leitura de contas vigentes; toda consulta filtra pelo `user_id` da sessão (INV-13)."""
+"""Contas do usuário. Leitura pelas views/tabelas, escrita só pela função `conta_gravar`
+(migração 0005, ADR 042); toda chamada usa o `user_id` da sessão (INV-13)."""
 
 from __future__ import annotations
 
@@ -12,10 +13,13 @@ class Conta:
     conta_id: int
     nome: str
     conta_beneficio: bool
+    tipo: str
+    conta_mae_id: int | None
+    versao: int
 
 
 _SELECT = (
-    "SELECT conta_id, nome, conta_beneficio FROM conta_versao "
+    "SELECT conta_id, nome, conta_beneficio, tipo, conta_mae_id, versao FROM conta_versao "
     "WHERE user_id = %s AND vigente AND NOT excluida"
 )
 
@@ -31,26 +35,25 @@ async def obter(conn: psycopg.AsyncConnection, user_id: int, conta_id: int) -> C
     return Conta(*linha) if linha else None
 
 
-async def criar_conta(
-    conn: psycopg.AsyncConnection, user_id: int, nome: str, conta_beneficio: bool
-) -> Conta | None:
-    """Cria a conta; devolve None se o usuário já tem uma conta vigente com esse nome."""
+async def gravar(
+    conn: psycopg.AsyncConnection,
+    user_id: int,
+    *,
+    nome: str,
+    tipo: str,
+    conta_mae_id: int | None,
+    conta_id: int | None = None,
+    versao: int | None = None,
+) -> int:
+    """Cria (sem `conta_id`) ou edita (com a `versao` lida). Devolve o `conta_id`.
+
+    Erros de regra saem como `psycopg.Error` com SQLSTATE AB*** (ver `backend.erros_banco`).
+    """
     cur = await conn.execute(
-        "SELECT 1 FROM conta_versao WHERE user_id = %s AND vigente AND NOT excluida "
-        "AND lower(nome) = lower(%s)",
-        (user_id, nome),
+        "SELECT conta_id FROM conta_gravar(%s, %s, %s, %s, %s, %s)",
+        (user_id, conta_id, versao, nome, tipo, conta_mae_id),
     )
-    if await cur.fetchone() is not None:
-        return None
-    try:
-        cur = await conn.execute(
-            "INSERT INTO conta_versao (user_id, nome, conta_beneficio) VALUES (%s, %s, %s) "
-            "RETURNING conta_id, nome, conta_beneficio",
-            (user_id, nome, conta_beneficio),
-        )
-    except psycopg.errors.UniqueViolation:
-        await conn.rollback()  # outra requisição criou o mesmo nome entre a checagem e o insert
-        return None
     linha = await cur.fetchone()
-    assert linha is not None
-    return Conta(*linha)
+    if linha is None:
+        raise RuntimeError("conta_gravar não devolveu linha")
+    return int(linha[0])

@@ -1,6 +1,6 @@
 # 036 — Papéis do banco criados fora da migração e fechamento de versão
 
-**Status:** Aceita
+**Status:** Aceita (alterada pelo [ADR 042](042-lancamento-tipos-de-conta-e-versionamento.md): `abako_app` perdeu o INSERT direto nas tabelas de versão e o USAGE das sequências; a escrita é só pelas funções SECURITY DEFINER)
 **Data:** 2026-11-01
 **Autores:** time
 **Reversibilidade:** média

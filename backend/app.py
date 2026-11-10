@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from backend.routers import auth, contas, saldos
+from backend.routers import auth, contas, lancamentos, saldos
 from backend.seguranca import LimitadorLogin
 from backend.settings import Settings, obter_settings
 
@@ -59,6 +59,8 @@ def criar_app(settings: Settings | None = None) -> FastAPI:
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Content-Type", "X-CSRF-Token"],
+        # Código estável dos erros de regra (ADR 042), legível também fora da mesma origem.
+        expose_headers=["X-Abako-Erro"],
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(cfg.hosts_permitidos))
 
@@ -76,6 +78,7 @@ def criar_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth.router, prefix="/api")
     app.include_router(contas.router, prefix="/api")
     app.include_router(saldos.router, prefix="/api")
+    app.include_router(lancamentos.router, prefix="/api")
     _servir_spa(app, cfg.frontend_dist)
     return app
 

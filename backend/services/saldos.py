@@ -9,6 +9,8 @@ from decimal import Decimal
 
 import psycopg
 
+from backend.tipos import TipoConta
+
 
 @dataclass(frozen=True)
 class SaldoConta:
@@ -18,6 +20,8 @@ class SaldoConta:
     saldo: Decimal
     snapshot_data: date | None
     snapshot_valor: Decimal | None
+    tipo: TipoConta  # o CHECK do banco garante um dos quatro valores
+    conta_mae_id: int | None
 
 
 @dataclass(frozen=True)
@@ -53,7 +57,7 @@ async def hoje(conn: psycopg.AsyncConnection) -> date:
 async def listar_saldos(conn: psycopg.AsyncConnection, user_id: int, em: date) -> list[SaldoConta]:
     cur = await conn.execute(
         "SELECT c.conta_id, c.nome, c.conta_beneficio, saldo_derivado(c.user_id, c.conta_id, %s), "
-        "       s.data_snapshot, s.valor "
+        "       s.data_snapshot, s.valor, c.tipo, c.conta_mae_id "
         "FROM conta_versao c "
         "LEFT JOIN LATERAL ("
         "    SELECT v.data_snapshot, v.valor FROM snapshot_vigente v "

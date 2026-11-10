@@ -1,6 +1,51 @@
 {
   "components": {
     "schemas": {
+      "ContaEdicao": {
+        "properties": {
+          "conta_mae_id": {
+            "anyOf": [
+              {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conta Mae Id"
+          },
+          "nome": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "tipo": {
+            "enum": [
+              "corrente",
+              "reserva",
+              "investimento",
+              "beneficio"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "versao": {
+            "minimum": 1.0,
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nome",
+          "tipo",
+          "versao"
+        ],
+        "title": "ContaEdicao",
+        "type": "object"
+      },
       "ContaEntrada": {
         "properties": {
           "conta_beneficio": {
@@ -8,11 +53,41 @@
             "title": "Conta Beneficio",
             "type": "boolean"
           },
+          "conta_mae_id": {
+            "anyOf": [
+              {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conta Mae Id"
+          },
           "nome": {
             "maxLength": 80,
             "minLength": 1,
             "title": "Nome",
             "type": "string"
+          },
+          "tipo": {
+            "anyOf": [
+              {
+                "enum": [
+                  "corrente",
+                  "reserva",
+                  "investimento",
+                  "beneficio"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo"
           }
         },
         "required": [
@@ -31,15 +106,43 @@
             "title": "Conta Id",
             "type": "integer"
           },
+          "conta_mae_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conta Mae Id"
+          },
           "nome": {
             "title": "Nome",
             "type": "string"
+          },
+          "tipo": {
+            "enum": [
+              "corrente",
+              "reserva",
+              "investimento",
+              "beneficio"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "versao": {
+            "title": "Versao",
+            "type": "integer"
           }
         },
         "required": [
           "conta_id",
           "nome",
-          "conta_beneficio"
+          "conta_beneficio",
+          "tipo",
+          "conta_mae_id",
+          "versao"
         ],
         "title": "ContaSaida",
         "type": "object"
@@ -96,6 +199,297 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "LancamentoEdicao": {
+        "properties": {
+          "bruto": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bruto"
+          },
+          "conta_destino_id": {
+            "anyOf": [
+              {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conta Destino Id"
+          },
+          "conta_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "data": {
+            "format": "date",
+            "title": "Data",
+            "type": "string"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "imposto": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imposto"
+          },
+          "tipo": {
+            "enum": [
+              "debito",
+              "credito",
+              "receita",
+              "transferencia",
+              "investimento",
+              "repasse",
+              "rendimento"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor"
+          },
+          "versao": {
+            "minimum": 1.0,
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tipo",
+          "data",
+          "conta_id",
+          "versao"
+        ],
+        "title": "LancamentoEdicao",
+        "type": "object"
+      },
+      "LancamentoEntrada": {
+        "properties": {
+          "bruto": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bruto"
+          },
+          "chave": {
+            "maxLength": 64,
+            "minLength": 8,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "title": "Chave",
+            "type": "string"
+          },
+          "conta_destino_id": {
+            "anyOf": [
+              {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conta Destino Id"
+          },
+          "conta_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "data": {
+            "format": "date",
+            "title": "Data",
+            "type": "string"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "imposto": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imposto"
+          },
+          "tipo": {
+            "enum": [
+              "debito",
+              "credito",
+              "receita",
+              "transferencia",
+              "investimento",
+              "repasse",
+              "rendimento"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor"
+          }
+        },
+        "required": [
+          "tipo",
+          "data",
+          "conta_id",
+          "chave"
+        ],
+        "title": "LancamentoEntrada",
+        "type": "object"
+      },
+      "LancamentoSaida": {
+        "properties": {
+          "bruto": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bruto"
+          },
+          "conta_destino_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conta Destino Id"
+          },
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "data": {
+            "format": "date",
+            "title": "Data",
+            "type": "string"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "imposto": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imposto"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "transacao_id": {
+            "title": "Transacao Id",
+            "type": "integer"
+          },
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          },
+          "versao": {
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "transacao_id",
+          "versao",
+          "tipo",
+          "data",
+          "valor",
+          "conta_id",
+          "conta_destino_id",
+          "bruto",
+          "imposto",
+          "descricao"
+        ],
+        "title": "LancamentoSaida",
+        "type": "object"
+      },
       "LoginEntrada": {
         "properties": {
           "login": {
@@ -141,6 +535,17 @@
             "title": "Conta Id",
             "type": "integer"
           },
+          "conta_mae_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conta Mae Id"
+          },
           "nome": {
             "title": "Nome",
             "type": "string"
@@ -171,6 +576,16 @@
               }
             ],
             "title": "Snapshot Valor"
+          },
+          "tipo": {
+            "enum": [
+              "corrente",
+              "reserva",
+              "investimento",
+              "beneficio"
+            ],
+            "title": "Tipo",
+            "type": "string"
           }
         },
         "required": [
@@ -179,7 +594,9 @@
           "conta_beneficio",
           "saldo",
           "snapshot_data",
-          "snapshot_valor"
+          "snapshot_valor",
+          "tipo",
+          "conta_mae_id"
         ],
         "title": "SaldoSaida",
         "type": "object"
@@ -539,6 +956,75 @@
         "tags": [
           "contas"
         ]
+      },
+      "put": {
+        "description": "Nome, tipo e conta do banco. Cria nova versão; a anterior fica no histórico.",
+        "operationId": "contas_editar",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conta_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Conta Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContaEdicao"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Editar",
+        "tags": [
+          "contas"
+        ]
       }
     },
     "/api/contas/{conta_id}/snapshots": {
@@ -609,6 +1095,350 @@
         "summary": "Registrar Snapshot",
         "tags": [
           "saldos"
+        ]
+      }
+    },
+    "/api/lancamentos": {
+      "get": {
+        "description": "Lançamentos vigentes, do mais recente para o mais antigo.",
+        "operationId": "lancamentos_listar",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "conta_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 9223372036854775807,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Conta Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "de",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "De"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ate",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ate"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LancamentoSaida"
+                  },
+                  "title": "Response Lancamentos Listar",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar",
+        "tags": [
+          "lancamentos"
+        ]
+      },
+      "post": {
+        "operationId": "lancamentos_criar",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LancamentoEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LancamentoSaida"
+                }
+              }
+            },
+            "description": "repetição da mesma chave"
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LancamentoSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Criar",
+        "tags": [
+          "lancamentos"
+        ]
+      }
+    },
+    "/api/lancamentos/{transacao_id}": {
+      "delete": {
+        "description": "Exclusão lógica: nova versão marcada como excluída; deixa de contar no saldo.",
+        "operationId": "lancamentos_excluir",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transacao_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Transacao Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "versao",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "Versao",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Excluir",
+        "tags": [
+          "lancamentos"
+        ]
+      },
+      "get": {
+        "operationId": "lancamentos_obter",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transacao_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Transacao Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LancamentoSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter",
+        "tags": [
+          "lancamentos"
+        ]
+      },
+      "put": {
+        "description": "Cria nova versão; a anterior fica no histórico e deixa de contar (INV-09).",
+        "operationId": "lancamentos_editar",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transacao_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Transacao Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LancamentoEdicao"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LancamentoSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Editar",
+        "tags": [
+          "lancamentos"
         ]
       }
     },

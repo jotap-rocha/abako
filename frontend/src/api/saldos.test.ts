@@ -1,17 +1,16 @@
 import { afterEach, beforeEach, vi } from "vitest";
 
-import { criarConta } from "./contas";
+import { criarConta, editarConta, obterConta } from "./contas";
 import { client } from "./gerado/client.gen";
 import { listarDivergencias, listarSaldos, registrarSnapshot } from "./saldos";
 
 // Só o `fetch` do navegador é simulado; os módulos e o cliente gerado rodam de verdade.
 const fetchSimulado = vi.fn<typeof fetch>();
 
-function resposta(status: number, corpo?: unknown): Response {
-  return new Response(corpo === undefined ? null : JSON.stringify(corpo), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
+function resposta(status: number, corpo?: unknown, codigo?: string): Response {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (codigo !== undefined) headers["X-Abako-Erro"] = codigo;
+  return new Response(corpo === undefined ? null : JSON.stringify(corpo), { status, headers });
 }
 
 function ultimaRequisicao(): Request {
@@ -47,6 +46,8 @@ describe("api de saldos", () => {
         conta_id: 1,
         nome: "A",
         conta_beneficio: false,
+        tipo: "corrente",
+        conta_mae_id: null,
         saldo: "12345678901234567.89",
         snapshot_data: null,
         snapshot_valor: null,
@@ -109,24 +110,78 @@ describe("api de saldos", () => {
 
 describe("api de contas", () => {
   it("criar_conta_mapeia_os_status", async () => {
-    const conta = { conta_id: 9, nome: "Nova", conta_beneficio: true };
+    const conta = {
+      conta_id: 9,
+      nome: "Nova",
+      conta_beneficio: true,
+      tipo: "beneficio",
+      conta_mae_id: null,
+      versao: 1,
+    };
     fetchSimulado.mockResolvedValueOnce(resposta(201, conta));
-    expect(await criarConta("Nova", true)).toEqual({ tipo: "ok", conta });
+    expect(await criarConta("Nova", "beneficio", null)).toEqual({ tipo: "ok", conta });
     const req = ultimaRequisicao();
     expect(req.method).toBe("POST");
-    expect(await req.text()).toBe('{"nome":"Nova","conta_beneficio":true}');
+    expect(await req.text()).toBe(
+      '{"nome":"Nova","tipo":"beneficio","conta_beneficio":true,"conta_mae_id":null}',
+    );
 
-    const casos: [number, string][] = [
-      [401, "sessao_expirada"],
-      [409, "nome_repetido"],
-      [422, "invalido"],
-      [500, "erro"],
+    const casos: [number, unknown][] = [
+      [401, { tipo: "sessao_expirada" }],
+      [409, { tipo: "nome_repetido" }],
+      // A mensagem de regra do servidor chega para a tela mostrar.
+      [422, { tipo: "invalido", mensagem: "x" }],
+      [500, { tipo: "erro" }],
     ];
-    for (const [status, tipo] of casos) {
+    for (const [status, esperado] of casos) {
       fetchSimulado.mockResolvedValueOnce(resposta(status, { detail: "x" }));
-      expect([status, await criarConta("X", false)]).toEqual([status, { tipo }]);
+      expect([status, await criarConta("X", "corrente", null)]).toEqual([status, esperado]);
     }
     fetchSimulado.mockRejectedValueOnce(new TypeError("rede"));
-    expect(await criarConta("X", false)).toEqual({ tipo: "erro" });
+    expect(await criarConta("X", "corrente", null)).toEqual({ tipo: "erro" });
+  });
+});
+
+describe("api de edição de conta", () => {
+  const conta = {
+    conta_id: 3,
+    nome: "Caixinha",
+    conta_beneficio: false,
+    tipo: "reserva",
+    conta_mae_id: 1,
+    versao: 2,
+  };
+
+  it("obter_e_editar_mapeiam_os_status", async () => {
+    fetchSimulado.mockResolvedValueOnce(resposta(200, conta));
+    expect(await obterConta(3)).toEqual({ tipo: "ok", conta });
+    fetchSimulado.mockResolvedValueOnce(resposta(404, { detail: "x" }));
+    expect(await obterConta(3)).toEqual({ tipo: "nao_encontrada" });
+
+    fetchSimulado.mockResolvedValueOnce(resposta(200, conta));
+    expect(await editarConta(3, 1, "Caixinha", "reserva", 1)).toEqual({ tipo: "ok", conta });
+    const req = ultimaRequisicao();
+    expect(req.method).toBe("PUT");
+    expect(req.url).toContain("/api/contas/3");
+    expect(await req.text()).toBe(
+      '{"nome":"Caixinha","tipo":"reserva","conta_mae_id":1,"versao":1}',
+    );
+
+    // O código no cabeçalho decide entre os dois 409; o texto da mensagem não importa.
+    const casos: [number, unknown, string | undefined, unknown][] = [
+      [409, { detail: "qualquer texto" }, "AB409", { tipo: "desatualizada" }],
+      [409, { detail: "qualquer texto" }, "AB410", { tipo: "nome_repetido" }],
+      [422, { detail: "regra x" }, "AB422", { tipo: "invalido", mensagem: "regra x" }],
+      [422, { detail: [{ msg: "pydantic" }] }, undefined, { tipo: "invalido", mensagem: null }],
+      [401, { detail: "x" }, undefined, { tipo: "sessao_expirada" }],
+      [404, { detail: "x" }, "AB404", { tipo: "nao_encontrada" }],
+      [500, { detail: "x" }, undefined, { tipo: "erro" }],
+    ];
+    for (const [status, corpo, codigo, esperado] of casos) {
+      fetchSimulado.mockResolvedValueOnce(resposta(status, corpo, codigo));
+      expect([status, await editarConta(3, 1, "C", "reserva", null)]).toEqual([status, esperado]);
+    }
+    fetchSimulado.mockRejectedValueOnce(new TypeError("rede"));
+    expect(await editarConta(3, 1, "C", "reserva", null)).toEqual({ tipo: "erro" });
   });
 });

@@ -20,6 +20,8 @@ const apiContas = vi.mocked(contas);
 function conta(parcial: Partial<SaldoSaida> & Pick<SaldoSaida, "conta_id" | "nome">): SaldoSaida {
   return {
     conta_beneficio: false,
+    tipo: "corrente",
+    conta_mae_id: null,
     saldo: "0.00",
     snapshot_data: null,
     snapshot_valor: null,
@@ -66,7 +68,13 @@ describe("tela de saldos", () => {
           snapshot_data: "2026-11-01",
           snapshot_valor: "1000.10",
         }),
-        conta({ conta_id: 2, nome: "Vale", conta_beneficio: true, saldo: "-0.30" }),
+        conta({
+          conta_id: 2,
+          nome: "Vale",
+          conta_beneficio: true,
+          tipo: "beneficio",
+          saldo: "-0.30",
+        }),
       ],
     });
     renderizar();
@@ -106,7 +114,14 @@ describe("tela de saldos", () => {
     });
     apiContas.criarConta.mockResolvedValue({
       tipo: "ok",
-      conta: { conta_id: 2, nome: "B", conta_beneficio: false },
+      conta: {
+        conta_id: 2,
+        nome: "B",
+        conta_beneficio: false,
+        tipo: "corrente",
+        conta_mae_id: null,
+        versao: 1,
+      },
     });
     renderizar();
     const form = await screen.findByRole("form", { name: "Nova conta" });
@@ -152,21 +167,35 @@ describe("nova conta", () => {
   it("cria_conta_e_recarrega_a_lista", async () => {
     apiContas.criarConta.mockResolvedValue({
       tipo: "ok",
-      conta: { conta_id: 7, nome: "Vale-refeição", conta_beneficio: true },
+      conta: {
+        conta_id: 7,
+        nome: "Vale-refeição",
+        conta_beneficio: true,
+        tipo: "beneficio",
+        conta_mae_id: null,
+        versao: 1,
+      },
     });
     renderizar();
     const form = await screen.findByRole("form", { name: "Nova conta" });
     apiSaldos.listarSaldos.mockResolvedValue({
       tipo: "ok",
-      saldos: [conta({ conta_id: 7, nome: "Vale-refeição", conta_beneficio: true })],
+      saldos: [
+        conta({
+          conta_id: 7,
+          nome: "Vale-refeição",
+          conta_beneficio: true,
+          tipo: "beneficio",
+        }),
+      ],
     });
 
     const usuario = userEvent.setup();
     await usuario.type(within(form).getByLabelText("Nome da conta"), "Vale-refeição");
-    await usuario.click(within(form).getByLabelText(/É conta de benefício/));
+    await usuario.selectOptions(within(form).getByLabelText("Tipo"), "beneficio");
     await usuario.click(within(form).getByRole("button", { name: "Criar conta" }));
 
-    expect(apiContas.criarConta).toHaveBeenCalledWith("Vale-refeição", true);
+    expect(apiContas.criarConta).toHaveBeenCalledWith("Vale-refeição", "beneficio", null);
     expect(await saldoDe("Vale-refeição")).toHaveTextContent("R$ 0,00");
     expect(within(form).getByRole("status")).toHaveTextContent("Conta “Vale-refeição” criada");
     expect(within(form).getByLabelText("Nome da conta")).toHaveValue("");
@@ -188,7 +217,7 @@ describe("nova conta", () => {
 
   it("mensagens_de_nome_invalido_e_falha_de_rede", async () => {
     apiContas.criarConta
-      .mockResolvedValueOnce({ tipo: "invalido" })
+      .mockResolvedValueOnce({ tipo: "invalido", mensagem: null })
       .mockResolvedValueOnce({ tipo: "erro" });
     renderizar();
     const form = await screen.findByRole("form", { name: "Nova conta" });

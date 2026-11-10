@@ -278,3 +278,16 @@ fixtures:
       saldo_derivado: "250.00"
       receita_total: "6000.00"
       tela_principal_mostra: "5000.00"
+
+  - id: F-REND-01
+    invariantes: [INV-36, INV-04]
+    descricao: >-
+      Rendimento registra bruto e imposto retido; a conta recebe bruto − imposto e nada disso é
+      gasto real.
+    entrada:
+      snapshot: {data: "2026-03-01", valor: "1000.00"}
+      rendimento: {data: "2026-03-10", bruto: "100.00", imposto: "22.50"}
+    esperado:
+      creditado: "77.50"
+      saldo_derivado: "1077.50"
+      gasto_real: "0.00"

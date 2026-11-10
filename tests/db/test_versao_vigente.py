@@ -33,7 +33,8 @@ def test_versoes_antigas_convivem_com_uma_vigente(conn: psycopg.Connection) -> N
     for versao, vigente in ((1, False), (2, False), (3, True)):
         conn.execute(
             "INSERT INTO transacao_versao (user_id, transacao_id, versao, vigente, conta_id, "
-            "data_transacao, valor) VALUES (%s, 901, %s, %s, 1, DATE '2026-01-05', 10.00)",
+            "data_transacao, valor, tipo) "
+            "VALUES (%s, 901, %s, %s, 1, DATE '2026-01-05', 10.00, 'receita')",
             (uid, versao, vigente),
         )
     linha = conn.execute(

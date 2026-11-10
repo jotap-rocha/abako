@@ -5,6 +5,28 @@ export type ClientOptions = {
 };
 
 /**
+ * ContaEdicao
+ */
+export type ContaEdicao = {
+    /**
+     * Conta Mae Id
+     */
+    conta_mae_id?: number | null;
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Tipo
+     */
+    tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio';
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
  * ContaEntrada
  */
 export type ContaEntrada = {
@@ -13,9 +35,17 @@ export type ContaEntrada = {
      */
     conta_beneficio?: boolean;
     /**
+     * Conta Mae Id
+     */
+    conta_mae_id?: number | null;
+    /**
      * Nome
      */
     nome: string;
+    /**
+     * Tipo
+     */
+    tipo?: 'corrente' | 'reserva' | 'investimento' | 'beneficio' | null;
 };
 
 /**
@@ -31,9 +61,21 @@ export type ContaSaida = {
      */
     conta_id: number;
     /**
+     * Conta Mae Id
+     */
+    conta_mae_id: number | null;
+    /**
      * Nome
      */
     nome: string;
+    /**
+     * Tipo
+     */
+    tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio';
+    /**
+     * Versao
+     */
+    versao: number;
 };
 
 /**
@@ -77,6 +119,136 @@ export type HttpValidationError = {
 };
 
 /**
+ * LancamentoEdicao
+ */
+export type LancamentoEdicao = {
+    /**
+     * Bruto
+     */
+    bruto?: string | null;
+    /**
+     * Conta Destino Id
+     */
+    conta_destino_id?: number | null;
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Data
+     */
+    data: string;
+    /**
+     * Descricao
+     */
+    descricao?: string | null;
+    /**
+     * Imposto
+     */
+    imposto?: string | null;
+    /**
+     * Tipo
+     */
+    tipo: 'debito' | 'credito' | 'receita' | 'transferencia' | 'investimento' | 'repasse' | 'rendimento';
+    /**
+     * Valor
+     */
+    valor?: string | null;
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
+ * LancamentoEntrada
+ */
+export type LancamentoEntrada = {
+    /**
+     * Bruto
+     */
+    bruto?: string | null;
+    /**
+     * Chave
+     */
+    chave: string;
+    /**
+     * Conta Destino Id
+     */
+    conta_destino_id?: number | null;
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Data
+     */
+    data: string;
+    /**
+     * Descricao
+     */
+    descricao?: string | null;
+    /**
+     * Imposto
+     */
+    imposto?: string | null;
+    /**
+     * Tipo
+     */
+    tipo: 'debito' | 'credito' | 'receita' | 'transferencia' | 'investimento' | 'repasse' | 'rendimento';
+    /**
+     * Valor
+     */
+    valor?: string | null;
+};
+
+/**
+ * LancamentoSaida
+ */
+export type LancamentoSaida = {
+    /**
+     * Bruto
+     */
+    bruto: string | null;
+    /**
+     * Conta Destino Id
+     */
+    conta_destino_id: number | null;
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Data
+     */
+    data: string;
+    /**
+     * Descricao
+     */
+    descricao: string | null;
+    /**
+     * Imposto
+     */
+    imposto: string | null;
+    /**
+     * Tipo
+     */
+    tipo: string;
+    /**
+     * Transacao Id
+     */
+    transacao_id: number;
+    /**
+     * Valor
+     */
+    valor: string;
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
  * LoginEntrada
  */
 export type LoginEntrada = {
@@ -113,6 +285,10 @@ export type SaldoSaida = {
      */
     conta_id: number;
     /**
+     * Conta Mae Id
+     */
+    conta_mae_id: number | null;
+    /**
      * Nome
      */
     nome: string;
@@ -128,6 +304,10 @@ export type SaldoSaida = {
      * Snapshot Valor
      */
     snapshot_valor: string | null;
+    /**
+     * Tipo
+     */
+    tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio';
 };
 
 /**
@@ -357,6 +537,42 @@ export type ContasObterResponses = {
 
 export type ContasObterResponse = ContasObterResponses[keyof ContasObterResponses];
 
+export type ContasEditarData = {
+    body: ContaEdicao;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Conta Id
+         */
+        conta_id: number;
+    };
+    query?: never;
+    url: '/api/contas/{conta_id}';
+};
+
+export type ContasEditarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ContasEditarError = ContasEditarErrors[keyof ContasEditarErrors];
+
+export type ContasEditarResponses = {
+    /**
+     * Successful Response
+     */
+    200: ContaSaida;
+};
+
+export type ContasEditarResponse = ContasEditarResponses[keyof ContasEditarResponses];
+
 export type SaldosRegistrarSnapshotData = {
     body: SnapshotEntrada;
     headers?: {
@@ -392,6 +608,192 @@ export type SaldosRegistrarSnapshotResponses = {
 };
 
 export type SaldosRegistrarSnapshotResponse = SaldosRegistrarSnapshotResponses[keyof SaldosRegistrarSnapshotResponses];
+
+export type LancamentosListarData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Conta Id
+         */
+        conta_id?: number | null;
+        /**
+         * De
+         */
+        de?: string | null;
+        /**
+         * Ate
+         */
+        ate?: string | null;
+        /**
+         * Limite
+         */
+        limite?: number;
+    };
+    url: '/api/lancamentos';
+};
+
+export type LancamentosListarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LancamentosListarError = LancamentosListarErrors[keyof LancamentosListarErrors];
+
+export type LancamentosListarResponses = {
+    /**
+     * Response Lancamentos Listar
+     *
+     * Successful Response
+     */
+    200: Array<LancamentoSaida>;
+};
+
+export type LancamentosListarResponse = LancamentosListarResponses[keyof LancamentosListarResponses];
+
+export type LancamentosCriarData = {
+    body: LancamentoEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/lancamentos';
+};
+
+export type LancamentosCriarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LancamentosCriarError = LancamentosCriarErrors[keyof LancamentosCriarErrors];
+
+export type LancamentosCriarResponses = {
+    /**
+     * repetição da mesma chave
+     */
+    200: LancamentoSaida;
+    /**
+     * Successful Response
+     */
+    201: LancamentoSaida;
+};
+
+export type LancamentosCriarResponse = LancamentosCriarResponses[keyof LancamentosCriarResponses];
+
+export type LancamentosExcluirData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Transacao Id
+         */
+        transacao_id: number;
+    };
+    query: {
+        /**
+         * Versao
+         */
+        versao: number;
+    };
+    url: '/api/lancamentos/{transacao_id}';
+};
+
+export type LancamentosExcluirErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LancamentosExcluirError = LancamentosExcluirErrors[keyof LancamentosExcluirErrors];
+
+export type LancamentosExcluirResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type LancamentosExcluirResponse = LancamentosExcluirResponses[keyof LancamentosExcluirResponses];
+
+export type LancamentosObterData = {
+    body?: never;
+    path: {
+        /**
+         * Transacao Id
+         */
+        transacao_id: number;
+    };
+    query?: never;
+    url: '/api/lancamentos/{transacao_id}';
+};
+
+export type LancamentosObterErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LancamentosObterError = LancamentosObterErrors[keyof LancamentosObterErrors];
+
+export type LancamentosObterResponses = {
+    /**
+     * Successful Response
+     */
+    200: LancamentoSaida;
+};
+
+export type LancamentosObterResponse = LancamentosObterResponses[keyof LancamentosObterResponses];
+
+export type LancamentosEditarData = {
+    body: LancamentoEdicao;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Transacao Id
+         */
+        transacao_id: number;
+    };
+    query?: never;
+    url: '/api/lancamentos/{transacao_id}';
+};
+
+export type LancamentosEditarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LancamentosEditarError = LancamentosEditarErrors[keyof LancamentosEditarErrors];
+
+export type LancamentosEditarResponses = {
+    /**
+     * Successful Response
+     */
+    200: LancamentoSaida;
+};
+
+export type LancamentosEditarResponse = LancamentosEditarResponses[keyof LancamentosEditarResponses];
 
 export type SaldosR4Data = {
     body?: never;

@@ -229,3 +229,77 @@ criterios:
     invariantes: [INV-03]
     fixtures: [F-SALDO-03]
     teste: ["tests/db/test_saldo.py::test_saldo_em_data_passada"]
+
+  - id: SPEC-004-AC-1
+    spec: SPEC-004
+    dado: "duas contas comuns (F-TRANSF-01)"
+    quando: "uma transferência de valor positivo é lançada"
+    entao: "existem exatamente duas pernas com o mesmo id e a mesma versão, saída na origem e entrada no destino, somando zero; perna única, soma diferente de zero, mesma conta ou sinal trocado são barrados pelo esquema (CHECKs + trigger no commit)"
+    invariantes: [INV-01]
+    fixtures: [F-TRANSF-01]
+    teste: ["tests/db/test_transferencia.py::test_duas_pernas_soma_zero", "tests/db/test_transferencia.py::test_perna_solta_e_barrada_pelo_esquema"]
+  - id: SPEC-004-AC-2
+    spec: SPEC-004
+    dado: "um lançamento vigente (F-SALDO-02)"
+    quando: "ele é editado"
+    entao: "nasce uma nova versão, a anterior fica no histórico sem contar, e a transferência versiona as duas pernas juntas"
+    invariantes: [INV-09]
+    fixtures: [F-SALDO-02]
+    teste: ["tests/db/test_versionamento.py::test_edicao_cria_versao", "tests/db/test_versionamento.py::test_editar_transferencia_versiona_as_duas_pernas"]
+  - id: SPEC-004-AC-3
+    spec: SPEC-004
+    dado: "uma criação de lançamento já feita com uma chave de idempotência"
+    quando: "a mesma chave chega de novo com o mesmo corpo (duplo clique, nova tentativa, inclusive enquanto a primeira ainda grava)"
+    entao: "nenhum lançamento novo é criado e a resposta é o lançamento original (200)"
+    invariantes: [INV-28]
+    teste: ["tests/backend/test_idempotencia.py::test_mesma_chave_nao_duplica", "tests/db/test_lancamento_regras.py::test_mesma_chave_em_paralelo_devolve_o_primeiro"]
+  - id: SPEC-004-AC-4
+    spec: SPEC-004
+    dado: "um lançamento lido na versão N e já editado por outra aba"
+    quando: "chega uma edição ou exclusão com a versão N"
+    entao: "a resposta é 409 e nenhuma versão é criada; duas edições simultâneas da mesma versão (de lançamento ou de conta) não passam juntas"
+    invariantes: [INV-29]
+    teste: ["tests/backend/test_conflito.py::test_versao_desatualizada", "tests/db/test_versionamento.py::test_duas_edicoes_simultaneas_so_uma_passa", "tests/db/test_conta_versao.py::test_duas_edicoes_de_conta_simultaneas"]
+  - id: SPEC-004-AC-5
+    spec: SPEC-004
+    dado: "um lançamento vigente"
+    quando: "ele é excluído"
+    entao: "nasce uma versão vigente marcada como excluída, o saldo deixa de contá-lo, o histórico fica e ele não pode mais ser editado"
+    invariantes: [INV-09]
+    teste: ["tests/db/test_exclusao.py::test_exclusao_logica", "tests/db/test_exclusao.py::test_excluido_nao_volta_nem_e_editado"]
+  - id: SPEC-004-AC-6
+    spec: SPEC-004
+    dado: "uma reserva com saldo 1000.00 (F-REND-01)"
+    quando: "um rendimento com bruto 100.00 e imposto 22.50 é lançado"
+    entao: "o lançamento guarda bruto e imposto, a conta recebe 77.50 e o saldo vai a 1077.50"
+    invariantes: [INV-36]
+    fixtures: [F-REND-01]
+    teste: ["tests/db/test_rendimento.py::test_liquido_creditado"]
+  - id: SPEC-004-AC-7
+    spec: SPEC-004
+    dado: "uma conta corrente de um banco e a caixinha dele cadastrada como corrente"
+    quando: "a caixinha é editada para reserva pertencente a esse banco"
+    entao: "nasce uma nova versão da conta com tipo reserva e o banco ligado, com saldo próprio; versão antiga dá conflito"
+    invariantes: []
+    teste: ["tests/db/test_conta_versao.py::test_caixinha_pertence_ao_banco_e_edicao_cria_versao", "frontend/src/saldos/EditarConta.test.tsx::marca_a_caixinha_como_reserva_do_banco"]
+  - id: SPEC-004-AC-8
+    spec: SPEC-004
+    dado: "uma chave de idempotência já usada"
+    quando: "ela chega com outros dados"
+    entao: "a resposta é 422 e nada é gravado"
+    invariantes: [INV-28]
+    teste: ["tests/backend/test_idempotencia.py::test_mesma_chave_com_outros_dados_e_recusada"]
+  - id: SPEC-004-AC-9
+    spec: SPEC-004
+    dado: "um usuário com contas"
+    quando: "tenta lançar crédito ou repasse, data futura ou anterior a 2000, valor não positivo, transferência para a mesma conta ou com benefício"
+    entao: "o banco recusa com 422 e uma mensagem curta, sem gravar nada"
+    invariantes: []
+    teste: ["tests/db/test_lancamento_regras.py::test_credito_e_repasse_ainda_recusados", "tests/db/test_lancamento_regras.py::test_data_e_valor_fora_do_permitido", "tests/db/test_transferencia.py::test_transferencia_recusa_destino_invalido", "tests/backend/test_lancamentos_api.py::test_regras_viram_422_com_mensagem"]
+  - id: SPEC-004-AC-10
+    spec: SPEC-004
+    dado: "o papel da aplicação"
+    quando: "tenta inserir, alterar ou apagar direto nas tabelas de versão"
+    entao: "é negado; a escrita só acontece pelas funções do banco, que recebem o usuário da sessão"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_papeis.py::test_app_sem_update_delete", "tests/db/test_papeis.py::test_escrita_so_pelas_funcoes", "tests/backend/test_lancamentos_api.py::test_isolamento_e_csrf"]

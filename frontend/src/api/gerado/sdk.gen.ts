@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
+import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -65,12 +65,71 @@ export const contasCriar = <ThrowOnError extends boolean = false>(options: Optio
 export const contasObter = <ThrowOnError extends boolean = false>(options: Options<ContasObterData, ThrowOnError>): RequestResult<ContasObterResponses, ContasObterErrors, ThrowOnError> => (options.client ?? client).get<ContasObterResponses, ContasObterErrors, ThrowOnError>({ url: '/api/contas/{conta_id}', ...options });
 
 /**
+ * Editar
+ *
+ * Nome, tipo e conta do banco. Cria nova versão; a anterior fica no histórico.
+ */
+export const contasEditar = <ThrowOnError extends boolean = false>(options: Options<ContasEditarData, ThrowOnError>): RequestResult<ContasEditarResponses, ContasEditarErrors, ThrowOnError> => (options.client ?? client).put<ContasEditarResponses, ContasEditarErrors, ThrowOnError>({
+    url: '/api/contas/{conta_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Registrar Snapshot
  *
  * Informa o saldo que o app do banco mostra. A divergência (R4) volta na resposta.
  */
 export const saldosRegistrarSnapshot = <ThrowOnError extends boolean = false>(options: Options<SaldosRegistrarSnapshotData, ThrowOnError>): RequestResult<SaldosRegistrarSnapshotResponses, SaldosRegistrarSnapshotErrors, ThrowOnError> => (options.client ?? client).post<SaldosRegistrarSnapshotResponses, SaldosRegistrarSnapshotErrors, ThrowOnError>({
     url: '/api/contas/{conta_id}/snapshots',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Listar
+ *
+ * Lançamentos vigentes, do mais recente para o mais antigo.
+ */
+export const lancamentosListar = <ThrowOnError extends boolean = false>(options?: Options<LancamentosListarData, ThrowOnError>): RequestResult<LancamentosListarResponses, LancamentosListarErrors, ThrowOnError> => (options?.client ?? client).get<LancamentosListarResponses, LancamentosListarErrors, ThrowOnError>({ url: '/api/lancamentos', ...options });
+
+/**
+ * Criar
+ */
+export const lancamentosCriar = <ThrowOnError extends boolean = false>(options: Options<LancamentosCriarData, ThrowOnError>): RequestResult<LancamentosCriarResponses, LancamentosCriarErrors, ThrowOnError> => (options.client ?? client).post<LancamentosCriarResponses, LancamentosCriarErrors, ThrowOnError>({
+    url: '/api/lancamentos',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Excluir
+ *
+ * Exclusão lógica: nova versão marcada como excluída; deixa de contar no saldo.
+ */
+export const lancamentosExcluir = <ThrowOnError extends boolean = false>(options: Options<LancamentosExcluirData, ThrowOnError>): RequestResult<LancamentosExcluirResponses, LancamentosExcluirErrors, ThrowOnError> => (options.client ?? client).delete<LancamentosExcluirResponses, LancamentosExcluirErrors, ThrowOnError>({ url: '/api/lancamentos/{transacao_id}', ...options });
+
+/**
+ * Obter
+ */
+export const lancamentosObter = <ThrowOnError extends boolean = false>(options: Options<LancamentosObterData, ThrowOnError>): RequestResult<LancamentosObterResponses, LancamentosObterErrors, ThrowOnError> => (options.client ?? client).get<LancamentosObterResponses, LancamentosObterErrors, ThrowOnError>({ url: '/api/lancamentos/{transacao_id}', ...options });
+
+/**
+ * Editar
+ *
+ * Cria nova versão; a anterior fica no histórico e deixa de contar (INV-09).
+ */
+export const lancamentosEditar = <ThrowOnError extends boolean = false>(options: Options<LancamentosEditarData, ThrowOnError>): RequestResult<LancamentosEditarResponses, LancamentosEditarErrors, ThrowOnError> => (options.client ?? client).put<LancamentosEditarResponses, LancamentosEditarErrors, ThrowOnError>({
+    url: '/api/lancamentos/{transacao_id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

@@ -55,8 +55,9 @@ def test_dinheiro_numeric(conn: psycopg.Connection) -> None:
     linha = conn.execute("INSERT INTO usuario (login) VALUES ('u_numeric') RETURNING user_id")
     uid = linha.fetchone()[0]  # type: ignore[index]
     soma = conn.execute(
-        "WITH t AS (INSERT INTO transacao_versao (user_id, conta_id, data_transacao, valor) "
-        "VALUES (%s, 1, DATE '2026-01-05', 0.10), (%s, 1, DATE '2026-01-05', 0.20) "
+        "WITH t AS (INSERT INTO transacao_versao (user_id, conta_id, data_transacao, valor, tipo) "
+        "VALUES (%s, 1, DATE '2026-01-05', 0.10, 'receita'), "
+        "(%s, 1, DATE '2026-01-05', 0.20, 'receita') "
         "RETURNING valor) SELECT sum(valor) FROM t",
         (uid, uid),
     ).fetchone()

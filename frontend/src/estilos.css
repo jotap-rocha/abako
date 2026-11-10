@@ -172,6 +172,17 @@ p {
   border-radius: var(--raio-pequeno);
 }
 
+.campo select {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  font: inherit;
+  color: inherit;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+}
+
+.campo select:focus-visible,
 .campo input:focus-visible {
   border-color: var(--foco);
   outline-offset: 0;
