@@ -197,6 +197,43 @@ criterios:
     entao: "o saldo da API aparece na lista e continua depois de recarregar, Alertas não mostra divergência e Sair volta ao login"
     invariantes: []
     teste: ["tests/e2e/test_saldos.py::test_login_e_saldos"]
+  - id: SPEC-012-AC-7
+    spec: SPEC-012
+    dado: "o formulário de lançamento aberto"
+    quando: "o usuário troca o tipo (despesa, receita, transferência, investimento, rendimento)"
+    entao: "os campos mudam por tipo (destino só em transferência e investimento; bruto e imposto no lugar de valor em rendimento); crédito e repasse aparecem como em breve e não enviam nada"
+    invariantes: []
+    teste: ["frontend/src/lancamento/Formulario.test.tsx::campos_por_tipo"]
+  - id: SPEC-012-AC-8
+    spec: SPEC-012
+    dado: "o servidor recusa um lançamento por regra (422), conflito de versão (409) ou falha de rede"
+    quando: "o usuário envia o formulário"
+    entao: "a tela mostra a causa em linguagem direta, sem repetir o envio sozinha, e mantém o que foi digitado"
+    invariantes: [INV-29]
+    teste: ["frontend/src/lancamento/Erros.test.tsx::erro_direto"]
+  - id: SPEC-012-AC-9
+    spec: SPEC-012
+    dado: "o servidor de verdade no tst, um usuário de teste e uma conta com saldo inicial"
+    quando: "no navegador, o usuário lança uma despesa e depois a exclui"
+    entao: "o saldo da lista de contas muda pelo valor da API e volta ao original depois da exclusão"
+    invariantes: [INV-03]
+    teste: ["tests/e2e/test_lancamento.py::test_lancar_e_ver_saldo"]
+  - id: SPEC-012-AC-10
+    spec: SPEC-012
+    dado: "um envio que falhou por rede e o formulário ainda aberto"
+    quando: "o usuário envia de novo"
+    entao: "o segundo envio leva a mesma chave de idempotência do primeiro; depois de um sucesso, o próximo lançamento usa chave nova"
+    invariantes: [INV-28]
+    teste: ["frontend/src/lancamento/Formulario.test.tsx::mesma_chave_no_retry"]
+  - id: SPEC-012-AC-11
+    spec: SPEC-012
+    dado: "a lista de lançamentos vigentes"
+    quando: "o usuário edita ou exclui um lançamento"
+    entao: "a edição e a exclusão levam a versão que o usuário viu ao abrir (mesmo se a lista for atualizada depois); versão desatualizada (409) é explicada sem sobrescrever; a lista é buscada de novo no servidor"
+    invariantes: [INV-29]
+    teste:
+      - "frontend/src/lancamento/Lancamentos.test.tsx::edita_e_exclui_com_versao"
+      - "frontend/src/lancamento/Lancamentos.test.tsx::edicao_usa_a_versao_que_o_usuario_viu"
   - id: SPEC-003-AC-1
     spec: SPEC-003
     dado: "uma conta com snapshot e transações vigentes posteriores (F-SALDO-01), versões editadas e excluídas (F-SALDO-02)"
