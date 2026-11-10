@@ -17,7 +17,10 @@ Finanças pessoais de um único usuário (modelo já preparado com `user_id` par
 | Snapshot de saldo | Saldo informado pelo usuário (o que o app do banco mostra), checkpoint de conferência | foto do extrato | Correção do saldo |
 | Saldo derivado | Último snapshot + transações válidas posteriores | saldo calculado | Saldo digitado |
 | Divergência | Derivado ≠ snapshot; sinalizada (R4), nunca corrigida sozinha | | Erro corrigido automaticamente |
-| Conta | Onde o dinheiro mora: corrente, reserva, investimento, benefício; cartão é conta de **dívida** | | Linha de crédito |
+| Conta | Onde o dinheiro mora: corrente, reserva, investimento, benefício; cartão é conta de **dívida** (SPEC-005). Editar conta cria nova versão | | Linha de crédito |
+| Conta do banco (conta-mãe) | Conta corrente a que uma reserva ou investimento pertence; a filha tem saldo próprio, separado da corrente | | Saldo somado |
+| Caixinha / cofre | Reserva que pertence a um banco (cada banco usa um nome); guardar nela é uma transferência, não gasto | | Investimento, parte da conta corrente |
+| Lançamento | Um registro do ledger por tipo (ADR 011/042): o valor é digitado positivo e o tipo dá o sinal; transferência e investimento têm duas pernas | transação | |
 | Linha de crédito | Entidade que detém o limite; vários cartões a compartilham | teto | Cartão |
 | Limite usado | Soma das dívidas dos cartões da linha, incl. parcelas futuras e terceiros; compra consome o valor total | | Soma das parcelas do mês |
 | Competência | Mês da fatura a que a parcela pertence | | Data da compra |

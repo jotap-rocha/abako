@@ -30,31 +30,66 @@ def test_app_sem_update_delete(esquema: str, url_app: str) -> None:
             ).fetchall()
         ]
         assert tabelas == ["conta_versao", "transacao_versao"]
+        # ADR 042: nas tabelas de versão a aplicação só lê; a escrita passa pelas funções.
         for t in tabelas:
-            for priv in ("UPDATE", "DELETE", "TRUNCATE"):
+            assert _tem_privilegio(app, t, "SELECT")
+            for priv in ("INSERT", "UPDATE", "DELETE", "TRUNCATE"):
                 assert not _tem_privilegio(app, t, priv), f"app tem {priv} em {t}"
-            assert _tem_privilegio(app, t, "INSERT")
 
-        # Comportamento real: INSERT funciona; UPDATE/DELETE são negados.
+        # Comportamento real: INSERT/UPDATE/DELETE diretos são negados; a função grava.
         linha = app.execute(
             "INSERT INTO usuario (login) VALUES ('u_papel_app') RETURNING user_id"
         ).fetchone()
         assert linha is not None
         uid = linha[0]
-        app.execute(
-            "INSERT INTO conta_versao (user_id, conta_id, nome) VALUES (%s, 910, 'c')", (uid,)
+        diretos = (
+            "INSERT INTO conta_versao (user_id, conta_id, nome) VALUES (%s, 910, 'c')",
+            "INSERT INTO transacao_versao (user_id, conta_id, data_transacao, valor, tipo) "
+            "VALUES (%s, 910, DATE '2026-01-05', 5.00, 'receita')",
         )
-        app.execute(
-            "INSERT INTO transacao_versao (user_id, conta_id, data_transacao, valor) "
-            "VALUES (%s, 910, DATE '2026-01-05', 5.00)",
-            (uid,),
-        )
+        for comando in diretos:
+            with pytest.raises(psycopg.errors.InsufficientPrivilege):
+                app.execute(comando, (uid,))
+            app.rollback()
+            linha = app.execute(
+                "INSERT INTO usuario (login) VALUES ('u_papel_app') RETURNING user_id"
+            ).fetchone()
+            assert linha is not None
+            uid = linha[0]
+        conta = app.execute(
+            "SELECT conta_id FROM conta_gravar(%s, NULL, NULL, 'c', 'corrente', NULL)", (uid,)
+        ).fetchone()
+        assert conta is not None
         app.rollback()
         for t in tabelas:
             for comando in (f"UPDATE {t} SET vigente = false", f"DELETE FROM {t}"):
                 with pytest.raises(psycopg.errors.InsufficientPrivilege):
                     app.execute(comando)
                 app.rollback()
+
+
+FUNCOES_DE_ESCRITA = (
+    "conta_gravar(bigint, bigint, integer, text, text, bigint)",
+    "lancamento_gravar(bigint, bigint, integer, text, date, numeric, bigint, bigint, numeric, "
+    "numeric, text, text, text)",
+    "lancamento_excluir(bigint, bigint, integer)",
+)
+
+
+def test_escrita_so_pelas_funcoes(esquema: str, url_app: str, url_pipeline: str) -> None:
+    """ADR 042: o app executa as funções de escrita; o pipeline não executa nenhuma."""
+    with psycopg.connect(url_app) as app, psycopg.connect(url_pipeline) as pipe:
+        for funcao in FUNCOES_DE_ESCRITA:
+            linha = app.execute("SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,))
+            assert linha.fetchone() == (True,), funcao
+            linha = pipe.execute("SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,))
+            assert linha.fetchone() == (False,), funcao
+        for auxiliar in ("abako_erro(text, text)",):
+            linha = app.execute("SELECT has_function_privilege(%s, 'EXECUTE')", (auxiliar,))
+            assert linha.fetchone() == (False,), auxiliar
+        for sequencia in ("conta_id_seq", "transacao_id_seq"):
+            linha = app.execute("SELECT has_sequence_privilege(%s, 'USAGE')", (sequencia,))
+            assert linha.fetchone() == (False,), sequencia
 
 
 def test_pipeline_somente_leitura(esquema: str, url_pipeline: str) -> None:

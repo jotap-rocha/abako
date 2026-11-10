@@ -62,6 +62,8 @@ def test_contrato_so_tem_rotas_da_api_e_nao_a_da_spa(cliente_spa: TestClient) ->
         "/api/contas/{conta_id}/snapshots",
         "/api/saldos",
         "/api/r4",
+        "/api/lancamentos",
+        "/api/lancamentos/{transacao_id}",
     }
 
 

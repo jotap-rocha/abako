@@ -1,23 +1,21 @@
 import { type FormEvent, useState } from "react";
 
 import { criarConta } from "../api/contas";
+import { CamposConta, type ValoresConta } from "./CamposConta";
 
 type Props = {
+  /** Contas correntes que podem ser o banco de uma reserva/investimento. */
+  bancos: { conta_id: number; nome: string }[];
   /** Chamado depois de criar, para a lista buscar as contas de novo no servidor. */
   aoCriar: () => void;
   aoSessaoExpirar: () => void;
 };
 
-const ERROS = {
-  nome_repetido: "Já existe uma conta com esse nome. Escolha outro.",
-  invalido: "O nome não pode ficar vazio (só espaços) nem passar de 80 caracteres.",
-  erro: "Não foi possível falar com o servidor. Tente de novo.",
-} as const;
+const VAZIO: ValoresConta = { nome: "", tipo: "corrente", contaMaeId: null };
 
-/** Cadastro de conta: só nome e se é benefício. Nenhum dado bancário é pedido (ADR 010). */
-export function NovaConta({ aoCriar, aoSessaoExpirar }: Props) {
-  const [nome, setNome] = useState("");
-  const [beneficio, setBeneficio] = useState(false);
+/** Cadastro de conta: nome, tipo e banco. Nenhum dado bancário é pedido (ADR 010). */
+export function NovaConta({ bancos, aoCriar, aoSessaoExpirar }: Props) {
+  const [valores, setValores] = useState<ValoresConta>(VAZIO);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [criada, setCriada] = useState<string | null>(null);
@@ -27,49 +25,29 @@ export function NovaConta({ aoCriar, aoSessaoExpirar }: Props) {
     setErro(null);
     setCriada(null);
     setEnviando(true);
-    const resposta = await criarConta(nome, beneficio);
+    const resposta = await criarConta(valores.nome, valores.tipo, valores.contaMaeId);
     setEnviando(false);
     if (resposta.tipo === "sessao_expirada") {
       aoSessaoExpirar();
     } else if (resposta.tipo === "ok") {
       setCriada(resposta.conta.nome);
-      setNome("");
-      setBeneficio(false);
+      setValores(VAZIO);
       aoCriar();
+    } else if (resposta.tipo === "nome_repetido") {
+      setErro("Já existe uma conta com esse nome. Escolha outro.");
+    } else if (resposta.tipo === "invalido") {
+      setErro(
+        resposta.mensagem ??
+          "O nome não pode ficar vazio (só espaços) nem passar de 80 caracteres.",
+      );
     } else {
-      setErro(ERROS[resposta.tipo]);
+      setErro("Não foi possível falar com o servidor. Tente de novo.");
     }
   }
 
   return (
     <form onSubmit={enviar} className="formulario" aria-label="Nova conta">
-      <div className="campo">
-        <label htmlFor="nova-conta-nome">Nome da conta</label>
-        <input
-          id="nova-conta-nome"
-          autoComplete="off"
-          maxLength={80}
-          placeholder="Ex.: Conta principal"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          required
-        />
-        <span className="ajuda">Um apelido seu. Não informe número de conta nem senha.</span>
-      </div>
-      <div className="campo-marcar">
-        <input
-          id="nova-conta-beneficio"
-          type="checkbox"
-          checked={beneficio}
-          onChange={(e) => setBeneficio(e.target.checked)}
-        />
-        <label htmlFor="nova-conta-beneficio">
-          É conta de benefício
-          <span className="ajuda">
-            Vale-refeição ou vale-alimentação. O que sai dela não conta no gasto real.
-          </span>
-        </label>
-      </div>
+      <CamposConta id="nova-conta" valores={valores} aoMudar={setValores} bancos={bancos} />
       {erro !== null && (
         <p role="alert" className="erro-form">
           {erro}

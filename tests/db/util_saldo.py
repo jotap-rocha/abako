@@ -75,9 +75,20 @@ def transacao(
         transacao_id = int(linha[0])
     conn.execute(
         "INSERT INTO transacao_versao "
-        "(user_id, transacao_id, versao, vigente, excluida, conta_id, data_transacao, valor) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-        (user_id, transacao_id, versao, vigente, excluida, conta_id, dia(data), dec(valor)),
+        "(user_id, transacao_id, versao, vigente, excluida, conta_id, data_transacao, valor, "
+        " tipo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        (
+            user_id,
+            transacao_id,
+            versao,
+            vigente,
+            excluida,
+            conta_id,
+            dia(data),
+            dec(valor),
+            # Cenário de saldo só precisa do sinal: saída = débito, entrada = receita.
+            "debito" if dec(valor) < 0 else "receita",
+        ),
     )
     return transacao_id
 

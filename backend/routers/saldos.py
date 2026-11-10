@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 from backend.deps import Conexao, Sessao, SessaoEscrita
 from backend.dinheiro import texto_dinheiro
 from backend.services import saldos as svc_saldos
+from backend.tipos import TipoConta
 
 router = APIRouter(tags=["saldos"])
 
@@ -30,6 +31,9 @@ class SaldoSaida(BaseModel):
     saldo: str
     snapshot_data: date | None
     snapshot_valor: str | None
+    tipo: TipoConta
+    # Reserva/investimento que pertence a uma conta corrente (caixinha do banco).
+    conta_mae_id: int | None
 
 
 class SnapshotEntrada(BaseModel):
@@ -75,6 +79,8 @@ async def listar(
             saldo=texto_dinheiro(s.saldo),
             snapshot_data=s.snapshot_data,
             snapshot_valor=None if s.snapshot_valor is None else texto_dinheiro(s.snapshot_valor),
+            tipo=s.tipo,
+            conta_mae_id=s.conta_mae_id,
         )
         for s in saldos
     ]

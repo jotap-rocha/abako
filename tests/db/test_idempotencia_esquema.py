@@ -8,8 +8,9 @@ import pytest
 pytestmark = pytest.mark.banco
 
 INSERT = (
-    "INSERT INTO transacao_versao (user_id, conta_id, data_transacao, valor, chave_idempotencia) "
-    "VALUES (%s, 1, DATE '2026-01-05', 10.00, %s)"
+    "INSERT INTO transacao_versao "
+    "(user_id, conta_id, data_transacao, valor, chave_idempotencia, tipo) "
+    "VALUES (%s, 1, DATE '2026-01-05', 10.00, %s, 'receita')"
 )
 
 

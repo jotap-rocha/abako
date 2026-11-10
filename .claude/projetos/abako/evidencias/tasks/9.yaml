@@ -1,0 +1,84 @@
+task_id: "9"
+criteria:
+  SPEC-004-AC-1:
+    id: SPEC-004-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_transferencia.py::test_duas_pernas_soma_zero tests/db/test_transferencia.py::test_perna_solta_e_barrada_pelo_esquema"
+    test_paths:
+      - "tests/db/test_transferencia.py::test_duas_pernas_soma_zero"
+      - "tests/db/test_transferencia.py::test_perna_solta_e_barrada_pelo_esquema"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-1.log"
+  SPEC-004-AC-10:
+    id: SPEC-004-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_papeis.py::test_app_sem_update_delete tests/db/test_papeis.py::test_escrita_so_pelas_funcoes tests/backend/test_lancamentos_api.py::test_isolamento_e_csrf"
+    test_paths:
+      - "tests/db/test_papeis.py::test_app_sem_update_delete"
+      - "tests/db/test_papeis.py::test_escrita_so_pelas_funcoes"
+      - "tests/backend/test_lancamentos_api.py::test_isolamento_e_csrf"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-10.log"
+  SPEC-004-AC-2:
+    id: SPEC-004-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_versionamento.py::test_edicao_cria_versao tests/db/test_versionamento.py::test_editar_transferencia_versiona_as_duas_pernas"
+    test_paths:
+      - "tests/db/test_versionamento.py::test_edicao_cria_versao"
+      - "tests/db/test_versionamento.py::test_editar_transferencia_versiona_as_duas_pernas"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-2.log"
+  SPEC-004-AC-3:
+    id: SPEC-004-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_idempotencia.py::test_mesma_chave_nao_duplica tests/db/test_lancamento_regras.py::test_mesma_chave_em_paralelo_devolve_o_primeiro"
+    test_paths:
+      - "tests/backend/test_idempotencia.py::test_mesma_chave_nao_duplica"
+      - "tests/db/test_lancamento_regras.py::test_mesma_chave_em_paralelo_devolve_o_primeiro"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-3.log"
+  SPEC-004-AC-4:
+    id: SPEC-004-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_conflito.py::test_versao_desatualizada tests/db/test_versionamento.py::test_duas_edicoes_simultaneas_so_uma_passa tests/db/test_conta_versao.py::test_duas_edicoes_de_conta_simultaneas"
+    test_paths:
+      - "tests/backend/test_conflito.py::test_versao_desatualizada"
+      - "tests/db/test_versionamento.py::test_duas_edicoes_simultaneas_so_uma_passa"
+      - "tests/db/test_conta_versao.py::test_duas_edicoes_de_conta_simultaneas"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-4.log"
+  SPEC-004-AC-5:
+    id: SPEC-004-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_exclusao.py::test_exclusao_logica tests/db/test_exclusao.py::test_excluido_nao_volta_nem_e_editado"
+    test_paths:
+      - "tests/db/test_exclusao.py::test_exclusao_logica"
+      - "tests/db/test_exclusao.py::test_excluido_nao_volta_nem_e_editado"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-5.log"
+  SPEC-004-AC-6:
+    id: SPEC-004-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_rendimento.py::test_liquido_creditado"
+    test_paths:
+      - "tests/db/test_rendimento.py::test_liquido_creditado"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-6.log"
+  SPEC-004-AC-7:
+    id: SPEC-004-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_conta_versao.py::test_caixinha_pertence_ao_banco_e_edicao_cria_versao && npm --prefix frontend test -- src/saldos/EditarConta.test.tsx -t marca_a_caixinha_como_reserva_do_banco"
+    test_paths:
+      - "tests/db/test_conta_versao.py::test_caixinha_pertence_ao_banco_e_edicao_cria_versao"
+      - "frontend/src/saldos/EditarConta.test.tsx::marca_a_caixinha_como_reserva_do_banco"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-7.log"
+  SPEC-004-AC-8:
+    id: SPEC-004-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_idempotencia.py::test_mesma_chave_com_outros_dados_e_recusada"
+    test_paths:
+      - "tests/backend/test_idempotencia.py::test_mesma_chave_com_outros_dados_e_recusada"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-8.log"
+  SPEC-004-AC-9:
+    id: SPEC-004-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_lancamento_regras.py::test_credito_e_repasse_ainda_recusados tests/db/test_lancamento_regras.py::test_data_e_valor_fora_do_permitido tests/db/test_transferencia.py::test_transferencia_recusa_destino_invalido tests/backend/test_lancamentos_api.py::test_regras_viram_422_com_mensagem"
+    test_paths:
+      - "tests/db/test_lancamento_regras.py::test_credito_e_repasse_ainda_recusados"
+      - "tests/db/test_lancamento_regras.py::test_data_e_valor_fora_do_permitido"
+      - "tests/db/test_transferencia.py::test_transferencia_recusa_destino_invalido"
+      - "tests/backend/test_lancamentos_api.py::test_regras_viram_422_com_mensagem"
+    exit_code: 0
+    log_path: "logs/9/SPEC-004-AC-9.log"

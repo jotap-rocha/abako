@@ -18,6 +18,8 @@ const CONTA = {
   conta_id: 3,
   nome: "Conta principal",
   conta_beneficio: false,
+  tipo: "corrente" as const,
+  conta_mae_id: null,
   saldo: "1000.00",
   snapshot_data: "2026-11-01",
   snapshot_valor: "1000.00",
