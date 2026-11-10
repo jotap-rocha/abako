@@ -1,0 +1,38 @@
+task_id: "10"
+criteria:
+  SPEC-012-AC-10:
+    id: SPEC-012-AC-10
+    command: "npm --prefix frontend test -- src/lancamento/Formulario.test.tsx -t \"mesma_chave_no_retry\""
+    test_paths:
+      - "frontend/src/lancamento/Formulario.test.tsx::mesma_chave_no_retry"
+    exit_code: 0
+    log_path: "logs/10/SPEC-012-AC-10.log"
+  SPEC-012-AC-11:
+    id: SPEC-012-AC-11
+    command: "npm --prefix frontend test -- src/lancamento/Lancamentos.test.tsx -t \"edita_e_exclui_com_versao|edicao_usa_a_versao\""
+    test_paths:
+      - "frontend/src/lancamento/Lancamentos.test.tsx::edita_e_exclui_com_versao"
+      - "frontend/src/lancamento/Lancamentos.test.tsx::edicao_usa_a_versao_que_o_usuario_viu"
+    exit_code: 0
+    log_path: "logs/10/SPEC-012-AC-11.log"
+  SPEC-012-AC-7:
+    id: SPEC-012-AC-7
+    command: "npm --prefix frontend test -- src/lancamento/Formulario.test.tsx -t \"campos_por_tipo\""
+    test_paths:
+      - "frontend/src/lancamento/Formulario.test.tsx::campos_por_tipo"
+    exit_code: 0
+    log_path: "logs/10/SPEC-012-AC-7.log"
+  SPEC-012-AC-8:
+    id: SPEC-012-AC-8
+    command: "npm --prefix frontend test -- src/lancamento/Erros.test.tsx -t \"erro_direto\""
+    test_paths:
+      - "frontend/src/lancamento/Erros.test.tsx::erro_direto"
+    exit_code: 0
+    log_path: "logs/10/SPEC-012-AC-8.log"
+  SPEC-012-AC-9:
+    id: SPEC-012-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/e2e/test_lancamento.py::test_lancar_e_ver_saldo"
+    test_paths:
+      - "tests/e2e/test_lancamento.py::test_lancar_e_ver_saldo"
+    exit_code: 0
+    log_path: "logs/10/SPEC-012-AC-9.log"

@@ -4,7 +4,7 @@ import { Route, Routes } from "react-router";
 import { recuperarSessao, sair } from "./api/sessao";
 import { Casca } from "./layout/Casca";
 import { Login } from "./login/Login";
-import { EmBreve } from "./paginas/EmBreve";
+import { Lancamentos } from "./lancamento/Lancamentos";
 import { Inicio } from "./paginas/Inicio";
 import { NaoEncontrada } from "./paginas/NaoEncontrada";
 import { limparCachesDoApp } from "./pwa/cache";
@@ -56,16 +56,7 @@ export function App() {
       <Route element={<Casca aoSair={() => void aoSair()} aoSessaoExpirar={aoSessaoExpirar} />}>
         <Route index element={<Inicio />} />
         <Route path="contas" element={<Saldos />} />
-        <Route
-          path="lancamentos"
-          element={
-            <EmBreve
-              titulo="Lançamentos"
-              descricao="Receitas, despesas, transferências e mais."
-              texto="O formulário de lançamento chega junto com a regra de lançamentos."
-            />
-          }
-        />
+        <Route path="lancamentos" element={<Lancamentos />} />
         <Route path="alertas" element={<Alertas />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Route>
