@@ -1058,6 +1058,83 @@
         "title": "LoginSaida",
         "type": "object"
       },
+      "ParametroEntrada": {
+        "additionalProperties": false,
+        "properties": {
+          "data_alvo": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Alvo"
+          },
+          "gasto_essencial": {
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+            "title": "Gasto Essencial",
+            "type": "string"
+          },
+          "meses": {
+            "maximum": 2147483647.0,
+            "minimum": -2147483648.0,
+            "title": "Meses",
+            "type": "integer"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "meses",
+          "gasto_essencial",
+          "vigente_desde"
+        ],
+        "title": "ParametroEntrada",
+        "type": "object"
+      },
+      "ParametroSaida": {
+        "properties": {
+          "data_alvo": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Alvo"
+          },
+          "gasto_essencial": {
+            "title": "Gasto Essencial",
+            "type": "string"
+          },
+          "meses": {
+            "title": "Meses",
+            "type": "integer"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "vigente_desde",
+          "meses",
+          "gasto_essencial",
+          "data_alvo"
+        ],
+        "title": "ParametroSaida",
+        "type": "object"
+      },
       "PessoaEdicao": {
         "properties": {
           "nome": {
@@ -1221,6 +1298,146 @@
           "conta_mae_id"
         ],
         "title": "SaldoSaida",
+        "type": "object"
+      },
+      "SituacaoSaida": {
+        "properties": {
+          "alvo_vencida": {
+            "title": "Alvo Vencida",
+            "type": "boolean"
+          },
+          "aporte_mensal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aporte Mensal"
+          },
+          "cobertura_meses": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cobertura Meses"
+          },
+          "config_pendente": {
+            "title": "Config Pendente",
+            "type": "boolean"
+          },
+          "contas_reserva": {
+            "title": "Contas Reserva",
+            "type": "integer"
+          },
+          "data_alvo": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Alvo"
+          },
+          "falta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Falta"
+          },
+          "gasto_essencial": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gasto Essencial"
+          },
+          "imposto_acumulado": {
+            "title": "Imposto Acumulado",
+            "type": "string"
+          },
+          "meses_ate_alvo": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meses Ate Alvo"
+          },
+          "meses_meta": {
+            "title": "Meses Meta",
+            "type": "integer"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meta"
+          },
+          "nivel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel"
+          },
+          "saldo_bruto": {
+            "title": "Saldo Bruto",
+            "type": "string"
+          },
+          "saldo_liquido": {
+            "title": "Saldo Liquido",
+            "type": "string"
+          }
+        },
+        "required": [
+          "contas_reserva",
+          "saldo_liquido",
+          "imposto_acumulado",
+          "saldo_bruto",
+          "meses_meta",
+          "gasto_essencial",
+          "meta",
+          "nivel",
+          "falta",
+          "cobertura_meses",
+          "data_alvo",
+          "meses_ate_alvo",
+          "alvo_vencida",
+          "aporte_mensal",
+          "config_pendente"
+        ],
+        "title": "SituacaoSaida",
         "type": "object"
       },
       "SnapshotEntrada": {
@@ -2977,6 +3194,112 @@
         "summary": "Receita",
         "tags": [
           "gasto_real"
+        ]
+      }
+    },
+    "/api/reserva": {
+      "get": {
+        "description": "Situação da reserva em `hoje` (data civil de São Paulo), derivada a cada consulta.",
+        "operationId": "reserva_situacao",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SituacaoSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Situacao",
+        "tags": [
+          "reserva"
+        ]
+      }
+    },
+    "/api/reserva/parametros": {
+      "get": {
+        "description": "Um parâmetro por `vigente_desde` (o último gravado), do mais antigo ao mais novo.",
+        "operationId": "reserva_listar_parametros",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ParametroSaida"
+                  },
+                  "title": "Response Reserva Listar Parametros",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Listar Parametros",
+        "tags": [
+          "reserva"
+        ]
+      },
+      "put": {
+        "description": "Grava os três valores juntos a partir de `vigente_desde`; repetir é idempotente.",
+        "operationId": "reserva_gravar_parametros",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParametroEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParametroSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Gravar Parametros",
+        "tags": [
+          "reserva"
         ]
       }
     },

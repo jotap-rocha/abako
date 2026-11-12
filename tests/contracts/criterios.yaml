@@ -661,3 +661,80 @@ criterios:
     entao: "a API usa o user_id da sessão, devolve dinheiro em texto, recusa mês inválido com 422 e não registra valores em log"
     invariantes: [INV-13, INV-14]
     teste: ["tests/backend/test_gasto_real_api.py::test_gasto_real_do_mes_f_gasto_02", "tests/backend/test_gasto_real_api.py::test_gasto_por_conta_f_gasto_02", "tests/backend/test_gasto_real_api.py::test_receita_de_caixa_e_de_beneficio_f_gasto_02", "tests/backend/test_gasto_real_api.py::test_estorno_tira_a_compra_das_competencias_originais_f_gasto_03", "tests/backend/test_gasto_real_api.py::test_mes_padrao_e_o_corrente_injetado", "tests/backend/test_gasto_real_api.py::test_mes_padrao_usa_o_fuso_de_sao_paulo_na_virada", "tests/backend/test_gasto_real_api.py::test_conta_de_beneficio_vale_pelo_tipo_vigente_na_consulta", "tests/backend/test_gasto_real_api.py::test_mes_invalido_e_422_do_banco", "tests/backend/test_gasto_real_api.py::test_isolamento_entre_usuarios", "tests/backend/test_gasto_real_api.py::test_sem_sessao_e_401", "tests/backend/test_gasto_real_api.py::test_valores_fora_do_log"]
+  - id: SPEC-009-AC-1
+    spec: SPEC-009
+    dado: "o saldo líquido da reserva e o gasto essencial informado (F-RES-02: 9000,00 e 3000,00; F-RES-06: casos não exatos)"
+    quando: "a cobertura em meses é consultada"
+    entao: "cobertura = saldo líquido ÷ gasto essencial, com duas casas e arredondamento meio-para-cima (3,00; 0,33; 0,67; empate 0,005 sobe para 0,01); saldo negativo também meio-para-cima (−0,005 dá 0,00; −0,015 dá −0,01; −0,1667 dá −0,17)"
+    invariantes: [INV-12]
+    fixtures: [F-RES-02, F-RES-06]
+    teste: ["tests/db/test_reserva.py::test_cobertura", "tests/db/test_reserva_propriedades.py::test_cobertura_meio_para_cima_em_inteiros", "tests/db/test_reserva.py::test_aporte_e_rendimento_nao_sao_receita_nem_despesa"]
+  - id: SPEC-009-AC-2
+    spec: SPEC-009
+    dado: "meta de 12000,00 (F-RES-01) e saldos nos cortes, um centavo de cada lado"
+    quando: "o nível da reserva é consultado"
+    entao: "crítica abaixo de 50% (5999,99), atenção de 50% (6000,00) a menos de 100% (11999,99), saudável a partir de 100% (12000,00); a falta é max(meta − saldo, 0)"
+    invariantes: [INV-17]
+    fixtures: [F-RES-01, F-RES-08]
+    teste: ["tests/db/test_reserva.py::test_cortes_nivel", "tests/db/test_reserva_propriedades.py::test_nivel_muda_exatamente_em_50_e_100_por_cento", "tests/db/test_reserva_propriedades.py::test_nivel_nas_bordas_exatas"]
+  - id: SPEC-009-AC-3
+    spec: SPEC-009
+    dado: "uma data-alvo e a falta da reserva (F-RES-01 exato; F-RES-05: divisão com resto, mesmo mês, data passada, meta atingida, virada de ano)"
+    quando: "o aporte mensal necessário é consultado, com a data de hoje informada"
+    entao: "aporte = falta ÷ meses civis até a data-alvo (mínimo 1), arredondado para cima em centavos; meta atingida dá 0,00; data-alvo passada não dá aporte (só a falta); meta atingida com data-alvo vencida dá 0,00 sem meses até o alvo; sem data-alvo não há aporte; aporte × meses cobre a falta e um centavo a menos não cobre"
+    invariantes: [INV-12]
+    fixtures: [F-RES-01, F-RES-05]
+    teste: ["tests/db/test_reserva.py::test_aporte_mensal", "tests/db/test_reserva_propriedades.py::test_aporte_cobre_a_falta_e_um_centavo_a_menos_nao", "tests/db/test_reserva_propriedades.py::test_aporte_zero_quando_nao_ha_falta", "tests/db/test_reserva_propriedades.py::test_aporte_com_meses_menor_que_um_vale_um"]
+  - id: SPEC-009-AC-4
+    spec: SPEC-009
+    dado: "uma reserva com saldo inicial e dois rendimentos com imposto retido, um rendimento excluído e um rendimento em conta de investimento (F-RES-03)"
+    quando: "a situação da reserva é consultada"
+    entao: "líquido 5139,50, imposto acumulado 40,50 (só rendimentos vigentes, não excluídos e em conta de reserva) e bruto = líquido + imposto = 5180,00; a cobertura (3,43) e o nível usam o líquido, não o bruto (3,45)"
+    invariantes: [INV-37, INV-36, INV-12]
+    fixtures: [F-RES-03, F-REND-01]
+    teste: ["tests/db/test_reserva.py::test_bruto_liquido_f_res_03", "tests/db/test_reserva.py::test_imposto_de_rendimento_futuro_nao_entra"]
+  - id: SPEC-009-AC-5
+    spec: SPEC-009
+    dado: "duas contas de reserva (caixinhas) e uma conta de investimento (F-RES-04)"
+    quando: "a situação da reserva é consultada"
+    entao: "a reserva é a soma das contas de tipo reserva (6577,50; imposto 22,50; bruto 6600,00), o nível e a cobertura valem sobre a soma e o investimento fica fora; conta de reserva que muda de tipo sai da soma, com o imposto dela (vale o tipo vigente na consulta)"
+    invariantes: [INV-12, INV-37]
+    fixtures: [F-RES-04]
+    teste: ["tests/db/test_reserva.py::test_soma_de_reservas_f_res_04", "tests/db/test_reserva.py::test_conta_que_deixa_de_ser_reserva_sai_da_soma_com_o_imposto", "tests/db/test_reserva.py::test_usuario_sem_reserva_tem_saldo_zero"]
+  - id: SPEC-009-AC-6
+    spec: SPEC-009
+    dado: "parâmetros (N, gasto essencial, data-alvo) gravados com vigência, inclusive futura e regravada na mesma vigência (F-RES-08)"
+    quando: "a situação é consultada em datas antes, entre e depois das vigências e a gravação recebe valores inválidos"
+    entao: "vale o registro de maior vigente_desde não posterior a hoje e, no mesmo desde, o último gravado; o histórico é só acrescido; repetir é idempotente; N fora de 1..120, gasto negativo ou com mais de 2 casas, datas anteriores a 2000 e hoje ausente são recusados (AB422) e usuário inexistente (AB404)"
+    invariantes: [INV-17]
+    fixtures: [F-RES-08]
+    teste: ["tests/db/test_reserva.py::test_parametros_com_vigencia_f_res_08", "tests/db/test_reserva.py::test_gravar_parametro_e_idempotente_e_futuro_vale_so_depois", "tests/db/test_reserva.py::test_validacao_dos_parametros"]
+  - id: SPEC-009-AC-7
+    spec: SPEC-009
+    dado: "gasto essencial nunca informado, ou informado como zero (F-RES-07)"
+    quando: "a situação da reserva é consultada"
+    entao: "config_pendente é verdadeiro e cobertura, meta, nível, falta e aporte são nulos (não é alerta R1); o saldo, o imposto e o bruto continuam devolvidos e N vale 3 por padrão"
+    invariantes: [INV-12]
+    fixtures: [F-RES-07]
+    teste: ["tests/db/test_reserva.py::test_config_ausente_f_res_07"]
+  - id: SPEC-009-AC-8
+    spec: SPEC-009
+    dado: "dois usuários, um deles com reserva e parâmetros, e o outro consulta"
+    quando: "a situação e a view de parâmetros são lidas com o user_id do outro usuário"
+    entao: "nada do dono aparece (saldo, imposto e bruto zerados, parâmetros ausentes, configuração pendente); o user_id vem da sessão"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_reserva.py::test_isolamento_por_user_id"]
+  - id: SPEC-009-AC-9
+    spec: SPEC-009
+    dado: "os papéis app e pipeline, a migração 0010 e o SQL das funções"
+    quando: "as funções são chamadas, a migração é revertida e o SQL é inspecionado"
+    entao: "a escrita é só pela função SECURITY DEFINER com search_path fixo (sem INSERT/UPDATE/DELETE direto); as leituras são INVOKER; só o app executa e o pipeline só lê a tabela; mensagens de erro literais; o downgrade com parâmetros é recusado e, sem dados, remove tudo"
+    invariantes: [INV-13, INV-14]
+    teste: ["tests/db/test_papeis.py::test_reserva_papeis", "tests/db/test_reserva_mensagens.py::test_mensagens_de_erro_da_0010_sao_literais", "tests/db/test_reserva_mensagens.py::test_escrita_e_definer_com_search_path_fixo_e_leitura_e_invoker", "tests/db/test_migracao_0010.py::test_downgrade_com_parametros_e_recusado", "tests/db/test_migracao_0010.py::test_downgrade_sem_dados_remove_tudo_e_sobe_de_novo", "tests/db/test_migracao_0010.py::test_leitura_funciona_depois_de_subir_de_novo"]
+  - id: SPEC-009-AC-10
+    spec: SPEC-009
+    dado: "a API da reserva (situação e parâmetros)"
+    quando: "o front pede a situação (hoje = data civil em America/Sao_Paulo) e grava parâmetros"
+    entao: "a API usa o user_id da sessão, devolve dinheiro em texto, traduz AB422/AB404 em 422/404, exige CSRF nas escritas e não registra valores em log"
+    invariantes: [INV-13, INV-14]
+    teste: ["tests/backend/test_reserva_api.py::test_nivel_nos_cortes_de_50_e_100_por_cento_f_res_01", "tests/backend/test_reserva_api.py::test_cobertura_meio_para_cima_f_res_06", "tests/backend/test_reserva_api.py::test_bruto_vs_liquido_f_res_03", "tests/backend/test_reserva_api.py::test_soma_de_duas_reservas_f_res_04", "tests/backend/test_reserva_api.py::test_aporte_nao_exato_e_casos_de_borda_f_res_05", "tests/backend/test_reserva_api.py::test_sem_parametro_e_config_pendente_f_res_07", "tests/backend/test_reserva_api.py::test_vigencia_dos_parametros_f_res_08", "tests/backend/test_reserva_api.py::test_hoje_usa_o_fuso_de_sao_paulo", "tests/backend/test_reserva_api.py::test_limites_de_negocio_sao_ab422_do_banco", "tests/backend/test_reserva_api.py::test_escrita_sem_csrf_e_403", "tests/backend/test_reserva_api.py::test_sem_sessao_e_401", "tests/backend/test_reserva_api.py::test_isolamento_entre_usuarios", "tests/backend/test_reserva_api.py::test_valores_fora_do_log"]

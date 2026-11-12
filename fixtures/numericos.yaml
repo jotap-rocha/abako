@@ -251,6 +251,134 @@ fixtures:
     entrada: {saldo_reserva: "9000.00", gasto_essencial: "3000.00"}
     esperado: {cobertura_meses: "3.00", meta_meses: 3, nivel: saudavel}
 
+  # ---- SPEC-009 (ADR 047): reserva, bruto/líquido, cobertura e aporte (contas à mão) ----
+
+  - id: F-RES-03
+    invariantes: [INV-12, INV-36, INV-37]
+    descricao: >-
+      Bruto, imposto acumulado e líquido da reserva (ADR 034). Uma reserva com saldo inicial e
+      dois rendimentos; o rendimento excluído e o rendimento em conta de investimento não contam.
+    entrada:
+      hoje: "2026-04-01"
+      parametros: {desde: "2026-01-01", meses: 3, gasto_essencial: "1500.00"}
+      reserva:
+        snapshot: {data: "2026-01-01", valor: "5000.00"}
+        rendimentos:
+          - {data: "2026-02-10", bruto: "100.00", imposto: "22.50"}   # liquido 77.50
+          - {data: "2026-03-10", bruto: "80.00", imposto: "18.00"}    # liquido 62.00
+      ignorados:
+        - {conta: reserva, rendimento_excluido: {bruto: "50.00", imposto: "10.00"}}
+        - {conta: investimento, rendimento: {bruto: "200.00", imposto: "40.00"}}
+    esperado:
+      saldo_liquido: "5139.50"        # 5000.00 + 77.50 + 62.00
+      imposto_acumulado: "40.50"      # 22.50 + 18.00
+      saldo_bruto: "5180.00"          # 5139.50 + 40.50
+      meta: "4500.00"                 # 3 x 1500.00
+      nivel: saudavel
+      falta: "0.00"
+      cobertura_meses: "3.43"         # liquido: 5139.50 / 1500.00 = 3.4263..
+      cobertura_se_usasse_bruto: "3.45"   # 5180.00 / 1500.00 = 3.4533.. (errado: nao e usado)
+
+  - id: F-RES-04
+    invariantes: [INV-12, INV-37]
+    descricao: >-
+      Soma de duas reservas (caixinhas de bancos diferentes); investimento fica fora. Isoladas,
+      uma é atenção e a outra crítica; somadas, saudável.
+    entrada:
+      hoje: "2026-04-01"
+      parametros: {desde: "2026-01-01", meses: 3, gasto_essencial: "2000.00"}
+      reservas:
+        - {nome: caixinha_a, snapshot: {data: "2026-01-01", valor: "4000.00"}}
+        - nome: caixinha_b
+          snapshot: {data: "2026-01-01", valor: "2500.00"}
+          rendimentos: [{data: "2026-02-10", bruto: "100.00", imposto: "22.50"}]
+      investimento: {snapshot: {data: "2026-01-01", valor: "10000.00"}}
+    esperado:
+      saldo_liquido: "6577.50"        # 4000.00 + (2500.00 + 77.50)
+      imposto_acumulado: "22.50"
+      saldo_bruto: "6600.00"
+      meta: "6000.00"                 # 3 x 2000.00
+      nivel: saudavel                 # 6577.50 >= 6000.00 (A sozinha: atencao; B sozinha: critica)
+      falta: "0.00"
+      cobertura_meses: "3.29"         # 6577.50 / 2000.00 = 3.28875
+      contas_reserva: 2
+    troca_de_tipo:   # a caixinha B vira investimento: sai da soma, com o imposto dela (tipo VIGENTE)
+      saldo_liquido: "4000.00"
+      imposto_acumulado: "0.00"
+      saldo_bruto: "4000.00"
+      contas_reserva: 1
+
+  - id: F-RES-05
+    invariantes: [INV-12]
+    descricao: >-
+      Aporte mensal até a data-alvo: meses civis entre hoje e a data-alvo (mínimo 1), arredondado
+      para cima em centavos. Meta 12000.00 (3 x 4000.00). O caso exato é o de F-RES-01.
+    entrada:
+      hoje: "2026-04-15"
+      parametros: {meses: 3, gasto_essencial: "4000.00"}
+    casos:
+      - {saldo: "3000.00", data_alvo: "2026-10-20", meses_ate_alvo: 6, falta: "9000.00", aporte: "1500.00"}
+      - {saldo: "3000.00", data_alvo: "2026-11-03", meses_ate_alvo: 7, falta: "9000.00", aporte: "1285.72"}   # 9000/7 = 1285.714..
+      - {saldo: "11000.00", data_alvo: "2026-07-01", meses_ate_alvo: 3, falta: "1000.00", aporte: "333.34"}   # 1000/3 = 333.333..
+      - {saldo: "3000.00", data_alvo: "2027-02-01", meses_ate_alvo: 10, falta: "9000.00", aporte: "900.00"}  # vira o ano: 12-4+2 = 10
+      - {saldo: "3000.00", data_alvo: "2026-04-30", meses_ate_alvo: 1, falta: "9000.00", aporte: "9000.00"}  # mesmo mes: minimo 1
+      - {saldo: "3000.00", data_alvo: "2026-03-31", alvo_vencida: true, falta: "9000.00", aporte: null}     # passada: so a falta
+      - {saldo: "12000.00", data_alvo: "2026-10-20", falta: "0.00", aporte: "0.00"}                         # meta atingida
+      - {saldo: "3000.00", data_alvo: null, falta: "9000.00", aporte: null}                                 # sem data-alvo
+      # meta atingida com data-alvo vencida: aporte 0,00; nao ha meses ate o alvo e alvo_vencida
+      # fica falso (so a falta gera "vencida": sem falta, nao ha aporte a cobrar)
+      - {saldo: "12000.00", data_alvo: "2026-03-31", meses_ate_alvo: null, alvo_vencida: false, falta: "0.00", aporte: "0.00"}
+
+  - id: F-RES-06
+    invariantes: [INV-12]
+    descricao: Cobertura em meses, 2 casas, arredondamento meio-para-cima (complementa F-RES-02).
+    casos:
+      - {saldo: "1000.00", gasto_essencial: "3000.00", cobertura_meses: "0.33"}   # 0.3333..
+      - {saldo: "2000.00", gasto_essencial: "3000.00", cobertura_meses: "0.67"}   # 0.6666..
+      - {saldo: "1.00", gasto_essencial: "200.00", cobertura_meses: "0.01"}       # empate 0.005 sobe
+      - {saldo: "9000.00", gasto_essencial: "3000.00", cobertura_meses: "3.00"}
+      # saldo negativo: meio-para-cima = floor(x*100 + 0,5)/100; o empate -0,005 sobe para 0,00
+      - {saldo: "-1.00", gasto_essencial: "200.00", cobertura_meses: "0.00"}    # -0.005 -> -0.5+0.5=0 -> 0.00
+      - {saldo: "-3.00", gasto_essencial: "200.00", cobertura_meses: "-0.01"}   # -0.015 -> -1.5+0.5=-1 -> -0.01
+      - {saldo: "-500.00", gasto_essencial: "3000.00", cobertura_meses: "-0.17"}  # -0.1666.. -> -16.17 -> floor -17
+
+  - id: F-RES-07
+    invariantes: [INV-12]
+    descricao: >-
+      Gasto essencial ausente (nunca informado) ou zero: configuração pendente; cobertura, meta,
+      nível, falta e aporte ficam nulos (não é alerta R1). O saldo continua sendo mostrado.
+    entrada:
+      hoje: "2026-04-01"
+      reserva: {snapshot: {data: "2026-01-01", valor: "3000.00"}}
+      casos: [sem_parametro, gasto_essencial_zero]
+    esperado:
+      saldo_liquido: "3000.00"
+      meses_meta: 3                   # padrão do ADR 007
+      config_pendente: true
+      cobertura_meses: null
+      meta: null
+      nivel: null
+      falta: null
+      aporte_mensal: null
+
+  - id: F-RES-08
+    invariantes: [INV-12, INV-17]
+    descricao: >-
+      Parâmetros com vigência: vale o registro de maior `desde` não posterior a hoje; no mesmo
+      `desde` vale o último gravado. O corte de 50% é exato (5000.00 de 10000.00 = atenção).
+    entrada:
+      reserva: {snapshot: {data: "2025-01-01", valor: "5000.00"}}
+      parametros:
+        - {desde: "2026-01-01", meses: 3, gasto_essencial: "2000.00"}
+        - {desde: "2026-06-01", meses: 4, gasto_essencial: "2500.00"}
+    casos:
+      - {hoje: "2025-12-31", config_pendente: true}
+      - {hoje: "2026-05-31", meta: "6000.00", nivel: atencao, cobertura_meses: "2.50", falta: "1000.00"}
+      - {hoje: "2026-06-01", meta: "10000.00", nivel: atencao, cobertura_meses: "2.00", falta: "5000.00"}
+    regravado:
+      parametro: {desde: "2026-06-01", meses: 4, gasto_essencial: "2800.00"}
+      caso: {hoje: "2026-06-01", meta: "11200.00", cobertura_meses: "1.79"}   # 5000.00 / 2800.00 = 1.7857..
+
   - id: F-R2-01
     invariantes: [INV-18, INV-19]
     descricao: Sobra do R2 positiva.
