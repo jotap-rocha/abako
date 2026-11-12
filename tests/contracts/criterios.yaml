@@ -502,3 +502,85 @@ criterios:
     entao: "é negado; a escrita só acontece pelas funções do banco, que recebem o usuário da sessão"
     invariantes: [INV-13]
     teste: ["tests/db/test_papeis.py::test_app_sem_update_delete", "tests/db/test_papeis.py::test_escrita_so_pelas_funcoes", "tests/backend/test_lancamentos_api.py::test_isolamento_e_csrf"]
+  - id: SPEC-007-AC-1
+    spec: SPEC-007
+    dado: "pessoas com compras de terceiro no cartão e repasses (F-FAT-01, F-REP-03)"
+    quando: "o a receber por pessoa é consultado"
+    entao: "para cada pessoa, a receber = max(D − R, 0), com D = total das compras dela (parcelas futuras incluídas) e R = repasses; a pessoa sem movimento aparece zerada; nada é gravado"
+    invariantes: [INV-10]
+    fixtures: [F-FAT-01, F-REP-03]
+    teste: ["tests/db/test_terceiros.py::test_a_receber_f_fat_01", "tests/db/test_terceiros.py::test_a_receber_varias_pessoas_f_rep_03"]
+  - id: SPEC-007-AC-2
+    spec: SPEC-007
+    dado: "uma compra de 100,00 que mistura parte própria e parte de uma pessoa, ou uma pessoa em lançamento que não é compra a crédito nem repasse (F-REP-04)"
+    quando: "a gravação é tentada pelas funções do banco ou direto nas linhas (dono)"
+    entao: "o banco recusa e nada é gravado: a compra tem uma pessoa só (todas as parcelas iguais) e terceiro só existe no cartão; a recusa de divisão no corpo da API é o AC-11"
+    invariantes: [INV-32]
+    fixtures: [F-REP-04]
+    teste: ["tests/db/test_terceiros.py::test_divisao_rejeitada_no_esquema", "tests/db/test_terceiros.py::test_pessoa_so_em_compra_a_credito_e_repasse"]
+  - id: SPEC-007-AC-3
+    spec: SPEC-007
+    dado: "uma pessoa com compra de 400,00 e repasses que passam da dívida (F-REP-01)"
+    quando: "o a receber é consultado após cada repasse e cada compra nova da pessoa"
+    entao: "a receber nunca é negativo: o excedente aparece como crédito da pessoa (R − D) e uma compra nova o abate sozinha; D − R = a receber − crédito para quaisquer valores"
+    invariantes: [INV-33]
+    fixtures: [F-REP-01]
+    teste: ["tests/db/test_terceiros.py::test_repasse_excedente_f_rep_01", "tests/db/test_terceiros.py::test_a_receber_nunca_negativo"]
+  - id: SPEC-007-AC-4
+    spec: SPEC-007
+    dado: "um cartão com compras próprias e de terceiros na mesma competência (F-FAT-01, F-REP-03) e a linha com limite (F-LIM-01)"
+    quando: "a fatura e o limite são consultados"
+    entao: "total da fatura = própria + terceiros (e igual a fatura_total); o limite usado conta o valor total das compras de terceiros, parcelas futuras incluídas (fecha o ADR 043 item 8)"
+    invariantes: [INV-26, INV-06, INV-07]
+    fixtures: [F-FAT-01, F-LIM-01, F-REP-03]
+    teste: ["tests/db/test_terceiros.py::test_fatura_propria_mais_terceiros_f_fat_01", "tests/db/test_terceiros.py::test_limite_com_terceiros_f_lim_01", "tests/db/test_terceiros.py::test_fatura_e_limite_com_terceiros_f_rep_03"]
+  - id: SPEC-007-AC-5
+    spec: SPEC-007
+    dado: "uma compra parcelada de terceiro com parte paga, um repasse e uma compra própria no mesmo cartão (F-REP-02)"
+    quando: "a compra de terceiro é estornada"
+    entao: "a dívida da pessoa cai pelo T inteiro e o excedente do repasse vira crédito da pessoa; o crédito P fica no grupo terceiros da fatura da competência do crédito, faturas anteriores e a fatura própria não mudam; a compra com parte paga continua não editável (ADR 044)"
+    invariantes: [INV-08, INV-10, INV-26]
+    fixtures: [F-REP-02]
+    teste: ["tests/db/test_terceiros.py::test_estorno_de_compra_de_terceiro_f_rep_02", "tests/db/test_terceiros.py::test_compra_de_terceiro_com_parte_paga_nao_e_editavel"]
+  - id: SPEC-007-AC-6
+    spec: SPEC-007
+    dado: "duas pessoas de usuários diferentes e um usuário que consulta com o user_id de outro"
+    quando: "a receber, fatura e cadastro de pessoa são lidos, ou uma compra/repasse aponta para pessoa de outro usuário"
+    entao: "nada de um usuário aparece para o outro e a escrita com pessoa alheia é recusada como não encontrada (a pessoa vem sempre do user_id da sessão)"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_terceiros.py::test_leituras_nao_vazam_para_outro_usuario", "tests/db/test_terceiros.py::test_pessoa_de_outro_usuario_nao_existe_para_mim", "tests/db/test_terceiros.py::test_leituras_com_user_id_de_outro_usuario_devolvem_vazio"]
+  - id: SPEC-007-AC-7
+    spec: SPEC-007
+    dado: "o nome de uma pessoa (dado pessoal, ADR 045)"
+    quando: "uma função da migração recusa uma entrada ou o pipeline lê o banco"
+    entao: "nenhuma mensagem de erro interpola nome, valor ou id (só literais) e o papel do pipeline não tem SELECT na coluna do nome; as funções de a receber e fatura devolvem só o id da pessoa"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_terceiros_mensagens.py::test_mensagens_de_abako_erro_da_0008_sao_literais", "tests/db/test_terceiros.py::test_nome_da_pessoa_fora_do_pipeline_e_das_leituras"]
+  - id: SPEC-007-AC-8
+    spec: SPEC-007
+    dado: "contas corrente, reserva, benefício e cartão de um usuário e uma pessoa cadastrada"
+    quando: "um repasse é lançado, editado e excluído"
+    entao: "só entra em conta corrente com pessoa e valor positivo (recusa nos outros tipos de conta, sem pessoa ou com data futura); sobe o saldo da conta; edição cria versão; exclusão lógica volta o a receber ao que era; repasse não é compra nem entra em fatura ou limite"
+    invariantes: [INV-33]
+    teste: ["tests/db/test_terceiros.py::test_repasse_regras_de_entrada", "tests/db/test_terceiros.py::test_repasse_edita_e_exclui_com_versao"]
+  - id: SPEC-007-AC-9
+    spec: SPEC-007
+    dado: "o cadastro mínimo de pessoa"
+    quando: "uma pessoa é criada, renomeada e excluída"
+    entao: "cada mudança cria nova versão vigente (a anterior fica no histórico); nome vazio, acima de 80 caracteres ou repetido (sem diferenciar maiúsculas) é recusado; versão desatualizada dá conflito; excluir pessoa com compra ou repasse vigente é recusado e a exclusão lógica libera o nome"
+    invariantes: [INV-09, INV-29]
+    teste: ["tests/db/test_terceiros.py::test_cadastro_de_pessoa_versiona", "tests/db/test_terceiros.py::test_exclusao_de_pessoa_recusada_com_movimento"]
+  - id: SPEC-007-AC-10
+    spec: SPEC-007
+    dado: "os papéis da aplicação e do pipeline e a migração 0008"
+    quando: "se tenta escrever direto na tabela de pessoa ou nas de lançamento, ou desfazer a migração com dados"
+    entao: "app lê e escreve só pelas funções (sem INSERT/UPDATE/DELETE); pipeline só lê; o downgrade com pessoa, repasse ou compra de terceiro é recusado e, sem dados, restaura a 0007"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_terceiros.py::test_papeis_da_pessoa", "tests/db/test_migracao_0008.py::test_downgrade_com_terceiros_e_recusado", "tests/db/test_migracao_0008.py::test_downgrade_sem_dados_restaura_a_0007_e_sobe_de_novo"]
+  - id: SPEC-007-AC-11
+    spec: SPEC-007
+    dado: "a API de lançamentos com o campo de pessoa e as rotas de pessoa, repasse, a receber e fatura com própria/terceiros"
+    quando: "o corpo da requisição tenta dividir uma compra entre própria e terceiro, ou informa pessoa de outro usuário, ou o user_id no corpo"
+    entao: "a API responde 422 (divisão) ou 404 (pessoa alheia), usa o user_id da sessão, devolve dinheiro em texto e não registra o nome da pessoa em log"
+    invariantes: [INV-32, INV-13, INV-14]
+    teste: ["tests/backend/test_terceiros.py::test_divisao_rejeitada", "tests/backend/test_terceiros.py::test_cadastro_de_pessoa_pela_api", "tests/backend/test_terceiros.py::test_exclusao_de_pessoa", "tests/backend/test_terceiros.py::test_a_receber_e_credito_f_rep_01", "tests/backend/test_terceiros.py::test_repasse_regras_pela_api", "tests/backend/test_terceiros.py::test_a_receber_varias_pessoas_f_rep_03", "tests/backend/test_terceiros.py::test_fatura_propria_mais_terceiros_f_fat_01", "tests/backend/test_terceiros.py::test_limite_f_lim_01_isolado", "tests/backend/test_terceiros.py::test_estorno_de_compra_de_terceiro_f_rep_02", "tests/backend/test_terceiros.py::test_idempotencia_considera_a_pessoa", "tests/backend/test_terceiros.py::test_troca_de_pessoa_na_edicao", "tests/backend/test_terceiros.py::test_isolamento_entre_usuarios", "tests/backend/test_terceiros.py::test_escritas_de_pessoa_exigem_csrf_e_sessao", "tests/backend/test_terceiros.py::test_valores_de_terceiros_sao_texto_com_duas_casas", "tests/backend/test_terceiros.py::test_nome_da_pessoa_fora_de_log_e_de_erro", "tests/backend/test_terceiros.py::test_chave_desconhecida_no_corpo_e_422_e_nada_e_gravado", "tests/backend/test_terceiros.py::test_versao_de_pessoa_acima_do_inteiro_do_banco_e_422", "tests/backend/test_terceiros.py::test_nome_aparado_antes_do_limite_de_80"]

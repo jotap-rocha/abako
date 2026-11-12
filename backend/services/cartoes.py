@@ -36,6 +36,15 @@ class ItemFatura:
     data_compra: date
     valor: Decimal
     descricao: str | None
+    # Nula = compra própria (ou crédito de estorno de compra própria).
+    pessoa_id: int | None
+
+
+@dataclass(frozen=True)
+class ResumoFatura:
+    total: Decimal
+    propria: Decimal
+    terceiros: Decimal
 
 
 @dataclass(frozen=True)
@@ -124,19 +133,22 @@ async def itens_da_fatura(
     conn: psycopg.AsyncConnection, user_id: int, conta_id: int, competencia: str
 ) -> list[ItemFatura]:
     cur = await conn.execute(
-        "SELECT transacao_id, versao, parcela, parcelas, data_compra, valor, descricao "
+        "SELECT transacao_id, versao, parcela, parcelas, data_compra, valor, descricao, pessoa_id "
         "FROM fatura_itens(%s, %s, %s)",
         (user_id, conta_id, competencia),
     )
     return [ItemFatura(*linha) for linha in await cur.fetchall()]
 
 
-async def total_da_fatura(
+async def resumo_da_fatura(
     conn: psycopg.AsyncConnection, user_id: int, conta_id: int, competencia: str
-) -> Decimal:
-    cur = await conn.execute("SELECT fatura_total(%s, %s, %s)", (user_id, conta_id, competencia))
+) -> ResumoFatura:
+    """Total = própria + terceiros (ADR 045 item 7); a soma é feita pelo banco."""
+    cur = await conn.execute(
+        "SELECT total, propria, terceiros FROM fatura_resumo(%s, %s, %s)",
+        (user_id, conta_id, competencia),
+    )
     linha = await cur.fetchone()
     if linha is None:
-        raise RuntimeError("fatura_total não devolveu linha")
-    total: Decimal = linha[0]
-    return total
+        raise RuntimeError("fatura_resumo não devolveu linha")
+    return ResumoFatura(*linha)

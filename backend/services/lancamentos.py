@@ -26,6 +26,8 @@ class Dados:
     descricao: str | None
     # Só na compra a crédito (1 a 48); o banco recusa nos demais tipos.
     parcelas: int | None = None
+    # Compra a crédito de terceiro (100% da pessoa) ou repasse (obrigatória); o banco confere.
+    pessoa_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -45,6 +47,8 @@ class Lancamento:
     # Só no estorno: compra estornada e crédito P emitido (ADR 044).
     estorno_de: int | None = None
     estorno_credito: Decimal | None = None
+    # Compra de terceiro ou repasse: a pessoa (o nome vem de /pessoas, nunca daqui).
+    pessoa_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -62,7 +66,7 @@ def _texto(valor: Decimal | None) -> str | None:
 
 def hash_corpo(dados: Dados) -> str:
     """Hash do corpo canônico: "10" e "10.00" são o mesmo lançamento (INV-28)."""
-    canonico = {
+    canonico: dict[str, object] = {
         "tipo": dados.tipo,
         "data": dados.data.isoformat(),
         "valor": _texto(dados.valor),
@@ -73,13 +77,16 @@ def hash_corpo(dados: Dados) -> str:
         "descricao": dados.descricao,
         "parcelas": dados.parcelas,
     }
+    if dados.pessoa_id is not None:  # ausente quando nula: o hash antigo continua valendo
+        canonico["pessoa_id"] = dados.pessoa_id
     texto = json.dumps(canonico, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(texto.encode("utf-8")).hexdigest()
 
 
 _SELECT = (
     "SELECT transacao_id, versao, tipo, data_transacao, valor, conta_id, conta_destino_id, "
-    "bruto, imposto, descricao, parcelas, competencia, estorno_de, estorno_credito "
+    "bruto, imposto, descricao, parcelas, competencia, estorno_de, estorno_credito, "
+    "pessoa_id "
     "FROM lancamento_vigente WHERE user_id = %s"
 )
 
@@ -133,7 +140,7 @@ async def gravar(
     """
     cur = await conn.execute(
         "SELECT transacao_id, criado FROM lancamento_gravar("
-        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             user_id,
             transacao_id,
@@ -149,6 +156,7 @@ async def gravar(
             chave,
             hash_corpo(dados) if chave is not None else None,
             dados.parcelas,
+            dados.pessoa_id,
         ),
     )
     linha = await cur.fetchone()

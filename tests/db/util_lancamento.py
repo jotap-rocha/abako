@@ -45,11 +45,12 @@ def lancar(
     chave: str | None = None,
     hash_corpo: str | None = None,
     parcelas: int | None = None,
+    pessoa: int | None = None,
 ) -> tuple[int, int, bool]:
     """Cria ou edita; devolve (transacao_id, versao, criou_agora)."""
     linha = conn.execute(
         "SELECT transacao_id, versao, criado FROM lancamento_gravar("
-        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             user_id,
             transacao_id,
@@ -65,6 +66,7 @@ def lancar(
             chave,
             hash_corpo,
             parcelas,
+            pessoa,
         ),
     ).fetchone()
     assert linha is not None
@@ -216,6 +218,7 @@ def apagar_usuario(url_dono: str, user_id: int) -> None:
             "cartao_fechamento",
             "conta_versao",
             "linha_credito",
+            "pessoa",
         ):
             limpa.execute(f"DELETE FROM {tabela} WHERE user_id = %s", (user_id,))  # noqa: S608
         limpa.execute("DELETE FROM usuario WHERE user_id = %s", (user_id,))

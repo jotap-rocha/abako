@@ -105,6 +105,7 @@ def test_credito_pela_api(client: TestClient, usuario: Usuario) -> None:
         "competencia": "2026-02",
         "estorno_de": None,
         "estorno_credito": None,
+        "pessoa_id": None,
     }
     tid = compra["transacao_id"]
     assert saldo(client, cartao, "2026-02-28") == "-100.00"
@@ -170,7 +171,7 @@ def test_parcelas_so_no_credito_e_obrigatorias(client: TestClient, usuario: Usua
     assert comprar(client, csrf, cartao, parcelas=0).status_code == 422
     assert comprar(client, csrf, cartao, parcelas=49).status_code == 422
     r = comprar(client, csrf, cartao, tipo="repasse", parcelas=None)
-    assert r.status_code == 422 and "ainda não está disponível" in r.json()["detail"]
+    assert r.status_code == 422 and "o repasse precisa de uma pessoa" in r.json()["detail"]
     assert client.get("/api/lancamentos").json() == []
 
 

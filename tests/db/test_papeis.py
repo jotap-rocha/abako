@@ -29,7 +29,7 @@ def test_app_sem_update_delete(esquema: str, url_app: str) -> None:
                 "WHERE table_schema = 'public' AND column_name = 'vigente' ORDER BY 1"
             ).fetchall()
         ]
-        assert tabelas == ["conta_versao", "linha_credito", "transacao_versao"]
+        assert tabelas == ["conta_versao", "linha_credito", "pessoa", "transacao_versao"]
         # ADR 042: nas tabelas de versão a aplicação só lê; a escrita passa pelas funções.
         for t in tabelas:
             assert _tem_privilegio(app, t, "SELECT")
@@ -71,8 +71,10 @@ def test_app_sem_update_delete(esquema: str, url_app: str) -> None:
 FUNCOES_DE_ESCRITA = (
     "conta_gravar(bigint, bigint, integer, text, text, bigint, bigint)",
     "lancamento_gravar(bigint, bigint, integer, text, date, numeric, bigint, bigint, numeric, "
-    "numeric, text, text, text, integer)",
+    "numeric, text, text, text, integer, bigint)",
     "lancamento_excluir(bigint, bigint, integer)",
+    "pessoa_gravar(bigint, bigint, integer, text)",
+    "pessoa_excluir(bigint, bigint, integer)",
     "linha_credito_gravar(bigint, bigint, integer, text, numeric)",
     "fechamento_gravar(bigint, bigint, integer, date)",
 )
@@ -91,7 +93,8 @@ def test_escrita_so_pelas_funcoes(esquema: str, url_app: str, url_pipeline: str)
         for auxiliar in ("abako_erro(text, text)",):
             linha = app.execute("SELECT has_function_privilege(%s, 'EXECUTE')", (auxiliar,))
             assert linha.fetchone() == (False,), auxiliar
-        for sequencia in ("conta_id_seq", "transacao_id_seq", "linha_credito_id_seq"):
+        sequencias = ("conta_id_seq", "transacao_id_seq", "linha_credito_id_seq", "pessoa_id_seq")
+        for sequencia in sequencias:
             linha = app.execute("SELECT has_sequence_privilege(%s, 'USAGE')", (sequencia,))
             assert linha.fetchone() == (False,), sequencia
 

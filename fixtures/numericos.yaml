@@ -485,3 +485,102 @@ fixtures:
       saldo_cartao: "-250.00"
       limite_usado: "250.00"
       gasto_real_do_pagamento: "0.00"
+
+  - id: F-REP-01
+    invariantes: [INV-10, INV-12, INV-33]
+    descricao: >-
+      Repasse acima da dívida (ADR 045). D = soma do total das compras de terceiro da pessoa; R =
+      soma dos repasses. a_receber = max(D - R, 0) e credito_da_pessoa = max(R - D, 0); nunca
+      negativo. Uma compra futura da pessoa abate o crédito sozinha. Repasse sobe o saldo da conta
+      corrente e não é receita nem gasto.
+    entrada:
+      pessoa: pessoa_b
+      passos:
+        - {compra: {total: "400.00", parcelas: 1}}
+        - {repasse: "250.00"}
+        - {repasse: "200.00"}
+        - {compra: {total: "30.00", parcelas: 1}}
+        - {compra: {total: "100.00", parcelas: 1}}
+    esperado:
+      apos_compra_400: {divida: "400.00", repassado: "0.00", a_receber: "400.00", credito_da_pessoa: "0.00"}
+      apos_repasse_250: {divida: "400.00", repassado: "250.00", a_receber: "150.00", credito_da_pessoa: "0.00"}
+      apos_repasse_200: {divida: "400.00", repassado: "450.00", a_receber: "0.00", credito_da_pessoa: "50.00"}
+      apos_compra_30: {divida: "430.00", repassado: "450.00", a_receber: "0.00", credito_da_pessoa: "20.00"}
+      apos_compra_100: {divida: "530.00", repassado: "450.00", a_receber: "80.00", credito_da_pessoa: "0.00"}
+      saldo_corrente_apos_dois_repasses: "450.00"
+
+  - id: F-REP-02
+    invariantes: [INV-08, INV-10, INV-26, INV-33]
+    descricao: >-
+      Estorno de compra de terceiro (ADR 045 itens 6 e 8, ADR 044). Fechamento dia 10; compra de
+      400,00 em 4 parcelas de 100,00 da pessoa_b nas competências c1..c4 (compra antes do dia 10);
+      compra própria de 50,00 à vista em c3; repasse de 100,00; pagamento de 150,00 do cartão
+      (aloca c1 100,00 e c2 50,00, logo P = 150,00 e N = 250,00); estorno no mês de c2 depois do
+      fechamento, cujo crédito cai em c3. D cai pelo T inteiro (400,00); o excedente do repasse vira
+      crédito da pessoa. O crédito P fica no grupo da compra (terceiros); faturas anteriores a c3 não
+      mudam e a própria não é reduzida.
+    entrada:
+      cartao: {dia_fechamento: 10}
+      compra_terceiro: {pessoa: pessoa_b, total: "400.00", parcelas: 4}
+      compra_propria: {total: "50.00", parcelas: 1, competencia: c3}
+      repasse: "100.00"
+      pagamento: "150.00"
+      estorno: integral_da_compra_de_terceiro
+    esperado:
+      antes_do_estorno: {divida: "400.00", repassado: "100.00", a_receber: "300.00", credito_da_pessoa: "0.00"}
+      depois_do_estorno: {divida: "0.00", repassado: "100.00", a_receber: "0.00", credito_da_pessoa: "100.00"}
+      pago_alocado: "150.00"
+      limite_devolvido: "250.00"
+      credito_na_fatura: "150.00"
+      faturas:
+        c1: {total: "100.00", propria: "0.00", terceiros: "100.00"}
+        c2: {total: "100.00", propria: "0.00", terceiros: "100.00"}
+        c3: {total: "-100.00", propria: "50.00", terceiros: "-150.00"}
+        c4: {total: "0.00", propria: "0.00", terceiros: "0.00"}
+
+  - id: F-REP-03
+    invariantes: [INV-06, INV-10, INV-11, INV-26, INV-33]
+    descricao: >-
+      A receber com mais de uma pessoa, fatura própria + terceiros e limite com terceiros. Todas as
+      compras no mesmo dia e cartão (primeira parcela em c1, fechamento dia 10). pessoa_c parcela
+      90,00 em 3 de 30,00; pessoa_d só repassou (crédito); pessoa_e quitou; pessoa_f cadastrada sem
+      movimento.
+    entrada:
+      linha: {limite: "5000.00"}
+      compras:
+        - {pessoa: propria, total: "600.00", parcelas: 1}
+        - {pessoa: pessoa_b, total: "400.00", parcelas: 1}
+        - {pessoa: pessoa_c, total: "90.00", parcelas: 3}
+        - {pessoa: pessoa_e, total: "60.00", parcelas: 1}
+      repasses:
+        - {pessoa: pessoa_b, valor: "250.00"}
+        - {pessoa: pessoa_d, valor: "40.00"}
+        - {pessoa: pessoa_e, valor: "60.00"}
+    esperado:
+      pessoa_b: {divida: "400.00", repassado: "250.00", a_receber: "150.00", credito_da_pessoa: "0.00"}
+      pessoa_c: {divida: "90.00", repassado: "0.00", a_receber: "90.00", credito_da_pessoa: "0.00"}
+      pessoa_d: {divida: "0.00", repassado: "40.00", a_receber: "0.00", credito_da_pessoa: "40.00"}
+      pessoa_e: {divida: "60.00", repassado: "60.00", a_receber: "0.00", credito_da_pessoa: "0.00"}
+      pessoa_f: {divida: "0.00", repassado: "0.00", a_receber: "0.00", credito_da_pessoa: "0.00"}
+      soma_a_receber: "240.00"
+      soma_credito_da_pessoa: "40.00"
+      fatura_c1: {total: "1090.00", propria: "600.00", terceiros: "490.00"}
+      fatura_c2: {total: "30.00", propria: "0.00", terceiros: "30.00"}
+      limite_usado: "1150.00"
+      limite_disponivel: "3850.00"
+
+  - id: F-REP-04
+    invariantes: [INV-32]
+    descricao: >-
+      Compra dividida entre próprio e terceiro é rejeitada (ADR 030, ADR 045 item 1): 60,00 própria
+      + 40,00 da pessoa_b numa compra de 100,00 não existe. Só são aceitas as compras inteiras, 100%
+      própria ou 100% de uma pessoa. Terceiro também não vale fora do cartão.
+    entrada:
+      tentativas_recusadas:
+        - {divisao: [{pessoa: propria, valor: "60.00"}, {pessoa: pessoa_b, valor: "40.00"}]}
+        - {tipo: debito, total: "100.00", pessoa: pessoa_b}
+      aceitas:
+        - {tipo: credito, total: "100.00", parcelas: 1, pessoa: pessoa_b}
+    esperado:
+      lancamentos_gravados_pelas_recusadas: 0
+      pessoa_b: {divida: "100.00", repassado: "0.00", a_receber: "100.00", credito_da_pessoa: "0.00"}

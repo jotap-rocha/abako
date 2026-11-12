@@ -53,3 +53,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [042](042-lancamento-tipos-de-conta-e-versionamento.md) | Lançamento por tipo, tipos de conta e escrita versionada por função | Aceita | 2026-11-09 |
 | [043](043-cartao-fatura-parcelas-e-limite.md) | Cartão, fatura, parcelas e limite: convenções da SPEC-005 | Aceita | 2026-11-10 |
 | [044](044-estorno-parcela-paga-e-pagamento-parcial.md) | Estorno e "parcela paga" com pagamento parcial: convenções da SPEC-006 | Aceita | 2026-11-10 |
+| [045](045-terceiros-repasse-e-a-receber-por-pessoa.md) | Terceiros, repasse e "a receber" por pessoa: convenções da SPEC-007 | Aceita | 2026-11-12 |

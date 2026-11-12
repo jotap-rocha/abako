@@ -12,7 +12,7 @@ from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Path, Query, Response, status
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from backend.deps import Conexao, Sessao, SessaoEscrita
 from backend.dinheiro import texto_dinheiro
@@ -25,11 +25,21 @@ router = APIRouter(prefix="/lancamentos", tags=["lancamentos"])
 
 IdLancamento = Annotated[int, Path(ge=1, le=2**63 - 1)]
 IdConta = Annotated[int, Field(ge=1, le=2**63 - 1)]
+IdPessoa = Annotated[int, Field(ge=1, le=2**63 - 1)]
+# Chaves que denunciam uma compra repartida entre donos: servem só para a mensagem amigável. Quem
+# barra de verdade é `extra="forbid"` (qualquer chave desconhecida é 422, INV-32).
+CHAVES_DE_DIVISAO = frozenset(
+    {"divisao", "divisoes", "partes", "rateio", "pessoas", "donos", "proprio", "valor_proprio"}
+)
 # Valor sempre positivo na entrada (no crédito, o total da compra); o tipo dá o sinal.
 PADRAO_POSITIVO = r"^[0-9]{1,12}(\.[0-9]{1,2})?$"
 
 
 class _Campos(BaseModel):
+    # Chave desconhecida é 422, nunca ignorada: um campo de divisão fora da lista viraria compra
+    # 100% própria em silêncio. O 422 não ecoa o valor recebido (handler em `backend.app`).
+    model_config = ConfigDict(extra="forbid")
+
     tipo: TipoLancamento
     data: date = Field(ge=DATA_MINIMA)
     # Débito, receita, transferência, investimento. No rendimento vem de bruto − imposto.
@@ -41,6 +51,21 @@ class _Campos(BaseModel):
     descricao: str | None = None
     # Só no crédito: de 1 a 48 (o banco recusa crédito sem parcelas e parcelas nos demais).
     parcelas: int | None = Field(default=None, ge=1, le=48)
+    # Compra a crédito 100% de uma pessoa, ou a pessoa que repassa (obrigatória no repasse).
+    pessoa_id: IdPessoa | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _corpo_antes(cls, corpo: object) -> object:
+        """Divisão é 422 com mensagem clara (INV-32); `user_id` no corpo é descartado, a sessão
+        manda (INV-13). Qualquer outra chave desconhecida cai no `extra="forbid"`."""
+        if not isinstance(corpo, dict):
+            return corpo
+        if CHAVES_DE_DIVISAO & {str(k).lower() for k in corpo}:
+            raise ValueError(
+                "a compra não pode ser dividida entre donos (ou é própria ou de uma pessoa)"
+            )
+        return {k: v for k, v in corpo.items() if k != "user_id"}
 
     @field_validator("descricao")
     @classmethod
@@ -63,6 +88,7 @@ class _Campos(BaseModel):
             imposto=None if self.imposto is None else Decimal(self.imposto),
             descricao=descricao or None,
             parcelas=self.parcelas,
+            pessoa_id=self.pessoa_id,
         )
 
 
@@ -94,6 +120,8 @@ class LancamentoSaida(BaseModel):
     # Só no estorno: a compra estornada e o crédito P (parte paga) na fatura (ADR 044).
     estorno_de: int | None = None
     estorno_credito: str | None = None
+    # Compra de terceiro ou repasse: a pessoa (o nome vem de /pessoas).
+    pessoa_id: int | None = None
 
 
 class EstornoEntrada(BaseModel):
@@ -139,6 +167,7 @@ def _saida(lanc: svc.Lancamento) -> LancamentoSaida:
         estorno_credito=(
             None if lanc.estorno_credito is None else texto_dinheiro(lanc.estorno_credito)
         ),
+        pessoa_id=lanc.pessoa_id,
     )
 
 
