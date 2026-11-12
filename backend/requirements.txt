@@ -7,3 +7,5 @@ argon2-cffi==25.1.0
 psycopg[binary]==3.3.6
 SQLAlchemy==2.0.34
 alembic==1.20.0
+# Fuso America/Sao_Paulo (zoneinfo) no Windows, que não tem base de fusos própria.
+tzdata==2026.5

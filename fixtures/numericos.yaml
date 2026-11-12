@@ -584,3 +584,71 @@ fixtures:
     esperado:
       lancamentos_gravados_pelas_recusadas: 0
       pessoa_b: {divida: "100.00", repassado: "0.00", a_receber: "100.00", credito_da_pessoa: "0.00"}
+
+  - id: F-GASTO-02
+    invariantes: [INV-04, INV-05, INV-11, INV-20, INV-24]
+    descricao: >-
+      Mês misto (ADR 046): parcelas de compras diferentes na competência, débito em conta de
+      reserva (conta como gasto), rendimento com imposto, repasse, transferência, investimento,
+      pagamento de fatura, terceiro e conta de benefício fora do gasto; receita de caixa separada
+      da de benefício. Cartão fecha no dia 10: compra até o dia 9 cai na competência do mês,
+      do dia 10 em diante, na seguinte. Contas: corrente, reserva (da corrente), investimento,
+      vale (benefício), cartão.
+    entrada:
+      compras:
+        - {id: A, data: "2025-03-05", total: "300.00", parcelas: 3, pessoa: propria}   # 100 em 03, 04, 05
+        - {id: B, data: "2025-03-12", total: "200.00", parcelas: 2, pessoa: propria}   # 100 em 04, 05
+        - {id: C, data: "2025-04-05", total: "90.00", parcelas: 1, pessoa: pessoa_b}   # 90 em 04, terceiro
+      lancamentos:
+        - {data: "2025-03-31", tipo: debito, conta: corrente, valor: "15.00"}
+        - {data: "2025-04-08", tipo: debito, conta: corrente, valor: "60.00"}
+        - {data: "2025-04-09", tipo: debito, conta: reserva, valor: "25.00"}
+        - {data: "2025-04-10", tipo: debito, conta: vale, valor: "40.00"}
+        - {data: "2025-05-01", tipo: debito, conta: corrente, valor: "11.00"}
+        - {data: "2025-04-15", tipo: rendimento, conta: reserva, bruto: "10.00", imposto: "2.00"}
+        - {data: "2025-04-16", tipo: transferencia, de: corrente, para: reserva, valor: "70.00"}
+        - {data: "2025-04-17", tipo: investimento, de: corrente, para: investimento, valor: "80.00"}
+        - {data: "2025-04-18", tipo: pagamento_fatura, de: corrente, para: cartao, valor: "150.00"}
+        - {data: "2025-04-19", tipo: repasse, conta: corrente, valor: "30.00", pessoa: pessoa_b}
+        - {data: "2025-03-20", tipo: receita, conta: corrente, valor: "500.00"}
+        - {data: "2025-04-02", tipo: receita, conta: corrente, valor: "1000.00"}
+        - {data: "2025-04-20", tipo: receita, conta: corrente, valor: "250.00"}
+        - {data: "2025-04-05", tipo: receita, conta: vale, valor: "400.00"}
+    esperado:
+      # abril: parcela 2/3 de A (100) + parcela 1/2 de B (100) + débito corrente (60) + débito
+      # reserva (25); C é de terceiro (90), o débito do vale (40) e o resto não são gasto
+      gasto_real_2025_04: "285.00"
+      # março: parcela 1/3 de A (100) + débito de 15
+      gasto_real_2025_03: "115.00"
+      # maio: parcela 3/3 de A (100) + parcela 2/2 de B (100) + débito de 11
+      gasto_real_2025_05: "211.00"
+      gasto_real_2025_06: "0.00"
+      gasto_por_conta_2025_04: {corrente: "60.00", reserva: "25.00", cartao: "200.00"}
+      receita_caixa_2025_04: "1250.00"
+      receita_beneficio_2025_04: "400.00"
+      receita_total_2025_04: "1650.00"
+      receita_caixa_2025_03: "500.00"
+
+  - id: F-GASTO-03
+    invariantes: [INV-04, INV-08, INV-11]
+    descricao: >-
+      Estorno de compra parcelada que cruza competências (ADR 044 item 5, ADR 046): depois do
+      estorno a compra sai do gasto real em TODAS as competências originais, inclusive as já
+      fechadas; o crédito do estorno não é receita nem redutor extra do gasto. Fechamento dia 10;
+      compra X em 2025-03-05 (400,00 em 4x: 100 em 03, 04, 05, 06), compra Y em 2025-03-06
+      (60,00 em 1x: 60 em 03), débito de 20 em 2025-03-15 e de 30 em 2025-04-08; pagamento de
+      150,00 do cartão em 2025-04-15; estorno de X em 2025-04-20; receita de 1000,00 em 2025-04-02.
+    entrada:
+      compra_estornada: {id: X, data: "2025-03-05", total: "400.00", parcelas: 4}
+    esperado:
+      antes_do_estorno:
+        gasto_real_2025_03: "180.00"
+        gasto_real_2025_04: "130.00"
+        gasto_real_2025_05: "100.00"
+        gasto_real_2025_06: "100.00"
+      depois_do_estorno:
+        gasto_real_2025_03: "80.00"
+        gasto_real_2025_04: "30.00"
+        gasto_real_2025_05: "0.00"
+        gasto_real_2025_06: "0.00"
+        receita_caixa_2025_04: "1000.00"

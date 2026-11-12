@@ -404,6 +404,50 @@
         "title": "FechamentoSaida",
         "type": "object"
       },
+      "GastoContaSaida": {
+        "properties": {
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "conta_id",
+          "valor"
+        ],
+        "title": "GastoContaSaida",
+        "type": "object"
+      },
+      "GastoRealSaida": {
+        "properties": {
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "por_conta": {
+            "items": {
+              "$ref": "#/components/schemas/GastoContaSaida"
+            },
+            "title": "Por Conta",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mes",
+          "total",
+          "por_conta"
+        ],
+        "title": "GastoRealSaida",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1072,6 +1116,34 @@
           "versao"
         ],
         "title": "PessoaSaida",
+        "type": "object"
+      },
+      "ReceitaSaida": {
+        "properties": {
+          "beneficio": {
+            "title": "Beneficio",
+            "type": "string"
+          },
+          "caixa": {
+            "title": "Caixa",
+            "type": "string"
+          },
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mes",
+          "caixa",
+          "beneficio",
+          "total"
+        ],
+        "title": "ReceitaSaida",
         "type": "object"
       },
       "SaldoSaida": {
@@ -1817,6 +1889,58 @@
         "summary": "Registrar Snapshot",
         "tags": [
           "saldos"
+        ]
+      }
+    },
+    "/api/gasto-real": {
+      "get": {
+        "description": "Gasto real do mês, total e por conta, derivado a cada consulta (ADR 046).",
+        "operationId": "gasto_real_gasto_real",
+        "parameters": [
+          {
+            "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+            "in": "query",
+            "name": "mes",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+              "title": "Mes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GastoRealSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Gasto Real",
+        "tags": [
+          "gasto_real"
         ]
       }
     },
@@ -2801,6 +2925,58 @@
         "summary": "R4",
         "tags": [
           "saldos"
+        ]
+      }
+    },
+    "/api/receita": {
+      "get": {
+        "description": "Receita de caixa, de benefício e total do mês (ADR 046 item 7).",
+        "operationId": "gasto_real_receita",
+        "parameters": [
+          {
+            "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+            "in": "query",
+            "name": "mes",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+              "title": "Mes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceitaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Receita",
+        "tags": [
+          "gasto_real"
         ]
       }
     },
