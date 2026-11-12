@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, GastoRealGastoRealData, GastoRealGastoRealErrors, GastoRealGastoRealResponses, GastoRealReceitaData, GastoRealReceitaErrors, GastoRealReceitaResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosEstornarData, LancamentosEstornarErrors, LancamentosEstornarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, PessoasAReceberDaPessoaData, PessoasAReceberDaPessoaErrors, PessoasAReceberDaPessoaResponses, PessoasAReceberData, PessoasAReceberResponses, PessoasCriarData, PessoasCriarErrors, PessoasCriarResponses, PessoasExcluirData, PessoasExcluirErrors, PessoasExcluirResponses, PessoasListarData, PessoasListarResponses, PessoasObterData, PessoasObterErrors, PessoasObterResponses, PessoasRenomearData, PessoasRenomearErrors, PessoasRenomearResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
+import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, GastoRealGastoRealData, GastoRealGastoRealErrors, GastoRealGastoRealResponses, GastoRealReceitaData, GastoRealReceitaErrors, GastoRealReceitaResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosEstornarData, LancamentosEstornarErrors, LancamentosEstornarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, PessoasAReceberDaPessoaData, PessoasAReceberDaPessoaErrors, PessoasAReceberDaPessoaResponses, PessoasAReceberData, PessoasAReceberResponses, PessoasCriarData, PessoasCriarErrors, PessoasCriarResponses, PessoasExcluirData, PessoasExcluirErrors, PessoasExcluirResponses, PessoasListarData, PessoasListarResponses, PessoasObterData, PessoasObterErrors, PessoasObterResponses, PessoasRenomearData, PessoasRenomearErrors, PessoasRenomearResponses, ReservaGravarParametrosData, ReservaGravarParametrosErrors, ReservaGravarParametrosResponses, ReservaListarParametrosData, ReservaListarParametrosResponses, ReservaSituacaoData, ReservaSituacaoResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -290,6 +290,34 @@ export const saldosR4 = <ThrowOnError extends boolean = false>(options?: Options
  * Receita de caixa, de benefício e total do mês (ADR 046 item 7).
  */
 export const gastoRealReceita = <ThrowOnError extends boolean = false>(options?: Options<GastoRealReceitaData, ThrowOnError>): RequestResult<GastoRealReceitaResponses, GastoRealReceitaErrors, ThrowOnError> => (options?.client ?? client).get<GastoRealReceitaResponses, GastoRealReceitaErrors, ThrowOnError>({ url: '/api/receita', ...options });
+
+/**
+ * Situacao
+ *
+ * Situação da reserva em `hoje` (data civil de São Paulo), derivada a cada consulta.
+ */
+export const reservaSituacao = <ThrowOnError extends boolean = false>(options?: Options<ReservaSituacaoData, ThrowOnError>): RequestResult<ReservaSituacaoResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ReservaSituacaoResponses, unknown, ThrowOnError>({ url: '/api/reserva', ...options });
+
+/**
+ * Listar Parametros
+ *
+ * Um parâmetro por `vigente_desde` (o último gravado), do mais antigo ao mais novo.
+ */
+export const reservaListarParametros = <ThrowOnError extends boolean = false>(options?: Options<ReservaListarParametrosData, ThrowOnError>): RequestResult<ReservaListarParametrosResponses, unknown, ThrowOnError> => (options?.client ?? client).get<ReservaListarParametrosResponses, unknown, ThrowOnError>({ url: '/api/reserva/parametros', ...options });
+
+/**
+ * Gravar Parametros
+ *
+ * Grava os três valores juntos a partir de `vigente_desde`; repetir é idempotente.
+ */
+export const reservaGravarParametros = <ThrowOnError extends boolean = false>(options: Options<ReservaGravarParametrosData, ThrowOnError>): RequestResult<ReservaGravarParametrosResponses, ReservaGravarParametrosErrors, ThrowOnError> => (options.client ?? client).put<ReservaGravarParametrosResponses, ReservaGravarParametrosErrors, ThrowOnError>({
+    url: '/api/reserva/parametros',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Listar

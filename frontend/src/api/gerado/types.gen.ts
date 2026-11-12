@@ -591,6 +591,50 @@ export type LoginSaida = {
 };
 
 /**
+ * ParametroEntrada
+ */
+export type ParametroEntrada = {
+    /**
+     * Data Alvo
+     */
+    data_alvo?: string | null;
+    /**
+     * Gasto Essencial
+     */
+    gasto_essencial: string;
+    /**
+     * Meses
+     */
+    meses: number;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
+ * ParametroSaida
+ */
+export type ParametroSaida = {
+    /**
+     * Data Alvo
+     */
+    data_alvo: string | null;
+    /**
+     * Gasto Essencial
+     */
+    gasto_essencial: string;
+    /**
+     * Meses
+     */
+    meses: number;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
  * PessoaEdicao
  */
 export type PessoaEdicao = {
@@ -690,6 +734,72 @@ export type SaldoSaida = {
      * Tipo
      */
     tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio' | 'divida';
+};
+
+/**
+ * SituacaoSaida
+ */
+export type SituacaoSaida = {
+    /**
+     * Alvo Vencida
+     */
+    alvo_vencida: boolean;
+    /**
+     * Aporte Mensal
+     */
+    aporte_mensal: string | null;
+    /**
+     * Cobertura Meses
+     */
+    cobertura_meses: string | null;
+    /**
+     * Config Pendente
+     */
+    config_pendente: boolean;
+    /**
+     * Contas Reserva
+     */
+    contas_reserva: number;
+    /**
+     * Data Alvo
+     */
+    data_alvo: string | null;
+    /**
+     * Falta
+     */
+    falta: string | null;
+    /**
+     * Gasto Essencial
+     */
+    gasto_essencial: string | null;
+    /**
+     * Imposto Acumulado
+     */
+    imposto_acumulado: string;
+    /**
+     * Meses Ate Alvo
+     */
+    meses_ate_alvo: number | null;
+    /**
+     * Meses Meta
+     */
+    meses_meta: number;
+    /**
+     * Meta
+     */
+    meta: string | null;
+    /**
+     * Nivel
+     */
+    nivel: string | null;
+    /**
+     * Saldo Bruto
+     */
+    saldo_bruto: string;
+    /**
+     * Saldo Liquido
+     */
+    saldo_liquido: string;
 };
 
 /**
@@ -1720,6 +1830,71 @@ export type GastoRealReceitaResponses = {
 };
 
 export type GastoRealReceitaResponse = GastoRealReceitaResponses[keyof GastoRealReceitaResponses];
+
+export type ReservaSituacaoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/reserva';
+};
+
+export type ReservaSituacaoResponses = {
+    /**
+     * Successful Response
+     */
+    200: SituacaoSaida;
+};
+
+export type ReservaSituacaoResponse = ReservaSituacaoResponses[keyof ReservaSituacaoResponses];
+
+export type ReservaListarParametrosData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/reserva/parametros';
+};
+
+export type ReservaListarParametrosResponses = {
+    /**
+     * Response Reserva Listar Parametros
+     *
+     * Successful Response
+     */
+    200: Array<ParametroSaida>;
+};
+
+export type ReservaListarParametrosResponse = ReservaListarParametrosResponses[keyof ReservaListarParametrosResponses];
+
+export type ReservaGravarParametrosData = {
+    body: ParametroEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/reserva/parametros';
+};
+
+export type ReservaGravarParametrosErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReservaGravarParametrosError = ReservaGravarParametrosErrors[keyof ReservaGravarParametrosErrors];
+
+export type ReservaGravarParametrosResponses = {
+    /**
+     * Successful Response
+     */
+    200: ParametroSaida;
+};
+
+export type ReservaGravarParametrosResponse = ReservaGravarParametrosResponses[keyof ReservaGravarParametrosResponses];
 
 export type SaldosListarData = {
     body?: never;

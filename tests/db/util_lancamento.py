@@ -216,6 +216,7 @@ def apagar_usuario(url_dono: str, user_id: int) -> None:
             "snapshot_saldo",
             "transacao_versao",
             "cartao_fechamento",
+            "reserva_parametro",
             "conta_versao",
             "linha_credito",
             "pessoa",

@@ -55,3 +55,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [044](044-estorno-parcela-paga-e-pagamento-parcial.md) | Estorno e "parcela paga" com pagamento parcial: convenções da SPEC-006 | Aceita | 2026-11-10 |
 | [045](045-terceiros-repasse-e-a-receber-por-pessoa.md) | Terceiros, repasse e "a receber" por pessoa: convenções da SPEC-007 | Aceita | 2026-11-12 |
 | [046](046-gasto-real-e-receita-de-caixa.md) | Gasto real e receita de caixa: convenções da SPEC-008 | Aceita | 2026-11-12 |
+| [047](047-reserva-cobertura-e-aporte.md) | Reserva, cobertura e aporte: convenções da SPEC-009 | Aceita | 2026-11-12 |

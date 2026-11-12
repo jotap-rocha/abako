@@ -86,7 +86,7 @@ def test_downgrade_sem_dados_restaura_a_0007_e_sobe_de_novo(esquema: str) -> Non
             c.rollback()
     finally:
         command.upgrade(cfg, "head")
-    assert _revisao(esquema) == "0009"
+    assert _revisao(esquema) == "0010"
     assert _funcoes(esquema, "lancamento_gravar") == [15]
     assert _funcoes(esquema, "lancamento_gravar_base") == [15]
     assert _funcoes(esquema, "pessoa_gravar") == [4]
@@ -103,7 +103,7 @@ def test_downgrade_com_terceiros_e_recusado(esquema: str) -> None:
     try:
         with pytest.raises(Exception, match="apagaria dados"):
             command.downgrade(Config(str(RAIZ / "alembic.ini")), "0007")
-        assert _revisao(esquema) == "0009"
+        assert _revisao(esquema) == "0010"
         with psycopg.connect(esquema) as ver:
             linha = ver.execute(
                 "SELECT count(*) FROM transacao_versao "

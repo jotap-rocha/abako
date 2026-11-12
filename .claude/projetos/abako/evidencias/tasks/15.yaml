@@ -1,0 +1,101 @@
+task_id: "15"
+criteria:
+  SPEC-009-AC-1:
+    id: SPEC-009-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_reserva.py::test_cobertura tests/db/test_reserva_propriedades.py::test_cobertura_meio_para_cima_em_inteiros tests/db/test_reserva.py::test_aporte_e_rendimento_nao_sao_receita_nem_despesa"
+    test_paths:
+      - "tests/db/test_reserva.py::test_cobertura"
+      - "tests/db/test_reserva_propriedades.py::test_cobertura_meio_para_cima_em_inteiros"
+      - "tests/db/test_reserva.py::test_aporte_e_rendimento_nao_sao_receita_nem_despesa"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-1.log"
+  SPEC-009-AC-10:
+    id: SPEC-009-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_reserva_api.py::test_nivel_nos_cortes_de_50_e_100_por_cento_f_res_01 tests/backend/test_reserva_api.py::test_cobertura_meio_para_cima_f_res_06 tests/backend/test_reserva_api.py::test_bruto_vs_liquido_f_res_03 tests/backend/test_reserva_api.py::test_soma_de_duas_reservas_f_res_04 tests/backend/test_reserva_api.py::test_aporte_nao_exato_e_casos_de_borda_f_res_05 tests/backend/test_reserva_api.py::test_sem_parametro_e_config_pendente_f_res_07 tests/backend/test_reserva_api.py::test_vigencia_dos_parametros_f_res_08 tests/backend/test_reserva_api.py::test_hoje_usa_o_fuso_de_sao_paulo tests/backend/test_reserva_api.py::test_limites_de_negocio_sao_ab422_do_banco tests/backend/test_reserva_api.py::test_escrita_sem_csrf_e_403 tests/backend/test_reserva_api.py::test_sem_sessao_e_401 tests/backend/test_reserva_api.py::test_isolamento_entre_usuarios tests/backend/test_reserva_api.py::test_valores_fora_do_log"
+    test_paths:
+      - "tests/backend/test_reserva_api.py::test_nivel_nos_cortes_de_50_e_100_por_cento_f_res_01"
+      - "tests/backend/test_reserva_api.py::test_cobertura_meio_para_cima_f_res_06"
+      - "tests/backend/test_reserva_api.py::test_bruto_vs_liquido_f_res_03"
+      - "tests/backend/test_reserva_api.py::test_soma_de_duas_reservas_f_res_04"
+      - "tests/backend/test_reserva_api.py::test_aporte_nao_exato_e_casos_de_borda_f_res_05"
+      - "tests/backend/test_reserva_api.py::test_sem_parametro_e_config_pendente_f_res_07"
+      - "tests/backend/test_reserva_api.py::test_vigencia_dos_parametros_f_res_08"
+      - "tests/backend/test_reserva_api.py::test_hoje_usa_o_fuso_de_sao_paulo"
+      - "tests/backend/test_reserva_api.py::test_limites_de_negocio_sao_ab422_do_banco"
+      - "tests/backend/test_reserva_api.py::test_escrita_sem_csrf_e_403"
+      - "tests/backend/test_reserva_api.py::test_sem_sessao_e_401"
+      - "tests/backend/test_reserva_api.py::test_isolamento_entre_usuarios"
+      - "tests/backend/test_reserva_api.py::test_valores_fora_do_log"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-10.log"
+  SPEC-009-AC-2:
+    id: SPEC-009-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_reserva.py::test_cortes_nivel tests/db/test_reserva_propriedades.py::test_nivel_muda_exatamente_em_50_e_100_por_cento tests/db/test_reserva_propriedades.py::test_nivel_nas_bordas_exatas"
+    test_paths:
+      - "tests/db/test_reserva.py::test_cortes_nivel"
+      - "tests/db/test_reserva_propriedades.py::test_nivel_muda_exatamente_em_50_e_100_por_cento"
+      - "tests/db/test_reserva_propriedades.py::test_nivel_nas_bordas_exatas"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-2.log"
+  SPEC-009-AC-3:
+    id: SPEC-009-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_reserva.py::test_aporte_mensal tests/db/test_reserva_propriedades.py::test_aporte_cobre_a_falta_e_um_centavo_a_menos_nao tests/db/test_reserva_propriedades.py::test_aporte_zero_quando_nao_ha_falta tests/db/test_reserva_propriedades.py::test_aporte_com_meses_menor_que_um_vale_um"
+    test_paths:
+      - "tests/db/test_reserva.py::test_aporte_mensal"
+      - "tests/db/test_reserva_propriedades.py::test_aporte_cobre_a_falta_e_um_centavo_a_menos_nao"
+      - "tests/db/test_reserva_propriedades.py::test_aporte_zero_quando_nao_ha_falta"
+      - "tests/db/test_reserva_propriedades.py::test_aporte_com_meses_menor_que_um_vale_um"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-3.log"
+  SPEC-009-AC-4:
+    id: SPEC-009-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_reserva.py::test_bruto_liquido_f_res_03 tests/db/test_reserva.py::test_imposto_de_rendimento_futuro_nao_entra"
+    test_paths:
+      - "tests/db/test_reserva.py::test_bruto_liquido_f_res_03"
+      - "tests/db/test_reserva.py::test_imposto_de_rendimento_futuro_nao_entra"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-4.log"
+  SPEC-009-AC-5:
+    id: SPEC-009-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_reserva.py::test_soma_de_reservas_f_res_04 tests/db/test_reserva.py::test_conta_que_deixa_de_ser_reserva_sai_da_soma_com_o_imposto tests/db/test_reserva.py::test_usuario_sem_reserva_tem_saldo_zero"
+    test_paths:
+      - "tests/db/test_reserva.py::test_soma_de_reservas_f_res_04"
+      - "tests/db/test_reserva.py::test_conta_que_deixa_de_ser_reserva_sai_da_soma_com_o_imposto"
+      - "tests/db/test_reserva.py::test_usuario_sem_reserva_tem_saldo_zero"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-5.log"
+  SPEC-009-AC-6:
+    id: SPEC-009-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_reserva.py::test_parametros_com_vigencia_f_res_08 tests/db/test_reserva.py::test_gravar_parametro_e_idempotente_e_futuro_vale_so_depois tests/db/test_reserva.py::test_validacao_dos_parametros"
+    test_paths:
+      - "tests/db/test_reserva.py::test_parametros_com_vigencia_f_res_08"
+      - "tests/db/test_reserva.py::test_gravar_parametro_e_idempotente_e_futuro_vale_so_depois"
+      - "tests/db/test_reserva.py::test_validacao_dos_parametros"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-6.log"
+  SPEC-009-AC-7:
+    id: SPEC-009-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_reserva.py::test_config_ausente_f_res_07"
+    test_paths:
+      - "tests/db/test_reserva.py::test_config_ausente_f_res_07"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-7.log"
+  SPEC-009-AC-8:
+    id: SPEC-009-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_reserva.py::test_isolamento_por_user_id"
+    test_paths:
+      - "tests/db/test_reserva.py::test_isolamento_por_user_id"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-8.log"
+  SPEC-009-AC-9:
+    id: SPEC-009-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_papeis.py::test_reserva_papeis tests/db/test_reserva_mensagens.py::test_mensagens_de_erro_da_0010_sao_literais tests/db/test_reserva_mensagens.py::test_escrita_e_definer_com_search_path_fixo_e_leitura_e_invoker tests/db/test_migracao_0010.py::test_downgrade_com_parametros_e_recusado tests/db/test_migracao_0010.py::test_downgrade_sem_dados_remove_tudo_e_sobe_de_novo tests/db/test_migracao_0010.py::test_leitura_funciona_depois_de_subir_de_novo"
+    test_paths:
+      - "tests/db/test_papeis.py::test_reserva_papeis"
+      - "tests/db/test_reserva_mensagens.py::test_mensagens_de_erro_da_0010_sao_literais"
+      - "tests/db/test_reserva_mensagens.py::test_escrita_e_definer_com_search_path_fixo_e_leitura_e_invoker"
+      - "tests/db/test_migracao_0010.py::test_downgrade_com_parametros_e_recusado"
+      - "tests/db/test_migracao_0010.py::test_downgrade_sem_dados_remove_tudo_e_sobe_de_novo"
+      - "tests/db/test_migracao_0010.py::test_leitura_funciona_depois_de_subir_de_novo"
+    exit_code: 0
+    log_path: "logs/15/SPEC-009-AC-9.log"

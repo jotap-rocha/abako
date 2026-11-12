@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from backend.routers import auth, cartoes, contas, gasto_real, lancamentos, pessoas, saldos
+from backend.routers import auth, cartoes, contas, gasto_real, lancamentos, pessoas, reserva, saldos
 from backend.seguranca import LimitadorLogin
 from backend.settings import Settings, obter_settings
 
@@ -89,6 +89,7 @@ def criar_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(lancamentos.router, prefix="/api")
     app.include_router(pessoas.router, prefix="/api")
     app.include_router(gasto_real.router, prefix="/api")
+    app.include_router(reserva.router, prefix="/api")
     app.include_router(cartoes.router_linhas, prefix="/api")
     app.include_router(cartoes.router_cartoes, prefix="/api")
     _servir_spa(app, cfg.frontend_dist)

@@ -44,6 +44,7 @@ def apagar_usuarios(url_dono: str, usuarios: list[Usuario]) -> None:
             "credencial",
             "snapshot_saldo",
             "cartao_fechamento",
+            "reserva_parametro",
             "linha_credito",
             "transacao_versao",
             "pessoa",
