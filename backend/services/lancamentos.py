@@ -42,6 +42,18 @@ class Lancamento:
     descricao: str | None
     parcelas: int | None
     competencia: str | None
+    # Só no estorno: compra estornada e crédito P emitido (ADR 044).
+    estorno_de: int | None = None
+    estorno_credito: Decimal | None = None
+
+
+@dataclass(frozen=True)
+class EstornoGravado:
+    estorno_id: int
+    competencia_credito: str
+    total: Decimal
+    pago: Decimal
+    limite_devolvido: Decimal
 
 
 def _texto(valor: Decimal | None) -> str | None:
@@ -67,7 +79,8 @@ def hash_corpo(dados: Dados) -> str:
 
 _SELECT = (
     "SELECT transacao_id, versao, tipo, data_transacao, valor, conta_id, conta_destino_id, "
-    "bruto, imposto, descricao, parcelas, competencia FROM lancamento_vigente WHERE user_id = %s"
+    "bruto, imposto, descricao, parcelas, competencia, estorno_de, estorno_credito "
+    "FROM lancamento_vigente WHERE user_id = %s"
 )
 
 
@@ -142,6 +155,26 @@ async def gravar(
     if linha is None:
         raise RuntimeError("lancamento_gravar não devolveu linha")
     return int(linha[0]), bool(linha[1])
+
+
+async def estornar(
+    conn: psycopg.AsyncConnection,
+    user_id: int,
+    transacao_id: int,
+    versao: int,
+    data: date,
+    descricao: str | None,
+) -> EstornoGravado:
+    """Estorna a compra inteira. T, P e N saem da função do banco (ADR 044); erros: AB***."""
+    cur = await conn.execute(
+        "SELECT estorno_id, competencia_credito, total, credito, limite_devolvido "
+        "FROM estorno_gravar(%s, %s, %s, %s, %s)",
+        (user_id, transacao_id, versao, data, descricao),
+    )
+    linha = await cur.fetchone()
+    if linha is None:
+        raise RuntimeError("estorno_gravar não devolveu linha")
+    return EstornoGravado(*linha)
 
 
 async def excluir(

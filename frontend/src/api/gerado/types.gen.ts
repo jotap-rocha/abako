@@ -121,6 +121,50 @@ export type DivergenciaSaida = {
 };
 
 /**
+ * EstornoEntrada
+ */
+export type EstornoEntrada = {
+    /**
+     * Data
+     */
+    data: string;
+    /**
+     * Descricao
+     */
+    descricao?: string | null;
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
+ * EstornoSaida
+ */
+export type EstornoSaida = {
+    /**
+     * Competencia Credito
+     */
+    competencia_credito: string;
+    /**
+     * Estorno Id
+     */
+    estorno_id: number;
+    /**
+     * Limite Devolvido
+     */
+    limite_devolvido: string;
+    /**
+     * Pago
+     */
+    pago: string;
+    /**
+     * Total
+     */
+    total: string;
+};
+
+/**
  * FaturaSaida
  */
 export type FaturaSaida = {
@@ -330,6 +374,14 @@ export type LancamentoSaida = {
      * Descricao
      */
     descricao: string | null;
+    /**
+     * Estorno Credito
+     */
+    estorno_credito?: string | null;
+    /**
+     * Estorno De
+     */
+    estorno_de?: number | null;
     /**
      * Imposto
      */
@@ -1076,6 +1128,42 @@ export type LancamentosEditarResponses = {
 };
 
 export type LancamentosEditarResponse = LancamentosEditarResponses[keyof LancamentosEditarResponses];
+
+export type LancamentosEstornarData = {
+    body: EstornoEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Transacao Id
+         */
+        transacao_id: number;
+    };
+    query?: never;
+    url: '/api/lancamentos/{transacao_id}/estorno';
+};
+
+export type LancamentosEstornarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LancamentosEstornarError = LancamentosEstornarErrors[keyof LancamentosEstornarErrors];
+
+export type LancamentosEstornarResponses = {
+    /**
+     * Successful Response
+     */
+    201: EstornoSaida;
+};
+
+export type LancamentosEstornarResponse = LancamentosEstornarResponses[keyof LancamentosEstornarResponses];
 
 export type LinhasCreditoListarData = {
     body?: never;

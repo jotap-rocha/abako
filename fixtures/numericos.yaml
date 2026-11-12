@@ -153,6 +153,83 @@ fixtures:
       movimento_em_conta_corrente: "0.00"
       liquido_da_compra: "0.00"
 
+  - id: F-EST-03
+    invariantes: [INV-08, INV-06]
+    descricao: >-
+      Estorno após pagamento parcial que não é múltiplo de parcela (ADR 044). Alocação em ordem de
+      competência: parcela 1 quitada (100) e parcela 2 paga em parte (50).
+    entrada:
+      compra: {total: "400.00", parcelas: 4}
+      pagamentos: ["150.00"]
+      estorno: integral_da_compra
+    esperado:
+      pago_alocado: "150.00"
+      limite_devolvido: "250.00"
+      credito_proxima_fatura_aberta: "150.00"
+      movimento_em_conta_corrente: "0.00"
+      liquido_da_compra: "0.00"
+      saldo_cartao_antes: "-250.00"
+      saldo_cartao_depois: "150.00"
+
+  - id: F-EST-04
+    invariantes: [INV-08, INV-06]
+    descricao: >-
+      Duas compras no mesmo cartão e um pagamento solto de 250 (ADR 044). A alocação segue
+      competência, data da compra e parcela: A1 (2026-03) 100, A2 (2026-04) 100, B (2026-04,
+      comprada depois de A) 50. O crédito de um estorno sai do pool (A estornada: pool 250-200 = 50,
+      que passa para B).
+    entrada:
+      compra_A: {total: "400.00", parcelas: 4, primeira_competencia: "2026-03", data: "2026-03-05"}
+      compra_B: {total: "200.00", parcelas: 1, competencia: "2026-04", data: "2026-03-20"}
+      pagamentos: ["250.00"]
+    casos:
+      - estorno: B
+        pago_alocado: "50.00"
+        limite_devolvido: "150.00"
+        credito_proxima_fatura_aberta: "50.00"
+        liquido_da_compra: "0.00"
+      - estorno: A
+        pago_alocado: "200.00"
+        limite_devolvido: "200.00"
+        credito_proxima_fatura_aberta: "200.00"
+        liquido_da_compra: "0.00"
+        pago_alocado_a_B_depois: "50.00"
+
+  - id: F-EST-05
+    invariantes: [INV-08, INV-06]
+    descricao: >-
+      Pagamento maior que a dívida: o saldo do cartão já está positivo; o estorno credita o total
+      da compra e o excedente do pagamento continua no pool (ADR 044).
+    entrada:
+      compra: {total: "400.00", parcelas: 4}
+      pagamentos: ["500.00"]
+      estorno: integral_da_compra
+    esperado:
+      saldo_cartao_antes: "100.00"
+      pago_alocado: "400.00"
+      limite_devolvido: "0.00"
+      credito_proxima_fatura_aberta: "400.00"
+      movimento_em_conta_corrente: "0.00"
+      liquido_da_compra: "0.00"
+      saldo_cartao_depois: "500.00"
+      pool_restante: "100.00"
+
+  - id: F-EST-06
+    invariantes: [INV-08, INV-09]
+    descricao: >-
+      Edição e exclusão de compra com parte paga são recusadas (ADR 044 item 8). Compra 400 em 4x com
+      pagamento de 150, tentativa de editar para total 600 (ou excluir). Nada muda.
+    entrada:
+      compra: {total: "400.00", parcelas: 4}
+      pagamentos: ["150.00"]
+      edicao: {total: "600.00", parcelas: 4}
+    esperado:
+      edicao_aceita: false
+      pago_alocado: "150.00"
+      saldo_cartao: "-250.00"
+      limite_usado: "250.00"
+      compra_vigente: {total: "400.00", parcelas: 4}
+
   - id: F-RES-01
     invariantes: [INV-12, INV-17]
     descricao: Níveis da reserva nos cortes de 50% e 100%. Meta = 12000.00.

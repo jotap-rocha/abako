@@ -29,6 +29,7 @@ Finanças pessoais de um único usuário (modelo já preparado com `user_id` par
 | Repasse | Terceiro devolvendo o que o usuário pagou por ele; abate o "a receber" | | Receita |
 | A receber | Despesas de terceiros no cartão − repasses, por pessoa | fiado | Receita |
 | Estorno | Integral (nenhuma parcela paga) ou com parcelas pagas (crédito na próxima fatura aberta) | | Dinheiro devolvido à conta corrente |
+| Parcela paga | O que o pagamento solto do cartão cobre, alocado por competência, data da compra e parcela; paga em parte também conta, só na parte paga (ADR 044) | Parcela quitada (valor todo coberto) | Pagamento ligado a uma fatura |
 | Reserva | Conta dedicada com meta = N meses × gasto essencial (N inicial 3) | | Parte de conta comum |
 | Cobertura | Saldo da reserva ÷ gasto essencial, em meses | | |
 | Rendimento | Tipo próprio de transação | | Receita comum |

@@ -1,0 +1,89 @@
+task_id: "12"
+criteria:
+  SPEC-006-AC-1:
+    id: SPEC-006-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_f_est_01 tests/backend/test_estorno_api.py::test_estorno_integral_f_est_01"
+    test_paths:
+      - "tests/db/test_estorno.py::test_f_est_01"
+      - "tests/backend/test_estorno_api.py::test_estorno_integral_f_est_01"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-1.log"
+  SPEC-006-AC-10:
+    id: SPEC-006-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_depois_do_estorno_pagamento_compra_e_estorno_ficam_imutaveis tests/db/test_estorno.py::test_conversao_para_cartao_com_estorno_e_recusada tests/db/test_estorno.py::test_conta_do_cartao_com_estorno_nao_muda_de_tipo tests/backend/test_estorno_api.py::test_depois_do_estorno_nada_do_cartao_se_edita"
+    test_paths:
+      - "tests/db/test_estorno.py::test_depois_do_estorno_pagamento_compra_e_estorno_ficam_imutaveis"
+      - "tests/db/test_estorno.py::test_conversao_para_cartao_com_estorno_e_recusada"
+      - "tests/db/test_estorno.py::test_conta_do_cartao_com_estorno_nao_muda_de_tipo"
+      - "tests/backend/test_estorno_api.py::test_depois_do_estorno_nada_do_cartao_se_edita"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-10.log"
+  SPEC-006-AC-11:
+    id: SPEC-006-AC-11
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_faturas_antigas_nao_mudam tests/backend/test_estorno_api.py::test_estorno_com_parcela_paga_f_est_02"
+    test_paths:
+      - "tests/db/test_estorno.py::test_faturas_antigas_nao_mudam"
+      - "tests/backend/test_estorno_api.py::test_estorno_com_parcela_paga_f_est_02"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-11.log"
+  SPEC-006-AC-2:
+    id: SPEC-006-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_f_est_02 tests/backend/test_estorno_api.py::test_estorno_com_parcela_paga_f_est_02"
+    test_paths:
+      - "tests/db/test_estorno.py::test_f_est_02"
+      - "tests/backend/test_estorno_api.py::test_estorno_com_parcela_paga_f_est_02"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-2.log"
+  SPEC-006-AC-3:
+    id: SPEC-006-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_liquido_zero"
+    test_paths:
+      - "tests/db/test_estorno.py::test_liquido_zero"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-3.log"
+  SPEC-006-AC-4:
+    id: SPEC-006-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_f_est_03 tests/backend/test_estorno_api.py::test_estorno_com_parcela_paga_em_parte_f_est_03"
+    test_paths:
+      - "tests/db/test_estorno.py::test_f_est_03"
+      - "tests/backend/test_estorno_api.py::test_estorno_com_parcela_paga_em_parte_f_est_03"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-4.log"
+  SPEC-006-AC-5:
+    id: SPEC-006-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_f_est_04"
+    test_paths:
+      - "tests/db/test_estorno.py::test_f_est_04"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-5.log"
+  SPEC-006-AC-6:
+    id: SPEC-006-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_estorno_no_dia_do_fechamento_cai_na_fatura_seguinte"
+    test_paths:
+      - "tests/db/test_estorno.py::test_estorno_no_dia_do_fechamento_cai_na_fatura_seguinte"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-6.log"
+  SPEC-006-AC-7:
+    id: SPEC-006-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_f_est_05"
+    test_paths:
+      - "tests/db/test_estorno.py::test_f_est_05"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-7.log"
+  SPEC-006-AC-8:
+    id: SPEC-006-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_f_est_06 tests/db/test_estorno.py::test_corrida_pagamento_novo_antes_da_edicao_recusa_a_edicao tests/db/test_estorno.py::test_corrida_edicao_antes_do_pagamento_novo_serializa tests/backend/test_estorno_api.py::test_recusa_editar_e_excluir_compra_com_parte_paga_f_est_06"
+    test_paths:
+      - "tests/db/test_estorno.py::test_f_est_06"
+      - "tests/db/test_estorno.py::test_corrida_pagamento_novo_antes_da_edicao_recusa_a_edicao"
+      - "tests/db/test_estorno.py::test_corrida_edicao_antes_do_pagamento_novo_serializa"
+      - "tests/backend/test_estorno_api.py::test_recusa_editar_e_excluir_compra_com_parte_paga_f_est_06"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-8.log"
+  SPEC-006-AC-9:
+    id: SPEC-006-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_estorno.py::test_compra_original_preservada_e_um_estorno_por_compra"
+    test_paths:
+      - "tests/db/test_estorno.py::test_compra_original_preservada_e_um_estorno_por_compra"
+    exit_code: 0
+    log_path: "logs/12/SPEC-006-AC-9.log"

@@ -91,6 +91,34 @@ class LancamentoSaida(BaseModel):
     # Só no crédito: número de parcelas e competência ("YYYY-MM") da primeira.
     parcelas: int | None = None
     competencia: str | None = None
+    # Só no estorno: a compra estornada e o crédito P (parte paga) na fatura (ADR 044).
+    estorno_de: int | None = None
+    estorno_credito: str | None = None
+
+
+class EstornoEntrada(BaseModel):
+    # A versão da compra que o front leu; se outra edição veio antes, 409.
+    versao: int = Field(ge=1)
+    data: date = Field(ge=DATA_MINIMA)
+    descricao: str | None = None
+
+    @field_validator("descricao")
+    @classmethod
+    def _descricao_aparada(cls, descricao: str | None) -> str | None:
+        limpa = descricao.strip() if descricao else ""
+        if len(limpa) > 200:
+            raise ValueError("a descrição passa de 200 caracteres")
+        return limpa or None
+
+
+class EstornoSaida(BaseModel):
+    estorno_id: int
+    # Fatura ("YYYY-MM") que recebe o crédito P.
+    competencia_credito: str
+    # T = total da compra, P = pago (vira crédito), N = T - P (limite devolvido).
+    total: str
+    pago: str
+    limite_devolvido: str
 
 
 def _saida(lanc: svc.Lancamento) -> LancamentoSaida:
@@ -107,6 +135,10 @@ def _saida(lanc: svc.Lancamento) -> LancamentoSaida:
         descricao=lanc.descricao,
         parcelas=lanc.parcelas,
         competencia=lanc.competencia,
+        estorno_de=lanc.estorno_de,
+        estorno_credito=(
+            None if lanc.estorno_credito is None else texto_dinheiro(lanc.estorno_credito)
+        ),
     )
 
 
@@ -175,6 +207,27 @@ async def editar(
     lanc = await _obter_ou_404(conn, sessao.user_id, transacao_id)
     await conn.commit()
     return _saida(lanc)
+
+
+@router.post(
+    "/{transacao_id}/estorno", response_model=EstornoSaida, status_code=status.HTTP_201_CREATED
+)
+async def estornar(
+    transacao_id: IdLancamento, entrada: EstornoEntrada, conn: Conexao, sessao: SessaoEscrita
+) -> EstornoSaida:
+    """Estorna a compra a crédito inteira; a regra (T, P, N, competência) vem do banco."""
+    async with regras_do_banco():
+        e = await svc.estornar(
+            conn, sessao.user_id, transacao_id, entrada.versao, entrada.data, entrada.descricao
+        )
+    await conn.commit()
+    return EstornoSaida(
+        estorno_id=e.estorno_id,
+        competencia_credito=e.competencia_credito,
+        total=texto_dinheiro(e.total),
+        pago=texto_dinheiro(e.pago),
+        limite_devolvido=texto_dinheiro(e.limite_devolvido),
+    )
 
 
 @router.delete("/{transacao_id}", status_code=status.HTTP_204_NO_CONTENT)

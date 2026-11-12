@@ -103,6 +103,8 @@ def test_credito_pela_api(client: TestClient, usuario: Usuario) -> None:
         "descricao": "geladeira",
         "parcelas": 3,
         "competencia": "2026-02",
+        "estorno_de": None,
+        "estorno_credito": None,
     }
     tid = compra["transacao_id"]
     assert saldo(client, cartao, "2026-02-28") == "-100.00"
