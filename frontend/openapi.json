@@ -461,6 +461,47 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HorizonteEntrada": {
+        "additionalProperties": false,
+        "properties": {
+          "dias": {
+            "maximum": 2147483647.0,
+            "minimum": -2147483648.0,
+            "title": "Dias",
+            "type": "integer"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dias",
+          "vigente_desde"
+        ],
+        "title": "HorizonteEntrada",
+        "type": "object"
+      },
+      "HorizonteSaida": {
+        "properties": {
+          "dias": {
+            "title": "Dias",
+            "type": "integer"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dias",
+          "vigente_desde"
+        ],
+        "title": "HorizonteSaida",
+        "type": "object"
+      },
       "ItemFaturaSaida": {
         "properties": {
           "data_compra": {
@@ -522,6 +563,107 @@
           "pessoa_id"
         ],
         "title": "ItemFaturaSaida",
+        "type": "object"
+      },
+      "ItemR2Saida": {
+        "properties": {
+          "bruto": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bruto"
+          },
+          "competencia": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Competencia"
+          },
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "data": {
+            "format": "date",
+            "title": "Data",
+            "type": "string"
+          },
+          "grupo": {
+            "title": "Grupo",
+            "type": "string"
+          },
+          "pago": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pago"
+          },
+          "parcial": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parcial"
+          },
+          "recorrente_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorrente Id"
+          },
+          "tipo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo"
+          },
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "grupo",
+          "tipo",
+          "recorrente_id",
+          "conta_id",
+          "competencia",
+          "data",
+          "valor",
+          "bruto",
+          "pago",
+          "parcial"
+        ],
+        "title": "ItemR2Saida",
         "type": "object"
       },
       "LancamentoEdicao": {
@@ -1058,6 +1200,72 @@
         "title": "LoginSaida",
         "type": "object"
       },
+      "OcorrenciaSaida": {
+        "properties": {
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "data": {
+            "format": "date",
+            "title": "Data",
+            "type": "string"
+          },
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "recorrente_id": {
+            "title": "Recorrente Id",
+            "type": "integer"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "transacao_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transacao Id"
+          },
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          },
+          "valor_esperado": {
+            "title": "Valor Esperado",
+            "type": "string"
+          },
+          "vinculada": {
+            "title": "Vinculada",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "recorrente_id",
+          "nome",
+          "tipo",
+          "conta_id",
+          "mes",
+          "data",
+          "valor_esperado",
+          "valor",
+          "transacao_id",
+          "vinculada"
+        ],
+        "title": "OcorrenciaSaida",
+        "type": "object"
+      },
       "ParametroEntrada": {
         "additionalProperties": false,
         "properties": {
@@ -1223,6 +1431,199 @@
         "title": "ReceitaSaida",
         "type": "object"
       },
+      "RecorrenteEdicao": {
+        "additionalProperties": false,
+        "properties": {
+          "conta_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "dia": {
+            "maximum": 2147483647.0,
+            "minimum": -2147483648.0,
+            "title": "Dia",
+            "type": "integer"
+          },
+          "mes_fim": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mes Fim"
+          },
+          "mes_inicio": {
+            "maxLength": 16,
+            "title": "Mes Inicio",
+            "type": "string"
+          },
+          "nome": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "tipo": {
+            "enum": [
+              "fixo",
+              "receita"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "valor": {
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+            "title": "Valor",
+            "type": "string"
+          },
+          "versao": {
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nome",
+          "tipo",
+          "valor",
+          "dia",
+          "conta_id",
+          "mes_inicio",
+          "versao"
+        ],
+        "title": "RecorrenteEdicao",
+        "type": "object"
+      },
+      "RecorrenteEntrada": {
+        "additionalProperties": false,
+        "properties": {
+          "conta_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "dia": {
+            "maximum": 2147483647.0,
+            "minimum": -2147483648.0,
+            "title": "Dia",
+            "type": "integer"
+          },
+          "mes_fim": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mes Fim"
+          },
+          "mes_inicio": {
+            "maxLength": 16,
+            "title": "Mes Inicio",
+            "type": "string"
+          },
+          "nome": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "tipo": {
+            "enum": [
+              "fixo",
+              "receita"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          },
+          "valor": {
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+            "title": "Valor",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "tipo",
+          "valor",
+          "dia",
+          "conta_id",
+          "mes_inicio"
+        ],
+        "title": "RecorrenteEntrada",
+        "type": "object"
+      },
+      "RecorrenteSaida": {
+        "properties": {
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "dia": {
+            "title": "Dia",
+            "type": "integer"
+          },
+          "mes_fim": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mes Fim"
+          },
+          "mes_inicio": {
+            "title": "Mes Inicio",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "recorrente_id": {
+            "title": "Recorrente Id",
+            "type": "integer"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          },
+          "valor": {
+            "title": "Valor",
+            "type": "string"
+          },
+          "versao": {
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "recorrente_id",
+          "nome",
+          "tipo",
+          "valor",
+          "dia",
+          "conta_id",
+          "mes_inicio",
+          "mes_fim",
+          "versao"
+        ],
+        "title": "RecorrenteSaida",
+        "type": "object"
+      },
       "SaldoSaida": {
         "properties": {
           "conta_beneficio": {
@@ -1298,6 +1699,83 @@
           "conta_mae_id"
         ],
         "title": "SaldoSaida",
+        "type": "object"
+      },
+      "SituacaoR2Saida": {
+        "properties": {
+          "alerta": {
+            "title": "Alerta",
+            "type": "boolean"
+          },
+          "compromissos": {
+            "title": "Compromissos",
+            "type": "string"
+          },
+          "data_fim": {
+            "format": "date",
+            "title": "Data Fim",
+            "type": "string"
+          },
+          "disponivel": {
+            "title": "Disponivel",
+            "type": "string"
+          },
+          "faturas_proprias": {
+            "title": "Faturas Proprias",
+            "type": "string"
+          },
+          "fixos_pendentes": {
+            "title": "Fixos Pendentes",
+            "type": "string"
+          },
+          "horizonte_dias": {
+            "title": "Horizonte Dias",
+            "type": "integer"
+          },
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/ItemR2Saida"
+            },
+            "title": "Itens",
+            "type": "array"
+          },
+          "pendencias_vencimento": {
+            "title": "Pendencias Vencimento",
+            "type": "integer"
+          },
+          "receitas_pendentes": {
+            "title": "Receitas Pendentes",
+            "type": "string"
+          },
+          "saldos_correntes": {
+            "title": "Saldos Correntes",
+            "type": "string"
+          },
+          "sobra": {
+            "title": "Sobra",
+            "type": "string"
+          },
+          "vencidas": {
+            "title": "Vencidas",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "horizonte_dias",
+          "data_fim",
+          "saldos_correntes",
+          "receitas_pendentes",
+          "disponivel",
+          "fixos_pendentes",
+          "faturas_proprias",
+          "compromissos",
+          "sobra",
+          "alerta",
+          "vencidas",
+          "pendencias_vencimento",
+          "itens"
+        ],
+        "title": "SituacaoR2Saida",
         "type": "object"
       },
       "SituacaoSaida": {
@@ -1556,6 +2034,63 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "VencimentoEntrada": {
+        "additionalProperties": false,
+        "properties": {
+          "dia": {
+            "maximum": 2147483647.0,
+            "minimum": -2147483648.0,
+            "title": "Dia",
+            "type": "integer"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dia",
+          "vigente_desde"
+        ],
+        "title": "VencimentoEntrada",
+        "type": "object"
+      },
+      "VencimentoSaida": {
+        "properties": {
+          "dia": {
+            "title": "Dia",
+            "type": "integer"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dia",
+          "vigente_desde"
+        ],
+        "title": "VencimentoSaida",
+        "type": "object"
+      },
+      "VinculoEntrada": {
+        "additionalProperties": false,
+        "properties": {
+          "transacao_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
+            "title": "Transacao Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "transacao_id"
+        ],
+        "title": "VinculoEntrada",
         "type": "object"
       }
     }
@@ -1840,6 +2375,123 @@
         "summary": "Registrar Fechamento",
         "tags": [
           "cartoes"
+        ]
+      }
+    },
+    "/api/cartoes/{conta_id}/vencimentos": {
+      "get": {
+        "operationId": "vencimentos_listar_vencimentos",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conta_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Conta Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VencimentoSaida"
+                  },
+                  "title": "Response Vencimentos Listar Vencimentos",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Vencimentos",
+        "tags": [
+          "vencimentos"
+        ]
+      },
+      "put": {
+        "description": "Dia de vencimento a partir de uma data; repetir é idempotente (ADR 048 item 5).",
+        "operationId": "vencimentos_gravar_vencimento",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conta_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Conta Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VencimentoEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VencimentoSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Gravar Vencimento",
+        "tags": [
+          "vencimentos"
         ]
       }
     },
@@ -3119,6 +3771,112 @@
         ]
       }
     },
+    "/api/r2": {
+      "get": {
+        "description": "Sobra do R2 em `hoje` (data civil de São Paulo), derivada a cada consulta (ADR 048).",
+        "operationId": "r2_situacao",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SituacaoR2Saida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Situacao",
+        "tags": [
+          "r2"
+        ]
+      }
+    },
+    "/api/r2/horizonte": {
+      "get": {
+        "description": "Um horizonte por `vigente_desde` (o último gravado), do mais antigo ao mais novo.",
+        "operationId": "r2_listar_horizontes",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/HorizonteSaida"
+                  },
+                  "title": "Response R2 Listar Horizontes",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Listar Horizontes",
+        "tags": [
+          "r2"
+        ]
+      },
+      "put": {
+        "description": "Grava o horizonte a partir de `vigente_desde`; repetir é idempotente.",
+        "operationId": "r2_gravar_horizonte",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HorizonteEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HorizonteSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Gravar Horizonte",
+        "tags": [
+          "r2"
+        ]
+      }
+    },
     "/api/r4": {
       "get": {
         "description": "Contas em que o saldo derivado difere do snapshot. Só sinaliza; nunca corrige.",
@@ -3194,6 +3952,472 @@
         "summary": "Receita",
         "tags": [
           "gasto_real"
+        ]
+      }
+    },
+    "/api/recorrentes": {
+      "get": {
+        "operationId": "recorrentes_listar",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RecorrenteSaida"
+                  },
+                  "title": "Response Recorrentes Listar",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Listar",
+        "tags": [
+          "recorrentes"
+        ]
+      },
+      "post": {
+        "operationId": "recorrentes_criar",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecorrenteEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecorrenteSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Criar",
+        "tags": [
+          "recorrentes"
+        ]
+      }
+    },
+    "/api/recorrentes/ocorrencias": {
+      "get": {
+        "description": "Ocorrências do mês (uma por recorrente vigente no período), derivadas a cada consulta.",
+        "operationId": "recorrentes_ocorrencias",
+        "parameters": [
+          {
+            "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+            "in": "query",
+            "name": "mes",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+              "title": "Mes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OcorrenciaSaida"
+                  },
+                  "title": "Response Recorrentes Ocorrencias",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ocorrencias",
+        "tags": [
+          "recorrentes"
+        ]
+      }
+    },
+    "/api/recorrentes/{recorrente_id}": {
+      "delete": {
+        "description": "Exclusão lógica; o histórico dos vínculos fica.",
+        "operationId": "recorrentes_excluir",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recorrente_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Recorrente Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "versao",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Versao",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Excluir",
+        "tags": [
+          "recorrentes"
+        ]
+      },
+      "get": {
+        "operationId": "recorrentes_obter",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recorrente_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Recorrente Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecorrenteSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter",
+        "tags": [
+          "recorrentes"
+        ]
+      },
+      "put": {
+        "description": "Cria nova versão; a anterior fica no histórico. Vale para as ocorrências não vinculadas.",
+        "operationId": "recorrentes_editar",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recorrente_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Recorrente Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecorrenteEdicao"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecorrenteSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Editar",
+        "tags": [
+          "recorrentes"
+        ]
+      }
+    },
+    "/api/recorrentes/{recorrente_id}/ocorrencias/{mes}/vinculo": {
+      "delete": {
+        "description": "Desfaz o vínculo (evento novo, o histórico fica); a ocorrência volta ao valor esperado.",
+        "operationId": "recorrentes_desvincular",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recorrente_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Recorrente Id",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Mês da ocorrência, AAAA-MM",
+            "in": "path",
+            "name": "mes",
+            "required": true,
+            "schema": {
+              "description": "Mês da ocorrência, AAAA-MM",
+              "title": "Mes",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OcorrenciaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Desvincular",
+        "tags": [
+          "recorrentes"
+        ]
+      },
+      "put": {
+        "description": "Liga a transação (mesmo tipo e conta) à ocorrência; repetir o mesmo vínculo é idempotente.",
+        "operationId": "recorrentes_vincular",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recorrente_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Recorrente Id",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Mês da ocorrência, AAAA-MM",
+            "in": "path",
+            "name": "mes",
+            "required": true,
+            "schema": {
+              "description": "Mês da ocorrência, AAAA-MM",
+              "title": "Mes",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VinculoEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OcorrenciaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Vincular",
+        "tags": [
+          "recorrentes"
         ]
       }
     },
