@@ -5,6 +5,36 @@ export type ClientOptions = {
 };
 
 /**
+ * AReceberSaida
+ */
+export type AReceberSaida = {
+    /**
+     * A Receber
+     */
+    a_receber: string;
+    /**
+     * Credito Da Pessoa
+     */
+    credito_da_pessoa: string;
+    /**
+     * Divida
+     */
+    divida: string;
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Pessoa Id
+     */
+    pessoa_id: number;
+    /**
+     * Repassado
+     */
+    repassado: string;
+};
+
+/**
  * ContaEdicao
  */
 export type ContaEdicao = {
@@ -177,6 +207,14 @@ export type FaturaSaida = {
      */
     itens: Array<ItemFaturaSaida>;
     /**
+     * Propria
+     */
+    propria: string;
+    /**
+     * Terceiros
+     */
+    terceiros: string;
+    /**
      * Total
      */
     total: string;
@@ -241,6 +279,10 @@ export type ItemFaturaSaida = {
      */
     parcelas: number;
     /**
+     * Pessoa Id
+     */
+    pessoa_id: number | null;
+    /**
      * Transacao Id
      */
     transacao_id: number;
@@ -286,6 +328,10 @@ export type LancamentoEdicao = {
      * Parcelas
      */
     parcelas?: number | null;
+    /**
+     * Pessoa Id
+     */
+    pessoa_id?: number | null;
     /**
      * Tipo
      */
@@ -336,6 +382,10 @@ export type LancamentoEntrada = {
      * Parcelas
      */
     parcelas?: number | null;
+    /**
+     * Pessoa Id
+     */
+    pessoa_id?: number | null;
     /**
      * Tipo
      */
@@ -390,6 +440,10 @@ export type LancamentoSaida = {
      * Parcelas
      */
     parcelas?: number | null;
+    /**
+     * Pessoa Id
+     */
+    pessoa_id?: number | null;
     /**
      * Tipo
      */
@@ -502,6 +556,48 @@ export type LoginSaida = {
      * Csrf Token
      */
     csrf_token: string;
+};
+
+/**
+ * PessoaEdicao
+ */
+export type PessoaEdicao = {
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
+ * PessoaEntrada
+ */
+export type PessoaEntrada = {
+    /**
+     * Nome
+     */
+    nome: string;
+};
+
+/**
+ * PessoaSaida
+ */
+export type PessoaSaida = {
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Pessoa Id
+     */
+    pessoa_id: number;
+    /**
+     * Versao
+     */
+    versao: number;
 };
 
 /**
@@ -1284,6 +1380,210 @@ export type LinhasCreditoLimiteResponses = {
 };
 
 export type LinhasCreditoLimiteResponse = LinhasCreditoLimiteResponses[keyof LinhasCreditoLimiteResponses];
+
+export type PessoasListarData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/pessoas';
+};
+
+export type PessoasListarResponses = {
+    /**
+     * Response Pessoas Listar
+     *
+     * Successful Response
+     */
+    200: Array<PessoaSaida>;
+};
+
+export type PessoasListarResponse = PessoasListarResponses[keyof PessoasListarResponses];
+
+export type PessoasCriarData = {
+    body: PessoaEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/pessoas';
+};
+
+export type PessoasCriarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PessoasCriarError = PessoasCriarErrors[keyof PessoasCriarErrors];
+
+export type PessoasCriarResponses = {
+    /**
+     * Successful Response
+     */
+    201: PessoaSaida;
+};
+
+export type PessoasCriarResponse = PessoasCriarResponses[keyof PessoasCriarResponses];
+
+export type PessoasAReceberData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/pessoas/a-receber';
+};
+
+export type PessoasAReceberResponses = {
+    /**
+     * Response Pessoas A Receber
+     *
+     * Successful Response
+     */
+    200: Array<AReceberSaida>;
+};
+
+export type PessoasAReceberResponse = PessoasAReceberResponses[keyof PessoasAReceberResponses];
+
+export type PessoasExcluirData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Pessoa Id
+         */
+        pessoa_id: number;
+    };
+    query: {
+        /**
+         * Versao
+         */
+        versao: number;
+    };
+    url: '/api/pessoas/{pessoa_id}';
+};
+
+export type PessoasExcluirErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PessoasExcluirError = PessoasExcluirErrors[keyof PessoasExcluirErrors];
+
+export type PessoasExcluirResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type PessoasExcluirResponse = PessoasExcluirResponses[keyof PessoasExcluirResponses];
+
+export type PessoasObterData = {
+    body?: never;
+    path: {
+        /**
+         * Pessoa Id
+         */
+        pessoa_id: number;
+    };
+    query?: never;
+    url: '/api/pessoas/{pessoa_id}';
+};
+
+export type PessoasObterErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PessoasObterError = PessoasObterErrors[keyof PessoasObterErrors];
+
+export type PessoasObterResponses = {
+    /**
+     * Successful Response
+     */
+    200: PessoaSaida;
+};
+
+export type PessoasObterResponse = PessoasObterResponses[keyof PessoasObterResponses];
+
+export type PessoasRenomearData = {
+    body: PessoaEdicao;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Pessoa Id
+         */
+        pessoa_id: number;
+    };
+    query?: never;
+    url: '/api/pessoas/{pessoa_id}';
+};
+
+export type PessoasRenomearErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PessoasRenomearError = PessoasRenomearErrors[keyof PessoasRenomearErrors];
+
+export type PessoasRenomearResponses = {
+    /**
+     * Successful Response
+     */
+    200: PessoaSaida;
+};
+
+export type PessoasRenomearResponse = PessoasRenomearResponses[keyof PessoasRenomearResponses];
+
+export type PessoasAReceberDaPessoaData = {
+    body?: never;
+    path: {
+        /**
+         * Pessoa Id
+         */
+        pessoa_id: number;
+    };
+    query?: never;
+    url: '/api/pessoas/{pessoa_id}/a-receber';
+};
+
+export type PessoasAReceberDaPessoaErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PessoasAReceberDaPessoaError = PessoasAReceberDaPessoaErrors[keyof PessoasAReceberDaPessoaErrors];
+
+export type PessoasAReceberDaPessoaResponses = {
+    /**
+     * Successful Response
+     */
+    200: AReceberSaida;
+};
+
+export type PessoasAReceberDaPessoaResponse = PessoasAReceberDaPessoaResponses[keyof PessoasAReceberDaPessoaResponses];
 
 export type SaldosR4Data = {
     body?: never;

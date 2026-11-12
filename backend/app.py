@@ -6,12 +6,14 @@ from collections.abc import Awaitable, Callable
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from backend.routers import auth, cartoes, contas, lancamentos, saldos
+from backend.routers import auth, cartoes, contas, lancamentos, pessoas, saldos
 from backend.seguranca import LimitadorLogin
 from backend.settings import Settings, obter_settings
 
@@ -53,6 +55,12 @@ def criar_app(settings: Settings | None = None) -> FastAPI:
             return JSONResponse({"detail": "origem não permitida"}, status_code=403)
         return await call_next(request)
 
+    @app.exception_handler(RequestValidationError)
+    async def corpo_invalido(_: Request, exc: RequestValidationError) -> JSONResponse:
+        """422 sem ecoar o valor recebido (`input`): nome de pessoa é dado pessoal (ADR 045)."""
+        erros = [{k: v for k, v in e.items() if k != "input"} for e in exc.errors()]
+        return JSONResponse({"detail": jsonable_encoder(erros)}, status_code=422)
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(origens),
@@ -79,6 +87,7 @@ def criar_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(contas.router, prefix="/api")
     app.include_router(saldos.router, prefix="/api")
     app.include_router(lancamentos.router, prefix="/api")
+    app.include_router(pessoas.router, prefix="/api")
     app.include_router(cartoes.router_linhas, prefix="/api")
     app.include_router(cartoes.router_cartoes, prefix="/api")
     _servir_spa(app, cfg.frontend_dist)

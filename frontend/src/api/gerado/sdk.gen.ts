@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosEstornarData, LancamentosEstornarErrors, LancamentosEstornarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
+import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosEstornarData, LancamentosEstornarErrors, LancamentosEstornarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, PessoasAReceberDaPessoaData, PessoasAReceberDaPessoaErrors, PessoasAReceberDaPessoaResponses, PessoasAReceberData, PessoasAReceberResponses, PessoasCriarData, PessoasCriarErrors, PessoasCriarResponses, PessoasExcluirData, PessoasExcluirErrors, PessoasExcluirResponses, PessoasListarData, PessoasListarResponses, PessoasObterData, PessoasObterErrors, PessoasObterResponses, PessoasRenomearData, PessoasRenomearErrors, PessoasRenomearResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -45,7 +45,7 @@ export const authLogout = <ThrowOnError extends boolean = false>(options?: Optio
 /**
  * Fatura
  *
- * Parcelas da competência (mês do fechamento, "YYYY-MM") e o total, em valor positivo.
+ * Parcelas da competência (mês do fechamento, "YYYY-MM"), total, própria e terceiros.
  */
 export const cartoesFatura = <ThrowOnError extends boolean = false>(options: Options<CartoesFaturaData, ThrowOnError>): RequestResult<CartoesFaturaResponses, CartoesFaturaErrors, ThrowOnError> => (options.client ?? client).get<CartoesFaturaResponses, CartoesFaturaErrors, ThrowOnError>({ url: '/api/cartoes/{conta_id}/faturas/{competencia}', ...options });
 
@@ -214,6 +214,61 @@ export const linhasCreditoEditar = <ThrowOnError extends boolean = false>(option
  * Limite, usado (dívida das compras ainda não pagas, com parcelas futuras) e disponível.
  */
 export const linhasCreditoLimite = <ThrowOnError extends boolean = false>(options: Options<LinhasCreditoLimiteData, ThrowOnError>): RequestResult<LinhasCreditoLimiteResponses, LinhasCreditoLimiteErrors, ThrowOnError> => (options.client ?? client).get<LinhasCreditoLimiteResponses, LinhasCreditoLimiteErrors, ThrowOnError>({ url: '/api/linhas-credito/{linha_id}/limite', ...options });
+
+/**
+ * Listar
+ */
+export const pessoasListar = <ThrowOnError extends boolean = false>(options?: Options<PessoasListarData, ThrowOnError>): RequestResult<PessoasListarResponses, unknown, ThrowOnError> => (options?.client ?? client).get<PessoasListarResponses, unknown, ThrowOnError>({ url: '/api/pessoas', ...options });
+
+/**
+ * Criar
+ */
+export const pessoasCriar = <ThrowOnError extends boolean = false>(options: Options<PessoasCriarData, ThrowOnError>): RequestResult<PessoasCriarResponses, PessoasCriarErrors, ThrowOnError> => (options.client ?? client).post<PessoasCriarResponses, PessoasCriarErrors, ThrowOnError>({
+    url: '/api/pessoas',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * A Receber
+ *
+ * D, R, a receber e crédito de cada pessoa, derivados a cada consulta (INV-10, INV-33).
+ */
+export const pessoasAReceber = <ThrowOnError extends boolean = false>(options?: Options<PessoasAReceberData, ThrowOnError>): RequestResult<PessoasAReceberResponses, unknown, ThrowOnError> => (options?.client ?? client).get<PessoasAReceberResponses, unknown, ThrowOnError>({ url: '/api/pessoas/a-receber', ...options });
+
+/**
+ * Excluir
+ *
+ * Exclusão lógica; o banco recusa (422) enquanto houver compra ou repasse vigente dela.
+ */
+export const pessoasExcluir = <ThrowOnError extends boolean = false>(options: Options<PessoasExcluirData, ThrowOnError>): RequestResult<PessoasExcluirResponses, PessoasExcluirErrors, ThrowOnError> => (options.client ?? client).delete<PessoasExcluirResponses, PessoasExcluirErrors, ThrowOnError>({ url: '/api/pessoas/{pessoa_id}', ...options });
+
+/**
+ * Obter
+ */
+export const pessoasObter = <ThrowOnError extends boolean = false>(options: Options<PessoasObterData, ThrowOnError>): RequestResult<PessoasObterResponses, PessoasObterErrors, ThrowOnError> => (options.client ?? client).get<PessoasObterResponses, PessoasObterErrors, ThrowOnError>({ url: '/api/pessoas/{pessoa_id}', ...options });
+
+/**
+ * Renomear
+ *
+ * Cria nova versão; a anterior fica no histórico.
+ */
+export const pessoasRenomear = <ThrowOnError extends boolean = false>(options: Options<PessoasRenomearData, ThrowOnError>): RequestResult<PessoasRenomearResponses, PessoasRenomearErrors, ThrowOnError> => (options.client ?? client).put<PessoasRenomearResponses, PessoasRenomearErrors, ThrowOnError>({
+    url: '/api/pessoas/{pessoa_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * A Receber Da Pessoa
+ */
+export const pessoasAReceberDaPessoa = <ThrowOnError extends boolean = false>(options: Options<PessoasAReceberDaPessoaData, ThrowOnError>): RequestResult<PessoasAReceberDaPessoaResponses, PessoasAReceberDaPessoaErrors, ThrowOnError> => (options.client ?? client).get<PessoasAReceberDaPessoaResponses, PessoasAReceberDaPessoaErrors, ThrowOnError>({ url: '/api/pessoas/{pessoa_id}/a-receber', ...options });
 
 /**
  * R4

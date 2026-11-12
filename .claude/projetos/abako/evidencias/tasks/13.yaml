@@ -1,0 +1,109 @@
+task_id: "13"
+criteria:
+  SPEC-007-AC-1:
+    id: SPEC-007-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros.py::test_a_receber_f_fat_01 tests/db/test_terceiros.py::test_a_receber_varias_pessoas_f_rep_03"
+    test_paths:
+      - "tests/db/test_terceiros.py::test_a_receber_f_fat_01"
+      - "tests/db/test_terceiros.py::test_a_receber_varias_pessoas_f_rep_03"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-1.log"
+  SPEC-007-AC-10:
+    id: SPEC-007-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros.py::test_papeis_da_pessoa tests/db/test_migracao_0008.py::test_downgrade_com_terceiros_e_recusado tests/db/test_migracao_0008.py::test_downgrade_sem_dados_restaura_a_0007_e_sobe_de_novo"
+    test_paths:
+      - "tests/db/test_terceiros.py::test_papeis_da_pessoa"
+      - "tests/db/test_migracao_0008.py::test_downgrade_com_terceiros_e_recusado"
+      - "tests/db/test_migracao_0008.py::test_downgrade_sem_dados_restaura_a_0007_e_sobe_de_novo"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-10.log"
+  SPEC-007-AC-11:
+    id: SPEC-007-AC-11
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_terceiros.py::test_divisao_rejeitada tests/backend/test_terceiros.py::test_cadastro_de_pessoa_pela_api tests/backend/test_terceiros.py::test_exclusao_de_pessoa tests/backend/test_terceiros.py::test_a_receber_e_credito_f_rep_01 tests/backend/test_terceiros.py::test_repasse_regras_pela_api tests/backend/test_terceiros.py::test_a_receber_varias_pessoas_f_rep_03 tests/backend/test_terceiros.py::test_fatura_propria_mais_terceiros_f_fat_01 tests/backend/test_terceiros.py::test_limite_f_lim_01_isolado tests/backend/test_terceiros.py::test_estorno_de_compra_de_terceiro_f_rep_02 tests/backend/test_terceiros.py::test_idempotencia_considera_a_pessoa tests/backend/test_terceiros.py::test_troca_de_pessoa_na_edicao tests/backend/test_terceiros.py::test_isolamento_entre_usuarios tests/backend/test_terceiros.py::test_escritas_de_pessoa_exigem_csrf_e_sessao tests/backend/test_terceiros.py::test_valores_de_terceiros_sao_texto_com_duas_casas tests/backend/test_terceiros.py::test_nome_da_pessoa_fora_de_log_e_de_erro tests/backend/test_terceiros.py::test_chave_desconhecida_no_corpo_e_422_e_nada_e_gravado tests/backend/test_terceiros.py::test_versao_de_pessoa_acima_do_inteiro_do_banco_e_422 tests/backend/test_terceiros.py::test_nome_aparado_antes_do_limite_de_80"
+    test_paths:
+      - "tests/backend/test_terceiros.py::test_divisao_rejeitada"
+      - "tests/backend/test_terceiros.py::test_cadastro_de_pessoa_pela_api"
+      - "tests/backend/test_terceiros.py::test_exclusao_de_pessoa"
+      - "tests/backend/test_terceiros.py::test_a_receber_e_credito_f_rep_01"
+      - "tests/backend/test_terceiros.py::test_repasse_regras_pela_api"
+      - "tests/backend/test_terceiros.py::test_a_receber_varias_pessoas_f_rep_03"
+      - "tests/backend/test_terceiros.py::test_fatura_propria_mais_terceiros_f_fat_01"
+      - "tests/backend/test_terceiros.py::test_limite_f_lim_01_isolado"
+      - "tests/backend/test_terceiros.py::test_estorno_de_compra_de_terceiro_f_rep_02"
+      - "tests/backend/test_terceiros.py::test_idempotencia_considera_a_pessoa"
+      - "tests/backend/test_terceiros.py::test_troca_de_pessoa_na_edicao"
+      - "tests/backend/test_terceiros.py::test_isolamento_entre_usuarios"
+      - "tests/backend/test_terceiros.py::test_escritas_de_pessoa_exigem_csrf_e_sessao"
+      - "tests/backend/test_terceiros.py::test_valores_de_terceiros_sao_texto_com_duas_casas"
+      - "tests/backend/test_terceiros.py::test_nome_da_pessoa_fora_de_log_e_de_erro"
+      - "tests/backend/test_terceiros.py::test_chave_desconhecida_no_corpo_e_422_e_nada_e_gravado"
+      - "tests/backend/test_terceiros.py::test_versao_de_pessoa_acima_do_inteiro_do_banco_e_422"
+      - "tests/backend/test_terceiros.py::test_nome_aparado_antes_do_limite_de_80"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-11.log"
+  SPEC-007-AC-2:
+    id: SPEC-007-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros.py::test_divisao_rejeitada_no_esquema tests/db/test_terceiros.py::test_pessoa_so_em_compra_a_credito_e_repasse"
+    test_paths:
+      - "tests/db/test_terceiros.py::test_divisao_rejeitada_no_esquema"
+      - "tests/db/test_terceiros.py::test_pessoa_so_em_compra_a_credito_e_repasse"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-2.log"
+  SPEC-007-AC-3:
+    id: SPEC-007-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros.py::test_repasse_excedente_f_rep_01 tests/db/test_terceiros.py::test_a_receber_nunca_negativo"
+    test_paths:
+      - "tests/db/test_terceiros.py::test_repasse_excedente_f_rep_01"
+      - "tests/db/test_terceiros.py::test_a_receber_nunca_negativo"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-3.log"
+  SPEC-007-AC-4:
+    id: SPEC-007-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros.py::test_fatura_propria_mais_terceiros_f_fat_01 tests/db/test_terceiros.py::test_limite_com_terceiros_f_lim_01 tests/db/test_terceiros.py::test_fatura_e_limite_com_terceiros_f_rep_03"
+    test_paths:
+      - "tests/db/test_terceiros.py::test_fatura_propria_mais_terceiros_f_fat_01"
+      - "tests/db/test_terceiros.py::test_limite_com_terceiros_f_lim_01"
+      - "tests/db/test_terceiros.py::test_fatura_e_limite_com_terceiros_f_rep_03"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-4.log"
+  SPEC-007-AC-5:
+    id: SPEC-007-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros.py::test_estorno_de_compra_de_terceiro_f_rep_02 tests/db/test_terceiros.py::test_compra_de_terceiro_com_parte_paga_nao_e_editavel"
+    test_paths:
+      - "tests/db/test_terceiros.py::test_estorno_de_compra_de_terceiro_f_rep_02"
+      - "tests/db/test_terceiros.py::test_compra_de_terceiro_com_parte_paga_nao_e_editavel"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-5.log"
+  SPEC-007-AC-6:
+    id: SPEC-007-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros.py::test_leituras_nao_vazam_para_outro_usuario tests/db/test_terceiros.py::test_pessoa_de_outro_usuario_nao_existe_para_mim tests/db/test_terceiros.py::test_leituras_com_user_id_de_outro_usuario_devolvem_vazio"
+    test_paths:
+      - "tests/db/test_terceiros.py::test_leituras_nao_vazam_para_outro_usuario"
+      - "tests/db/test_terceiros.py::test_pessoa_de_outro_usuario_nao_existe_para_mim"
+      - "tests/db/test_terceiros.py::test_leituras_com_user_id_de_outro_usuario_devolvem_vazio"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-6.log"
+  SPEC-007-AC-7:
+    id: SPEC-007-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros_mensagens.py::test_mensagens_de_abako_erro_da_0008_sao_literais tests/db/test_terceiros.py::test_nome_da_pessoa_fora_do_pipeline_e_das_leituras"
+    test_paths:
+      - "tests/db/test_terceiros_mensagens.py::test_mensagens_de_abako_erro_da_0008_sao_literais"
+      - "tests/db/test_terceiros.py::test_nome_da_pessoa_fora_do_pipeline_e_das_leituras"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-7.log"
+  SPEC-007-AC-8:
+    id: SPEC-007-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros.py::test_repasse_regras_de_entrada tests/db/test_terceiros.py::test_repasse_edita_e_exclui_com_versao"
+    test_paths:
+      - "tests/db/test_terceiros.py::test_repasse_regras_de_entrada"
+      - "tests/db/test_terceiros.py::test_repasse_edita_e_exclui_com_versao"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-8.log"
+  SPEC-007-AC-9:
+    id: SPEC-007-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_terceiros.py::test_cadastro_de_pessoa_versiona tests/db/test_terceiros.py::test_exclusao_de_pessoa_recusada_com_movimento"
+    test_paths:
+      - "tests/db/test_terceiros.py::test_cadastro_de_pessoa_versiona"
+      - "tests/db/test_terceiros.py::test_exclusao_de_pessoa_recusada_com_movimento"
+    exit_code: 0
+    log_path: "logs/13/SPEC-007-AC-9.log"

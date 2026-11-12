@@ -1,6 +1,44 @@
 {
   "components": {
     "schemas": {
+      "AReceberSaida": {
+        "properties": {
+          "a_receber": {
+            "title": "A Receber",
+            "type": "string"
+          },
+          "credito_da_pessoa": {
+            "title": "Credito Da Pessoa",
+            "type": "string"
+          },
+          "divida": {
+            "title": "Divida",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "pessoa_id": {
+            "title": "Pessoa Id",
+            "type": "integer"
+          },
+          "repassado": {
+            "title": "Repassado",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pessoa_id",
+          "nome",
+          "divida",
+          "repassado",
+          "a_receber",
+          "credito_da_pessoa"
+        ],
+        "title": "AReceberSaida",
+        "type": "object"
+      },
       "ContaEdicao": {
         "properties": {
           "conta_mae_id": {
@@ -303,6 +341,14 @@
             "title": "Itens",
             "type": "array"
           },
+          "propria": {
+            "title": "Propria",
+            "type": "string"
+          },
+          "terceiros": {
+            "title": "Terceiros",
+            "type": "string"
+          },
           "total": {
             "title": "Total",
             "type": "string"
@@ -311,6 +357,8 @@
         "required": [
           "competencia",
           "total",
+          "propria",
+          "terceiros",
           "itens"
         ],
         "title": "FaturaSaida",
@@ -395,6 +443,17 @@
             "title": "Parcelas",
             "type": "integer"
           },
+          "pessoa_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pessoa Id"
+          },
           "transacao_id": {
             "title": "Transacao Id",
             "type": "integer"
@@ -415,12 +474,14 @@
           "parcelas",
           "data_compra",
           "valor",
-          "descricao"
+          "descricao",
+          "pessoa_id"
         ],
         "title": "ItemFaturaSaida",
         "type": "object"
       },
       "LancamentoEdicao": {
+        "additionalProperties": false,
         "properties": {
           "bruto": {
             "anyOf": [
@@ -494,6 +555,19 @@
             ],
             "title": "Parcelas"
           },
+          "pessoa_id": {
+            "anyOf": [
+              {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pessoa Id"
+          },
           "tipo": {
             "enum": [
               "debito",
@@ -535,6 +609,7 @@
         "type": "object"
       },
       "LancamentoEntrada": {
+        "additionalProperties": false,
         "properties": {
           "bruto": {
             "anyOf": [
@@ -614,6 +689,19 @@
               }
             ],
             "title": "Parcelas"
+          },
+          "pessoa_id": {
+            "anyOf": [
+              {
+                "maximum": 9.223372036854776e+18,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pessoa Id"
           },
           "tipo": {
             "enum": [
@@ -748,6 +836,17 @@
               }
             ],
             "title": "Parcelas"
+          },
+          "pessoa_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pessoa Id"
           },
           "tipo": {
             "title": "Tipo",
@@ -913,6 +1012,66 @@
           "csrf_token"
         ],
         "title": "LoginSaida",
+        "type": "object"
+      },
+      "PessoaEdicao": {
+        "properties": {
+          "nome": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "versao": {
+            "maximum": 2147483647.0,
+            "minimum": 1.0,
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "nome",
+          "versao"
+        ],
+        "title": "PessoaEdicao",
+        "type": "object"
+      },
+      "PessoaEntrada": {
+        "properties": {
+          "nome": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome"
+        ],
+        "title": "PessoaEntrada",
+        "type": "object"
+      },
+      "PessoaSaida": {
+        "properties": {
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "pessoa_id": {
+            "title": "Pessoa Id",
+            "type": "integer"
+          },
+          "versao": {
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pessoa_id",
+          "nome",
+          "versao"
+        ],
+        "title": "PessoaSaida",
         "type": "object"
       },
       "SaldoSaida": {
@@ -1225,7 +1384,7 @@
     },
     "/api/cartoes/{conta_id}/faturas/{competencia}": {
       "get": {
-        "description": "Parcelas da competência (mês do fechamento, \"YYYY-MM\") e o total, em valor positivo.",
+        "description": "Parcelas da competência (mês do fechamento, \"YYYY-MM\"), total, própria e terceiros.",
         "operationId": "cartoes_fatura",
         "parameters": [
           {
@@ -2288,6 +2447,334 @@
         "summary": "Limite",
         "tags": [
           "linhas_credito"
+        ]
+      }
+    },
+    "/api/pessoas": {
+      "get": {
+        "operationId": "pessoas_listar",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PessoaSaida"
+                  },
+                  "title": "Response Pessoas Listar",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Listar",
+        "tags": [
+          "pessoas"
+        ]
+      },
+      "post": {
+        "operationId": "pessoas_criar",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PessoaEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PessoaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Criar",
+        "tags": [
+          "pessoas"
+        ]
+      }
+    },
+    "/api/pessoas/a-receber": {
+      "get": {
+        "description": "D, R, a receber e crédito de cada pessoa, derivados a cada consulta (INV-10, INV-33).",
+        "operationId": "pessoas_a_receber",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AReceberSaida"
+                  },
+                  "title": "Response Pessoas A Receber",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "A Receber",
+        "tags": [
+          "pessoas"
+        ]
+      }
+    },
+    "/api/pessoas/{pessoa_id}": {
+      "delete": {
+        "description": "Exclusão lógica; o banco recusa (422) enquanto houver compra ou repasse vigente dela.",
+        "operationId": "pessoas_excluir",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pessoa_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Pessoa Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "versao",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Versao",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Excluir",
+        "tags": [
+          "pessoas"
+        ]
+      },
+      "get": {
+        "operationId": "pessoas_obter",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pessoa_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Pessoa Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PessoaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter",
+        "tags": [
+          "pessoas"
+        ]
+      },
+      "put": {
+        "description": "Cria nova versão; a anterior fica no histórico.",
+        "operationId": "pessoas_renomear",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pessoa_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Pessoa Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PessoaEdicao"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PessoaSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Renomear",
+        "tags": [
+          "pessoas"
+        ]
+      }
+    },
+    "/api/pessoas/{pessoa_id}/a-receber": {
+      "get": {
+        "operationId": "pessoas_a_receber_da_pessoa",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pessoa_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Pessoa Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AReceberSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "A Receber Da Pessoa",
+        "tags": [
+          "pessoas"
         ]
       }
     },

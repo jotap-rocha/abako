@@ -147,11 +147,16 @@ class ItemFaturaSaida(BaseModel):
     data_compra: date
     valor: str
     descricao: str | None
+    # Nula = própria. O nome da pessoa vem de /pessoas (nunca na fatura).
+    pessoa_id: int | None
 
 
 class FaturaSaida(BaseModel):
     competencia: str
+    # total = propria + terceiros. Terceiros entra na fatura e no limite, não no gasto real.
     total: str
+    propria: str
+    terceiros: str
     itens: list[ItemFaturaSaida]
 
 
@@ -189,13 +194,15 @@ async def listar_fechamentos(
 async def fatura(
     conta_id: IdConta, competencia: Competencia, conn: Conexao, sessao: Sessao
 ) -> FaturaSaida:
-    """Parcelas da competência (mês do fechamento, "YYYY-MM") e o total, em valor positivo."""
+    """Parcelas da competência (mês do fechamento, "YYYY-MM"), total, própria e terceiros."""
     await _exigir_cartao(conn, sessao.user_id, conta_id)
     itens = await svc.itens_da_fatura(conn, sessao.user_id, conta_id, competencia)
-    total = await svc.total_da_fatura(conn, sessao.user_id, conta_id, competencia)
+    resumo = await svc.resumo_da_fatura(conn, sessao.user_id, conta_id, competencia)
     return FaturaSaida(
         competencia=competencia,
-        total=texto_dinheiro(total),
+        total=texto_dinheiro(resumo.total),
+        propria=texto_dinheiro(resumo.propria),
+        terceiros=texto_dinheiro(resumo.terceiros),
         itens=[
             ItemFaturaSaida(
                 transacao_id=i.transacao_id,
@@ -205,6 +212,7 @@ async def fatura(
                 data_compra=i.data_compra,
                 valor=texto_dinheiro(i.valor),
                 descricao=i.descricao,
+                pessoa_id=i.pessoa_id,
             )
             for i in itens
         ],

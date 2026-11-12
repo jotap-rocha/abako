@@ -87,6 +87,7 @@ def test_ciclo_de_vida_de_um_lancamento(client: TestClient, usuario: Usuario) ->
         "competencia": None,
         "estorno_de": None,
         "estorno_credito": None,
+        "pessoa_id": None,
     }
     tid = criado["transacao_id"]
     assert saldo(client, c, "2026-02-28") == "-80.00"
@@ -160,7 +161,7 @@ def test_regras_viram_422_com_mensagem(client: TestClient, usuario: Usuario) -> 
         ({"tipo": "credito", "valor": "10"}, "número de parcelas"),
         ({"tipo": "credito", "valor": "10", "parcelas": 2}, "só em conta de cartão"),
         ({"tipo": "debito", "valor": "10", "parcelas": 2}, "só da compra a crédito"),
-        ({"tipo": "repasse", "valor": "10"}, "ainda não está disponível"),
+        ({"tipo": "repasse", "valor": "10"}, "o repasse precisa de uma pessoa"),
         ({"tipo": "debito", "valor": "10", "data": "2999-01-01"}, "entre 2000 e hoje"),
         ({"tipo": "transferencia", "valor": "10", "conta_destino_id": c}, "contas diferentes"),
         ({"tipo": "rendimento", "bruto": "1.00", "imposto": "2.00"}, "bruto > 0"),

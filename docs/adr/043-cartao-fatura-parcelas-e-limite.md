@@ -41,7 +41,7 @@ dívida se relaciona com o limite, em qual fatura cai a compra no dia do fechame
    R3 está adiado, ADR 023).
 7. **Parcelas:** n de 1 a 48; as n−1 primeiras valem o total dividido por n truncado em centavos
    e a última absorve o resto (INV-02, F-PARC-01/02/03). Sem juros.
-8. **Fora desta SPEC:** terceiros (`pessoa`) e repasse, que ficam na SPEC-013 (por isso o teste de
+8. **Fora desta SPEC:** terceiros (`pessoa`) e repasse, que ficam na SPEC-007 (por isso o teste de
    "própria + terceiros" da fatura e o limite com terceiros só fecham lá, F-FAT-01 e F-LIM-01);
    estorno (SPEC-006); snapshot e R4 de fatura (adiados; a conta de dívida já aceita "informar
    saldo", ADR 041, mas isso não distingue fatura aberta de fechada); vencimento (SPEC-010).
@@ -61,7 +61,7 @@ dívida se relaciona com o limite, em qual fatura cai a compra no dia do fechame
 - As funções de leitura (fatura, limite) confiam no `user_id` que recebem, como as de saldo;
   só `abako_app` tem EXECUTE e o `user_id` vem sempre da sessão (INV-13). Se outro papel ganhar
   EXECUTE, o isolamento passa a depender dele.
-- O INV-26 (fatura = própria + terceiros) passa para a SPEC-013, onde terceiros existem; aqui a
+- O INV-26 (fatura = própria + terceiros) passa para a SPEC-007, onde terceiros existem; aqui a
   fatura soma só compras próprias.
 
 ## Alternativas consideradas

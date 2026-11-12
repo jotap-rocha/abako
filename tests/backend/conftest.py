@@ -46,6 +46,7 @@ def apagar_usuarios(url_dono: str, usuarios: list[Usuario]) -> None:
             "cartao_fechamento",
             "linha_credito",
             "transacao_versao",
+            "pessoa",
             "conta_versao",
         ):
             conn.execute(f"DELETE FROM {tabela} WHERE user_id = ANY(%s)", (ids,))  # noqa: S608
