@@ -1,0 +1,92 @@
+task_id: "14"
+criteria:
+  SPEC-008-AC-1:
+    id: SPEC-008-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_gasto_real.py::test_f_gasto_01 tests/db/test_gasto_real.py::test_rendimento_com_imposto_fica_fora"
+    test_paths:
+      - "tests/db/test_gasto_real.py::test_f_gasto_01"
+      - "tests/db/test_gasto_real.py::test_rendimento_com_imposto_fica_fora"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-1.log"
+  SPEC-008-AC-10:
+    id: SPEC-008-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_gasto_real_api.py::test_gasto_real_do_mes_f_gasto_02 tests/backend/test_gasto_real_api.py::test_gasto_por_conta_f_gasto_02 tests/backend/test_gasto_real_api.py::test_receita_de_caixa_e_de_beneficio_f_gasto_02 tests/backend/test_gasto_real_api.py::test_estorno_tira_a_compra_das_competencias_originais_f_gasto_03 tests/backend/test_gasto_real_api.py::test_mes_padrao_e_o_corrente_injetado tests/backend/test_gasto_real_api.py::test_mes_padrao_usa_o_fuso_de_sao_paulo_na_virada tests/backend/test_gasto_real_api.py::test_conta_de_beneficio_vale_pelo_tipo_vigente_na_consulta tests/backend/test_gasto_real_api.py::test_mes_invalido_e_422_do_banco tests/backend/test_gasto_real_api.py::test_isolamento_entre_usuarios tests/backend/test_gasto_real_api.py::test_sem_sessao_e_401 tests/backend/test_gasto_real_api.py::test_valores_fora_do_log"
+    test_paths:
+      - "tests/backend/test_gasto_real_api.py::test_gasto_real_do_mes_f_gasto_02"
+      - "tests/backend/test_gasto_real_api.py::test_gasto_por_conta_f_gasto_02"
+      - "tests/backend/test_gasto_real_api.py::test_receita_de_caixa_e_de_beneficio_f_gasto_02"
+      - "tests/backend/test_gasto_real_api.py::test_estorno_tira_a_compra_das_competencias_originais_f_gasto_03"
+      - "tests/backend/test_gasto_real_api.py::test_mes_padrao_e_o_corrente_injetado"
+      - "tests/backend/test_gasto_real_api.py::test_mes_padrao_usa_o_fuso_de_sao_paulo_na_virada"
+      - "tests/backend/test_gasto_real_api.py::test_conta_de_beneficio_vale_pelo_tipo_vigente_na_consulta"
+      - "tests/backend/test_gasto_real_api.py::test_mes_invalido_e_422_do_banco"
+      - "tests/backend/test_gasto_real_api.py::test_isolamento_entre_usuarios"
+      - "tests/backend/test_gasto_real_api.py::test_sem_sessao_e_401"
+      - "tests/backend/test_gasto_real_api.py::test_valores_fora_do_log"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-10.log"
+  SPEC-008-AC-2:
+    id: SPEC-008-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_gasto_real.py::test_pagamento_fatura_nao_e_gasto"
+    test_paths:
+      - "tests/db/test_gasto_real.py::test_pagamento_fatura_nao_e_gasto"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-2.log"
+  SPEC-008-AC-3:
+    id: SPEC-008-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_gasto_real.py::test_terceiro_fora_do_gasto"
+    test_paths:
+      - "tests/db/test_gasto_real.py::test_terceiro_fora_do_gasto"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-3.log"
+  SPEC-008-AC-4:
+    id: SPEC-008-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_gasto_real.py::test_conta_de_beneficio tests/db/test_gasto_real.py::test_receita_total_e_caixa_mais_beneficio"
+    test_paths:
+      - "tests/db/test_gasto_real.py::test_conta_de_beneficio"
+      - "tests/db/test_gasto_real.py::test_receita_total_e_caixa_mais_beneficio"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-4.log"
+  SPEC-008-AC-5:
+    id: SPEC-008-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_gasto_real.py::test_estorno_nas_competencias_originais_f_gasto_03 tests/db/test_gasto_real.py::test_estorno_integral_zera_o_gasto_da_compra"
+    test_paths:
+      - "tests/db/test_gasto_real.py::test_estorno_nas_competencias_originais_f_gasto_03"
+      - "tests/db/test_gasto_real.py::test_estorno_integral_zera_o_gasto_da_compra"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-5.log"
+  SPEC-008-AC-6:
+    id: SPEC-008-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_gasto_real.py::test_receita_de_caixa_f_gasto_02 tests/db/test_gasto_real.py::test_receita_total_e_caixa_mais_beneficio"
+    test_paths:
+      - "tests/db/test_gasto_real.py::test_receita_de_caixa_f_gasto_02"
+      - "tests/db/test_gasto_real.py::test_receita_total_e_caixa_mais_beneficio"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-6.log"
+  SPEC-008-AC-7:
+    id: SPEC-008-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_gasto_real.py::test_mes_misto_f_gasto_02 tests/db/test_gasto_real.py::test_debito_em_reserva_e_investimento_conta_como_gasto tests/db/test_gasto_real.py::test_debito_fora_do_mes_civil_nao_conta tests/db/test_gasto_real.py::test_gasto_real_soma_so_saidas_proprias"
+    test_paths:
+      - "tests/db/test_gasto_real.py::test_mes_misto_f_gasto_02"
+      - "tests/db/test_gasto_real.py::test_debito_em_reserva_e_investimento_conta_como_gasto"
+      - "tests/db/test_gasto_real.py::test_debito_fora_do_mes_civil_nao_conta"
+      - "tests/db/test_gasto_real.py::test_gasto_real_soma_so_saidas_proprias"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-7.log"
+  SPEC-008-AC-8:
+    id: SPEC-008-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_gasto_real.py::test_leituras_com_user_id_de_outro_usuario_devolvem_zero"
+    test_paths:
+      - "tests/db/test_gasto_real.py::test_leituras_com_user_id_de_outro_usuario_devolvem_zero"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-8.log"
+  SPEC-008-AC-9:
+    id: SPEC-008-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_gasto_real.py::test_leituras_nao_gravam_e_recusam_mes_invalido tests/db/test_papeis.py::test_leituras_do_gasto_real_so_o_app tests/db/test_gasto_real_mensagens.py::test_mensagens_de_erro_da_0009_sao_literais tests/db/test_migracao_0009.py::test_downgrade_com_dados_remove_so_as_funcoes_e_sobe_de_novo"
+    test_paths:
+      - "tests/db/test_gasto_real.py::test_leituras_nao_gravam_e_recusam_mes_invalido"
+      - "tests/db/test_papeis.py::test_leituras_do_gasto_real_so_o_app"
+      - "tests/db/test_gasto_real_mensagens.py::test_mensagens_de_erro_da_0009_sao_literais"
+      - "tests/db/test_migracao_0009.py::test_downgrade_com_dados_remove_so_as_funcoes_e_sobe_de_novo"
+    exit_code: 0
+    log_path: "logs/14/SPEC-008-AC-9.log"

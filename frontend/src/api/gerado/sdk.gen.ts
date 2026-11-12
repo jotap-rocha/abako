@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosEstornarData, LancamentosEstornarErrors, LancamentosEstornarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, PessoasAReceberDaPessoaData, PessoasAReceberDaPessoaErrors, PessoasAReceberDaPessoaResponses, PessoasAReceberData, PessoasAReceberResponses, PessoasCriarData, PessoasCriarErrors, PessoasCriarResponses, PessoasExcluirData, PessoasExcluirErrors, PessoasExcluirResponses, PessoasListarData, PessoasListarResponses, PessoasObterData, PessoasObterErrors, PessoasObterResponses, PessoasRenomearData, PessoasRenomearErrors, PessoasRenomearResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
+import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, GastoRealGastoRealData, GastoRealGastoRealErrors, GastoRealGastoRealResponses, GastoRealReceitaData, GastoRealReceitaErrors, GastoRealReceitaResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosEstornarData, LancamentosEstornarErrors, LancamentosEstornarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, PessoasAReceberDaPessoaData, PessoasAReceberDaPessoaErrors, PessoasAReceberDaPessoaResponses, PessoasAReceberData, PessoasAReceberResponses, PessoasCriarData, PessoasCriarErrors, PessoasCriarResponses, PessoasExcluirData, PessoasExcluirErrors, PessoasExcluirResponses, PessoasListarData, PessoasListarResponses, PessoasObterData, PessoasObterErrors, PessoasObterResponses, PessoasRenomearData, PessoasRenomearErrors, PessoasRenomearResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -117,6 +117,13 @@ export const saldosRegistrarSnapshot = <ThrowOnError extends boolean = false>(op
         ...options.headers
     }
 });
+
+/**
+ * Gasto Real
+ *
+ * Gasto real do mês, total e por conta, derivado a cada consulta (ADR 046).
+ */
+export const gastoRealGastoReal = <ThrowOnError extends boolean = false>(options?: Options<GastoRealGastoRealData, ThrowOnError>): RequestResult<GastoRealGastoRealResponses, GastoRealGastoRealErrors, ThrowOnError> => (options?.client ?? client).get<GastoRealGastoRealResponses, GastoRealGastoRealErrors, ThrowOnError>({ url: '/api/gasto-real', ...options });
 
 /**
  * Listar
@@ -276,6 +283,13 @@ export const pessoasAReceberDaPessoa = <ThrowOnError extends boolean = false>(op
  * Contas em que o saldo derivado difere do snapshot. Só sinaliza; nunca corrige.
  */
 export const saldosR4 = <ThrowOnError extends boolean = false>(options?: Options<SaldosR4Data, ThrowOnError>): RequestResult<SaldosR4Responses, unknown, ThrowOnError> => (options?.client ?? client).get<SaldosR4Responses, unknown, ThrowOnError>({ url: '/api/r4', ...options });
+
+/**
+ * Receita
+ *
+ * Receita de caixa, de benefício e total do mês (ADR 046 item 7).
+ */
+export const gastoRealReceita = <ThrowOnError extends boolean = false>(options?: Options<GastoRealReceitaData, ThrowOnError>): RequestResult<GastoRealReceitaResponses, GastoRealReceitaErrors, ThrowOnError> => (options?.client ?? client).get<GastoRealReceitaResponses, GastoRealReceitaErrors, ThrowOnError>({ url: '/api/receita', ...options });
 
 /**
  * Listar

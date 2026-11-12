@@ -5,6 +5,8 @@ Conecta como os papéis reais (URLs validadas pelo mesmo guarda do tst, ver conf
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 import psycopg
 import pytest
 
@@ -140,4 +142,54 @@ def test_pipeline_somente_leitura(esquema: str, url_pipeline: str) -> None:
             (psycopg.errors.ReadOnlySqlTransaction, psycopg.errors.InsufficientPrivilege)
         ):
             pipe.execute("INSERT INTO usuario (login) VALUES ('x')")
+        pipe.rollback()
+
+
+FUNCOES_DE_LEITURA_DO_GASTO_REAL = (
+    "mes_inicio(text)",
+    "gasto_real_itens(bigint, text)",
+    "gasto_real(bigint, text)",
+    "gasto_real_por_conta(bigint, text)",
+    "receita_caixa(bigint, text)",
+    "receita_beneficio(bigint, text)",
+    "receita_total(bigint, text)",
+)
+
+
+def test_leituras_do_gasto_real_so_o_app(esquema: str, url_app: str, url_pipeline: str) -> None:
+    """SPEC-008 / ADR 046: o app executa as leituras (INVOKER, sem escrita); o pipeline não."""
+    with psycopg.connect(url_app) as app, psycopg.connect(url_pipeline) as pipe:
+        for funcao in FUNCOES_DE_LEITURA_DO_GASTO_REAL:
+            linha = app.execute("SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,))
+            assert linha.fetchone() == (True,), funcao
+            linha = pipe.execute("SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,))
+            assert linha.fetchone() == (False,), funcao
+            invoker = app.execute(
+                "SELECT NOT prosecdef FROM pg_proc WHERE oid = %s::regprocedure", (funcao,)
+            ).fetchone()
+            assert invoker == (True,), funcao  # roda com os privilégios de quem chama
+        # o app lê o que escreveu pelas funções e o gasto real sai pelo papel dele
+        novo = app.execute(
+            "INSERT INTO usuario (login) VALUES ('u_papel_gasto') RETURNING user_id"
+        ).fetchone()
+        assert novo is not None
+        uid = novo[0]
+        corrente = app.execute(
+            "SELECT conta_id FROM conta_gravar(%s, NULL, NULL, 'c', 'corrente', NULL)", (uid,)
+        ).fetchone()
+        assert corrente is not None
+        app.execute(
+            "SELECT * FROM lancamento_gravar(%s, NULL, NULL, 'debito', DATE '2025-04-08', 12.34, "
+            "%s, NULL, NULL, NULL, NULL, NULL, NULL, NULL)",
+            (uid, corrente[0]),
+        )
+        assert app.execute("SELECT gasto_real(%s, '2025-04')", (uid,)).fetchone() == (
+            Decimal("12.34"),
+        )
+        app.rollback()  # nada fica no banco
+        for papel in (app, pipe):
+            for priv in ("UPDATE", "DELETE"):
+                assert not _tem_privilegio(papel, "transacao_versao", priv), priv
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            pipe.execute("SELECT gasto_real(1, '2025-04')")
         pipe.rollback()

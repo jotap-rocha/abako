@@ -249,6 +249,38 @@ export type FechamentoSaida = {
 };
 
 /**
+ * GastoContaSaida
+ */
+export type GastoContaSaida = {
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Valor
+     */
+    valor: string;
+};
+
+/**
+ * GastoRealSaida
+ */
+export type GastoRealSaida = {
+    /**
+     * Mes
+     */
+    mes: string;
+    /**
+     * Por Conta
+     */
+    por_conta: Array<GastoContaSaida>;
+    /**
+     * Total
+     */
+    total: string;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -598,6 +630,28 @@ export type PessoaSaida = {
      * Versao
      */
     versao: number;
+};
+
+/**
+ * ReceitaSaida
+ */
+export type ReceitaSaida = {
+    /**
+     * Beneficio
+     */
+    beneficio: string;
+    /**
+     * Caixa
+     */
+    caixa: string;
+    /**
+     * Mes
+     */
+    mes: string;
+    /**
+     * Total
+     */
+    total: string;
 };
 
 /**
@@ -1038,6 +1092,38 @@ export type SaldosRegistrarSnapshotResponses = {
 };
 
 export type SaldosRegistrarSnapshotResponse = SaldosRegistrarSnapshotResponses[keyof SaldosRegistrarSnapshotResponses];
+
+export type GastoRealGastoRealData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Mes
+         *
+         * Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo
+         */
+        mes?: string | null;
+    };
+    url: '/api/gasto-real';
+};
+
+export type GastoRealGastoRealErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GastoRealGastoRealError = GastoRealGastoRealErrors[keyof GastoRealGastoRealErrors];
+
+export type GastoRealGastoRealResponses = {
+    /**
+     * Successful Response
+     */
+    200: GastoRealSaida;
+};
+
+export type GastoRealGastoRealResponse = GastoRealGastoRealResponses[keyof GastoRealGastoRealResponses];
 
 export type LancamentosListarData = {
     body?: never;
@@ -1602,6 +1688,38 @@ export type SaldosR4Responses = {
 };
 
 export type SaldosR4Response = SaldosR4Responses[keyof SaldosR4Responses];
+
+export type GastoRealReceitaData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Mes
+         *
+         * Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo
+         */
+        mes?: string | null;
+    };
+    url: '/api/receita';
+};
+
+export type GastoRealReceitaErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GastoRealReceitaError = GastoRealReceitaErrors[keyof GastoRealReceitaErrors];
+
+export type GastoRealReceitaResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReceitaSaida;
+};
+
+export type GastoRealReceitaResponse = GastoRealReceitaResponses[keyof GastoRealReceitaResponses];
 
 export type SaldosListarData = {
     body?: never;

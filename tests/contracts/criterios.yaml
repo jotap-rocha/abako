@@ -584,3 +584,80 @@ criterios:
     entao: "a API responde 422 (divisão) ou 404 (pessoa alheia), usa o user_id da sessão, devolve dinheiro em texto e não registra o nome da pessoa em log"
     invariantes: [INV-32, INV-13, INV-14]
     teste: ["tests/backend/test_terceiros.py::test_divisao_rejeitada", "tests/backend/test_terceiros.py::test_cadastro_de_pessoa_pela_api", "tests/backend/test_terceiros.py::test_exclusao_de_pessoa", "tests/backend/test_terceiros.py::test_a_receber_e_credito_f_rep_01", "tests/backend/test_terceiros.py::test_repasse_regras_pela_api", "tests/backend/test_terceiros.py::test_a_receber_varias_pessoas_f_rep_03", "tests/backend/test_terceiros.py::test_fatura_propria_mais_terceiros_f_fat_01", "tests/backend/test_terceiros.py::test_limite_f_lim_01_isolado", "tests/backend/test_terceiros.py::test_estorno_de_compra_de_terceiro_f_rep_02", "tests/backend/test_terceiros.py::test_idempotencia_considera_a_pessoa", "tests/backend/test_terceiros.py::test_troca_de_pessoa_na_edicao", "tests/backend/test_terceiros.py::test_isolamento_entre_usuarios", "tests/backend/test_terceiros.py::test_escritas_de_pessoa_exigem_csrf_e_sessao", "tests/backend/test_terceiros.py::test_valores_de_terceiros_sao_texto_com_duas_casas", "tests/backend/test_terceiros.py::test_nome_da_pessoa_fora_de_log_e_de_erro", "tests/backend/test_terceiros.py::test_chave_desconhecida_no_corpo_e_422_e_nada_e_gravado", "tests/backend/test_terceiros.py::test_versao_de_pessoa_acima_do_inteiro_do_banco_e_422", "tests/backend/test_terceiros.py::test_nome_aparado_antes_do_limite_de_80"]
+  - id: SPEC-008-AC-1
+    spec: SPEC-008
+    dado: "um mês com débito, parcela de cartão, pagamento de fatura, transferência, investimento, repasse, rendimento com imposto, terceiro e débito de conta de benefício (F-GASTO-01)"
+    quando: "o gasto real do mês é consultado"
+    entao: "só o débito próprio e a parcela própria contam (200,00); transferência, investimento, repasse, rendimento (e o imposto retido), pagamento de fatura, terceiro e benefício ficam fora"
+    invariantes: [INV-04]
+    fixtures: [F-GASTO-01, F-REND-01, F-TRANSF-01]
+    teste: ["tests/db/test_gasto_real.py::test_f_gasto_01", "tests/db/test_gasto_real.py::test_rendimento_com_imposto_fica_fora"]
+  - id: SPEC-008-AC-2
+    spec: SPEC-008
+    dado: "uma compra parcelada no cartão e um pagamento da fatura"
+    quando: "o gasto real é consultado antes e depois do pagamento"
+    entao: "o pagamento de fatura nunca é gasto: o gasto de cada mês é a parcela da competência e a soma dos meses é o total da compra, não o valor pago"
+    invariantes: [INV-05]
+    fixtures: [F-GASTO-01, F-GASTO-02]
+    teste: ["tests/db/test_gasto_real.py::test_pagamento_fatura_nao_e_gasto"]
+  - id: SPEC-008-AC-3
+    spec: SPEC-008
+    dado: "uma compra no cartão de terceiro (pessoa_id preenchido) ao lado de uma compra própria"
+    quando: "o gasto real, a fatura e o limite são consultados"
+    entao: "a compra de terceiro não é gasto real do usuário, mas entra no total da fatura (terceiros) e no limite usado"
+    invariantes: [INV-11]
+    fixtures: [F-GASTO-01, F-GASTO-02]
+    teste: ["tests/db/test_gasto_real.py::test_terceiro_fora_do_gasto"]
+  - id: SPEC-008-AC-4
+    spec: SPEC-008
+    dado: "despesa e receita lançadas em conta de benefício"
+    quando: "o gasto real e a receita do mês são consultados"
+    entao: "a despesa de benefício nunca entra no gasto real e a receita de benefício nunca entra na receita de caixa; a receita total é caixa + benefício"
+    invariantes: [INV-20, INV-24]
+    fixtures: [F-GASTO-01, F-GASTO-02, F-VALE-05]
+    teste: ["tests/db/test_gasto_real.py::test_conta_de_beneficio", "tests/db/test_gasto_real.py::test_receita_total_e_caixa_mais_beneficio"]
+  - id: SPEC-008-AC-5
+    spec: SPEC-008
+    dado: "uma compra parcelada que cruza competências (inclusive já fechadas) e é estornada depois, com parte paga (F-GASTO-03)"
+    quando: "o gasto real de cada competência é consultado antes e depois do estorno"
+    entao: "depois do estorno a compra sai do gasto em todas as competências originais das parcelas; o crédito do estorno não é receita nem gasto negativo; estorno integral zera o gasto da compra (ADR 044 item 5)"
+    invariantes: [INV-04, INV-08]
+    fixtures: [F-GASTO-03]
+    teste: ["tests/db/test_gasto_real.py::test_estorno_nas_competencias_originais_f_gasto_03", "tests/db/test_gasto_real.py::test_estorno_integral_zera_o_gasto_da_compra"]
+  - id: SPEC-008-AC-6
+    spec: SPEC-008
+    dado: "lançamentos de receita em conta corrente e em conta de benefício, além de repasse, rendimento, transferência e investimento (F-GASTO-02)"
+    quando: "a receita do mês é consultada"
+    entao: "a receita de caixa soma só o tipo receita fora de conta de benefício (1250,00 em abril); repasse, rendimento, transferência, investimento e benefício não entram"
+    invariantes: [INV-20, INV-24]
+    fixtures: [F-GASTO-02, F-VALE-05]
+    teste: ["tests/db/test_gasto_real.py::test_receita_de_caixa_f_gasto_02", "tests/db/test_gasto_real.py::test_receita_total_e_caixa_mais_beneficio"]
+  - id: SPEC-008-AC-7
+    spec: SPEC-008
+    dado: "um mês com parcelas de compras diferentes, débito em conta de reserva e débito em conta de investimento (F-GASTO-02)"
+    quando: "o gasto real e o gasto por conta são consultados mês a mês"
+    entao: "o débito em reserva e em investimento conta como gasto, a parcela entra na competência da fatura e o débito pela data civil do lançamento; a soma do ano é só de saídas próprias e nunca passa do total das saídas"
+    invariantes: [INV-04, INV-02]
+    fixtures: [F-GASTO-02]
+    teste: ["tests/db/test_gasto_real.py::test_mes_misto_f_gasto_02", "tests/db/test_gasto_real.py::test_debito_em_reserva_e_investimento_conta_como_gasto", "tests/db/test_gasto_real.py::test_debito_fora_do_mes_civil_nao_conta", "tests/db/test_gasto_real.py::test_gasto_real_soma_so_saidas_proprias"]
+  - id: SPEC-008-AC-8
+    spec: SPEC-008
+    dado: "dois usuários e um deles consulta com o user_id do outro"
+    quando: "gasto real, itens, gasto por conta e receitas são lidos"
+    entao: "nada de um usuário aparece para o outro (zero ou vazio); o user_id vem da sessão"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_gasto_real.py::test_leituras_com_user_id_de_outro_usuario_devolvem_zero"]
+  - id: SPEC-008-AC-9
+    spec: SPEC-008
+    dado: "os papéis app e pipeline, a migração 0009 e meses fora do formato AAAA-MM"
+    quando: "as funções de gasto real e receita são chamadas, a migração é revertida e o SQL é inspecionado"
+    entao: "as leituras são INVOKER, só o app as executa, nada é gravado, mês inválido é recusado (AB422) com mensagem literal, valores são NUMERIC e o downgrade remove só as funções"
+    invariantes: [INV-13, INV-14]
+    teste: ["tests/db/test_gasto_real.py::test_leituras_nao_gravam_e_recusam_mes_invalido", "tests/db/test_papeis.py::test_leituras_do_gasto_real_so_o_app", "tests/db/test_gasto_real_mensagens.py::test_mensagens_de_erro_da_0009_sao_literais", "tests/db/test_migracao_0009.py::test_downgrade_com_dados_remove_so_as_funcoes_e_sobe_de_novo"]
+  - id: SPEC-008-AC-10
+    spec: SPEC-008
+    dado: "a API de gasto real e receita do mês"
+    quando: "o front pede o mês (padrão: o corrente em America/Sao_Paulo)"
+    entao: "a API usa o user_id da sessão, devolve dinheiro em texto, recusa mês inválido com 422 e não registra valores em log"
+    invariantes: [INV-13, INV-14]
+    teste: ["tests/backend/test_gasto_real_api.py::test_gasto_real_do_mes_f_gasto_02", "tests/backend/test_gasto_real_api.py::test_gasto_por_conta_f_gasto_02", "tests/backend/test_gasto_real_api.py::test_receita_de_caixa_e_de_beneficio_f_gasto_02", "tests/backend/test_gasto_real_api.py::test_estorno_tira_a_compra_das_competencias_originais_f_gasto_03", "tests/backend/test_gasto_real_api.py::test_mes_padrao_e_o_corrente_injetado", "tests/backend/test_gasto_real_api.py::test_mes_padrao_usa_o_fuso_de_sao_paulo_na_virada", "tests/backend/test_gasto_real_api.py::test_conta_de_beneficio_vale_pelo_tipo_vigente_na_consulta", "tests/backend/test_gasto_real_api.py::test_mes_invalido_e_422_do_banco", "tests/backend/test_gasto_real_api.py::test_isolamento_entre_usuarios", "tests/backend/test_gasto_real_api.py::test_sem_sessao_e_401", "tests/backend/test_gasto_real_api.py::test_valores_fora_do_log"]
