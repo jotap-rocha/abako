@@ -229,6 +229,90 @@ criterios:
     entao: "a edição cria nova versão da compra inteira (todas as parcelas), a anterior sai da fatura e do limite, e a exclusão lógica tira a compra de ambos"
     invariantes: [INV-09]
     teste: ["tests/db/test_parcelas.py::test_editar_e_excluir_compra_parcelada"]
+  - id: SPEC-006-AC-1
+    spec: SPEC-006
+    dado: "uma compra parcelada sem nenhuma parcela paga (F-EST-01)"
+    quando: "a compra é estornada"
+    entao: "o limite é devolvido por inteiro, a fatura aberta é reduzida e nenhum valor movimenta a conta corrente"
+    invariantes: [INV-08]
+    fixtures: [F-EST-01]
+    teste: ["tests/db/test_estorno.py::test_f_est_01", "tests/backend/test_estorno_api.py::test_estorno_integral_f_est_01"]
+  - id: SPEC-006-AC-2
+    spec: SPEC-006
+    dado: "uma compra parcelada com uma parcela quitada (F-EST-02)"
+    quando: "a compra é estornada"
+    entao: "o limite devolve a soma das parcelas não pagas e o valor pago vira crédito na próxima fatura aberta"
+    invariantes: [INV-08]
+    fixtures: [F-EST-02]
+    teste: ["tests/db/test_estorno.py::test_f_est_02", "tests/backend/test_estorno_api.py::test_estorno_com_parcela_paga_f_est_02"]
+  - id: SPEC-006-AC-3
+    spec: SPEC-006
+    dado: "qualquer compra estornada, com qualquer valor pago"
+    quando: "se soma a compra, o limite devolvido e o crédito"
+    entao: "o líquido da compra é zero (propriedade: −T + N + P = 0)"
+    invariantes: [INV-08]
+    fixtures: [F-EST-01, F-EST-02, F-EST-03, F-EST-05]
+    teste: ["tests/db/test_estorno.py::test_liquido_zero"]
+  - id: SPEC-006-AC-4
+    spec: SPEC-006
+    dado: "pagamento parcial que cobre uma parcela só em parte (F-EST-03)"
+    quando: "a compra é estornada"
+    entao: "o valor pago, inclusive o da parcela paga em parte, vira crédito, e o restante devolve limite"
+    invariantes: [INV-08]
+    fixtures: [F-EST-03]
+    teste: ["tests/db/test_estorno.py::test_f_est_03", "tests/backend/test_estorno_api.py::test_estorno_com_parcela_paga_em_parte_f_est_03"]
+  - id: SPEC-006-AC-5
+    spec: SPEC-006
+    dado: "duas compras no mesmo cartão e um pagamento solto (F-EST-04)"
+    quando: "uma delas é estornada"
+    entao: "o pago é alocado por competência, data da compra e parcela, e o crédito do estorno sai do pool de pagamentos"
+    invariantes: [INV-08]
+    fixtures: [F-EST-04]
+    teste: ["tests/db/test_estorno.py::test_f_est_04"]
+  - id: SPEC-006-AC-6
+    spec: SPEC-006
+    dado: "estorno lançado no dia do fechamento do cartão"
+    quando: "o crédito é gravado"
+    entao: "o crédito cai na fatura seguinte (ADR 043 item 1)"
+    invariantes: [INV-08]
+    teste: ["tests/db/test_estorno.py::test_estorno_no_dia_do_fechamento_cai_na_fatura_seguinte"]
+  - id: SPEC-006-AC-7
+    spec: SPEC-006
+    dado: "pagamento maior que a dívida (F-EST-05)"
+    quando: "a compra é estornada"
+    entao: "o crédito é o total da compra, o saldo do cartão fica positivo e o excedente do pagamento permanece no pool"
+    invariantes: [INV-08]
+    fixtures: [F-EST-05]
+    teste: ["tests/db/test_estorno.py::test_f_est_05"]
+  - id: SPEC-006-AC-8
+    spec: SPEC-006
+    dado: "uma compra com alguma parte paga (F-EST-06)"
+    quando: "se tenta editá-la ou excluí-la"
+    entao: "a edição e a exclusão são recusadas, a compra vigente, o saldo e o limite não mudam; compra sem nada pago continua editável e excluível"
+    invariantes: [INV-09]
+    fixtures: [F-EST-06]
+    teste: ["tests/db/test_estorno.py::test_f_est_06", "tests/db/test_estorno.py::test_corrida_pagamento_novo_antes_da_edicao_recusa_a_edicao", "tests/db/test_estorno.py::test_corrida_edicao_antes_do_pagamento_novo_serializa", "tests/backend/test_estorno_api.py::test_recusa_editar_e_excluir_compra_com_parte_paga_f_est_06"]
+  - id: SPEC-006-AC-9
+    spec: SPEC-006
+    dado: "uma compra estornada"
+    quando: "se consulta o histórico e o gasto real"
+    entao: "a compra original é preservada, existe um único estorno ligado a ela e o gasto real sai das competências originais das parcelas"
+    invariantes: [INV-08, INV-09]
+    teste: ["tests/db/test_estorno.py::test_compra_original_preservada_e_um_estorno_por_compra"]
+  - id: SPEC-006-AC-10
+    spec: SPEC-006
+    dado: "um cartão com um estorno gravado"
+    quando: "se tenta editar ou excluir qualquer lançamento já gravado nele (pagamento, compra, compra estornada ou o próprio estorno)"
+    entao: "a operação é recusada com mensagem clara e nada muda; lançamento novo (compra, pagamento) segue aceito (o pool de pagamentos nunca fica negativo)"
+    invariantes: [INV-08, INV-09]
+    teste: ["tests/db/test_estorno.py::test_depois_do_estorno_pagamento_compra_e_estorno_ficam_imutaveis", "tests/db/test_estorno.py::test_conversao_para_cartao_com_estorno_e_recusada", "tests/db/test_estorno.py::test_conta_do_cartao_com_estorno_nao_muda_de_tipo", "tests/backend/test_estorno_api.py::test_depois_do_estorno_nada_do_cartao_se_edita"]
+  - id: SPEC-006-AC-11
+    spec: SPEC-006
+    dado: "uma compra parcelada estornada, com parcelas em competências anteriores à do crédito"
+    quando: "se consultam as faturas"
+    entao: "as faturas de competência anterior à do crédito mantêm o valor e a compra; da competência do crédito em diante a compra sai e o crédito P aparece na do estorno; o gasto real segue saindo das competências originais"
+    invariantes: [INV-08]
+    teste: ["tests/db/test_estorno.py::test_faturas_antigas_nao_mudam", "tests/backend/test_estorno_api.py::test_estorno_com_parcela_paga_f_est_02"]
   - id: SPEC-012-AC-1
     spec: SPEC-012
     dado: "o contrato OpenAPI da API e o cliente TypeScript versionado em frontend/"

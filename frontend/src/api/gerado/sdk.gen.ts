@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
+import type { AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosEstornarData, LancamentosEstornarErrors, LancamentosEstornarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -156,6 +156,20 @@ export const lancamentosObter = <ThrowOnError extends boolean = false>(options: 
  */
 export const lancamentosEditar = <ThrowOnError extends boolean = false>(options: Options<LancamentosEditarData, ThrowOnError>): RequestResult<LancamentosEditarResponses, LancamentosEditarErrors, ThrowOnError> => (options.client ?? client).put<LancamentosEditarResponses, LancamentosEditarErrors, ThrowOnError>({
     url: '/api/lancamentos/{transacao_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Estornar
+ *
+ * Estorna a compra a crédito inteira; a regra (T, P, N, competência) vem do banco.
+ */
+export const lancamentosEstornar = <ThrowOnError extends boolean = false>(options: Options<LancamentosEstornarData, ThrowOnError>): RequestResult<LancamentosEstornarResponses, LancamentosEstornarErrors, ThrowOnError> => (options.client ?? client).post<LancamentosEstornarResponses, LancamentosEstornarErrors, ThrowOnError>({
+    url: '/api/lancamentos/{transacao_id}/estorno',
     ...options,
     headers: {
         'Content-Type': 'application/json',

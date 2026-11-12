@@ -54,6 +54,7 @@ def test_resumir_confere_contagem_e_soma(conn: psycopg.Connection[tuple[object, 
         "valor": Decimal("71.00"),
         "bruto": Decimal("0"),
         "imposto": Decimal("0"),
+        "estorno_credito": Decimal("0"),  # coluna da 0007; a soma cobre toda coluna numérica
     }
     assert banco_vazio(conn) is False
 

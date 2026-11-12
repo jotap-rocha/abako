@@ -34,8 +34,8 @@ def test_downgrade_com_transferencia_e_recusado(esquema: str) -> None:
     try:
         with pytest.raises(Exception, match="apagaria dados"):
             command.downgrade(Config(str(RAIZ / "alembic.ini")), "0004")
-        # o downgrade roda numa transação só: a falha na 0005 desfaz também a 0006
-        assert _revisao(esquema) == "0006"
+        # o downgrade roda numa transação só: a falha na 0005 desfaz também a 0007 e a 0006
+        assert _revisao(esquema) == "0007"
         with psycopg.connect(esquema) as ver:
             linha = ver.execute(
                 "SELECT count(*) FROM transacao_versao WHERE user_id = %s", (uid,)

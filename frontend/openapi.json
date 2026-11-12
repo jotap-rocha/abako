@@ -226,6 +226,70 @@
         "title": "DivergenciaSaida",
         "type": "object"
       },
+      "EstornoEntrada": {
+        "properties": {
+          "data": {
+            "format": "date",
+            "title": "Data",
+            "type": "string"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "versao": {
+            "minimum": 1.0,
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "versao",
+          "data"
+        ],
+        "title": "EstornoEntrada",
+        "type": "object"
+      },
+      "EstornoSaida": {
+        "properties": {
+          "competencia_credito": {
+            "title": "Competencia Credito",
+            "type": "string"
+          },
+          "estorno_id": {
+            "title": "Estorno Id",
+            "type": "integer"
+          },
+          "limite_devolvido": {
+            "title": "Limite Devolvido",
+            "type": "string"
+          },
+          "pago": {
+            "title": "Pago",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "string"
+          }
+        },
+        "required": [
+          "estorno_id",
+          "competencia_credito",
+          "total",
+          "pago",
+          "limite_devolvido"
+        ],
+        "title": "EstornoSaida",
+        "type": "object"
+      },
       "FaturaSaida": {
         "properties": {
           "competencia": {
@@ -640,6 +704,28 @@
               }
             ],
             "title": "Descricao"
+          },
+          "estorno_credito": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estorno Credito"
+          },
+          "estorno_de": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estorno De"
           },
           "imposto": {
             "anyOf": [
@@ -1914,6 +2000,77 @@
           }
         },
         "summary": "Editar",
+        "tags": [
+          "lancamentos"
+        ]
+      }
+    },
+    "/api/lancamentos/{transacao_id}/estorno": {
+      "post": {
+        "description": "Estorna a compra a crédito inteira; a regra (T, P, N, competência) vem do banco.",
+        "operationId": "lancamentos_estornar",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transacao_id",
+            "required": true,
+            "schema": {
+              "maximum": 9223372036854775807,
+              "minimum": 1,
+              "title": "Transacao Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstornoEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstornoSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Estornar",
         "tags": [
           "lancamentos"
         ]
