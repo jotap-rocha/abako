@@ -836,3 +836,94 @@ criterios:
     entao: "a API usa o user_id da sessão, devolve dinheiro em texto, traduz AB404/AB409/AB410/AB422 em 404/409/409/422, exige CSRF nas escritas e não registra valores em log"
     invariantes: [INV-13, INV-14]
     teste: ["tests/backend/test_recorrentes_api.py::test_criar_listar_obter_e_texto_com_duas_casas", "tests/backend/test_recorrentes_api.py::test_editar_cria_versao_e_exige_a_versao_lida", "tests/backend/test_recorrentes_api.py::test_nome_repetido_e_409_ab410", "tests/backend/test_recorrentes_api.py::test_excluir_e_logico_com_versao", "tests/backend/test_recorrentes_api.py::test_regras_de_cadastro_do_banco", "tests/backend/test_recorrentes_api.py::test_corpo_invalido_e_422_sem_eco", "tests/backend/test_recorrentes_api.py::test_ocorrencias_dia_29_a_31_f_r2_10", "tests/backend/test_recorrentes_api.py::test_mes_padrao_e_o_corrente_de_sao_paulo", "tests/backend/test_recorrentes_api.py::test_vinculo_valor_e_historico_f_r2_11", "tests/backend/test_recorrentes_api.py::test_regras_do_vinculo", "tests/backend/test_recorrentes_api.py::test_edicao_com_vinculo", "tests/backend/test_recorrentes_api.py::test_sem_sessao_e_401", "tests/backend/test_recorrentes_api.py::test_escrita_sem_csrf_e_403_e_nada_e_gravado", "tests/backend/test_recorrentes_api.py::test_isolamento_entre_usuarios", "tests/backend/test_recorrentes_api.py::test_nome_e_valores_fora_do_log", "tests/backend/test_recorrentes_api.py::test_metodos_nao_previstos", "tests/backend/test_r2_api.py::test_sobra_positiva_e_negativa_f_r2_01_e_02", "tests/backend/test_r2_api.py::test_terceiros_vale_e_outras_contas_fora_da_sobra_f_r2_03", "tests/backend/test_r2_api.py::test_vinculada_sai_e_vencida_fica_a_parte_f_r2_04", "tests/backend/test_r2_api.py::test_limites_do_horizonte_f_r2_05", "tests/backend/test_r2_api.py::test_horizonte_com_vigencia_f_r2_09", "tests/backend/test_r2_api.py::test_horizonte_gravar_listar_e_idempotencia", "tests/backend/test_r2_api.py::test_horizonte_fora_dos_limites_e_ab422", "tests/backend/test_r2_api.py::test_vencimento_gravar_listar_e_idempotencia", "tests/backend/test_r2_api.py::test_vencimento_da_competencia_f_r2_06", "tests/backend/test_r2_api.py::test_pagamento_parcial_f_r2_07", "tests/backend/test_r2_api.py::test_fatura_aberta_aparece_como_parcial_f_r2_08", "tests/backend/test_r2_api.py::test_cartao_sem_vencimento_vira_pendencia", "tests/backend/test_r2_api.py::test_hoje_decide_na_virada_de_mes_e_de_ano", "tests/backend/test_r2_api.py::test_hoje_usa_o_fuso_de_sao_paulo", "tests/backend/test_r2_api.py::test_sem_sessao_e_401", "tests/backend/test_r2_api.py::test_escrita_sem_csrf_e_403", "tests/backend/test_r2_api.py::test_user_id_no_corpo_e_descartado", "tests/backend/test_r2_api.py::test_isolamento_entre_usuarios", "tests/backend/test_r2_api.py::test_valores_e_nome_fora_do_log", "tests/backend/test_r2_api.py::test_metodos_nao_previstos"]
+  - id: SPEC-011-AC-1
+    spec: SPEC-011
+    dado: "a reserva em cada nível (F-ALERTA-01: meta 12000,00; saldos 3000,00, 5999,99, 6000,00, 11999,99, 12000,00) com o gasto essencial informado"
+    quando: "os alertas são consultados"
+    entao: "R1 dispara conforme o nível: crítica (< 50% da meta) é alerta forte (tipo alerta, severidade alta); atenção (50% a < 100%) é aviso (media); saudável não gera alerta; os cortes são exatos e vêm com nível, saldo líquido, meta e falta em texto"
+    invariantes: [INV-12, INV-17, INV-38]
+    fixtures: [F-ALERTA-01, F-ALERTA-05]
+    teste: ["tests/backend/test_alertas.py::test_r1", "tests/db/test_alertas.py::test_r1_severidade_por_nivel_f_alerta_01", "tests/db/test_alertas.py::test_sem_conta_de_reserva_com_gasto_configurado_e_r1_critico_f_alerta_05", "tests/db/test_alertas_propriedades.py::test_severidade_do_r1_muda_exatamente_nos_cortes"]
+  - id: SPEC-011-AC-2
+    spec: SPEC-011
+    dado: "um usuário com saldo corrente, receita e fixo recorrentes no horizonte (F-ALERTA-02: disponível 8000,00 e fixo de 8000,01)"
+    quando: "os alertas são consultados"
+    entao: "R2 dispara quando a sobra do horizonte é negativa (-0,01): alerta forte (severidade alta, detalhe sobra_negativa) com sobra, disponível, compromissos, horizonte e data final em texto"
+    invariantes: [INV-18, INV-19, INV-38]
+    fixtures: [F-ALERTA-02]
+    teste: ["tests/backend/test_alertas.py::test_r2", "tests/db/test_alertas.py::test_r2_sobra_estrita_f_alerta_02"]
+  - id: SPEC-011-AC-3
+    spec: SPEC-011
+    dado: "contas com derivado diferente do snapshot (F-ALERTA-03: investimento +10,00, cartão -50,00, conta com duas divergências, snapshot futuro, conta conferida e conta excluída)"
+    quando: "os alertas são consultados"
+    entao: "R4 aparece na API como condição visível, não só em log: uma linha por conta vigente com o snapshot divergente mais recente até hoje (data, valor, derivado, divergência) e a quantidade; cartão é a conta de dívida; conta conferida, snapshot futuro e conta excluída não geram alerta; nada é corrigido"
+    invariantes: [INV-23, INV-30, INV-38]
+    fixtures: [F-ALERTA-03]
+    teste: ["tests/backend/test_alertas.py::test_r4_visivel", "tests/db/test_alertas.py::test_r4_por_conta_f_alerta_03", "tests/db/test_alertas.py::test_r4_de_cartao_e_a_divergencia_da_conta_de_divida_f_alerta_03", "tests/db/test_alertas.py::test_r4_ignora_conta_excluida", "tests/db/test_alertas.py::test_r4_dois_snapshots_no_mesmo_dia_valem_o_ultimo"]
+  - id: SPEC-011-AC-4
+    spec: SPEC-011
+    dado: "sobra exatamente zero ou positiva (F-ALERTA-02: fixo de 7999,99 e de 8000,00) e uma ocorrência vencida sem vínculo"
+    quando: "os alertas são consultados"
+    entao: "a sobra zero ou positiva não gera alerta forte (só sobra < 0 estrito); a vencida fica fora da sobra e vira aviso à parte (severidade baixa, detalhe vencidas) com a quantidade"
+    invariantes: [INV-19, INV-38]
+    fixtures: [F-ALERTA-02]
+    teste: ["tests/backend/test_alertas.py::test_r2_sobra_zero_ou_positiva_nao_alerta", "tests/backend/test_alertas.py::test_r2_vencidas_sao_aviso_a_parte", "tests/db/test_alertas.py::test_r2_sobra_estrita_f_alerta_02", "tests/db/test_alertas.py::test_r2_vencidas_sao_aviso_a_parte_f_alerta_02", "tests/db/test_alertas_propriedades.py::test_r2_alerta_so_com_sobra_negativa_estrita"]
+  - id: SPEC-011-AC-5
+    spec: SPEC-011
+    dado: "a reserva sem gasto essencial informado ou com gasto essencial zero (F-ALERTA-01)"
+    quando: "os alertas são consultados"
+    entao: "configuração pendente não é R1: sai apenas um item de configuração (tipo configuracao, severidade baixa, detalhe reserva_gasto_essencial) com o saldo e sem nível, meta ou falta"
+    invariantes: [INV-12, INV-38]
+    fixtures: [F-ALERTA-01]
+    teste: ["tests/backend/test_alertas.py::test_config_pendente_nao_e_r1", "tests/db/test_alertas.py::test_config_pendente_nao_e_r1_f_alerta_01", "tests/db/test_alertas.py::test_usuario_novo_so_tem_a_configuracao_da_reserva"]
+  - id: SPEC-011-AC-6
+    spec: SPEC-011
+    dado: "um cartão com dívida e sem dia de vencimento cadastrado (F-ALERTA-02: sobra 5500,00 e -1000,00)"
+    quando: "os alertas são consultados"
+    entao: "a sobra é sinalizada como não confiável (sobra_nao_confiavel): aviso media se a sobra é >= 0 e alerta forte com o mesmo sinal se é negativa, com a quantidade de pendências"
+    invariantes: [INV-18, INV-38]
+    fixtures: [F-ALERTA-02]
+    teste: ["tests/backend/test_alertas.py::test_r2_sobra_nao_confiavel", "tests/db/test_alertas.py::test_r2_sobra_nao_confiavel_f_alerta_02"]
+  - id: SPEC-011-AC-7
+    spec: SPEC-011
+    dado: "vários alertas ao mesmo tempo (F-ALERTA-04: sobra -100,00, reserva em atenção, divergência -50,00 e uma vencida)"
+    quando: "os alertas são consultados"
+    entao: "a lista vem ordenada por severidade (alta, media, baixa), depois por código (R1 antes de R4), cada item com o bloco dos seus números"
+    invariantes: [INV-38]
+    fixtures: [F-ALERTA-04]
+    teste: ["tests/backend/test_alertas.py::test_varios_alertas_ordenados_por_severidade", "tests/db/test_alertas.py::test_combinacao_ordenada_por_severidade_f_alerta_04"]
+  - id: SPEC-011-AC-8
+    spec: SPEC-011
+    dado: "um alerta ativo"
+    quando: "a condição deixa de existir e os alertas são consultados de novo"
+    entao: "o alerta some na consulta seguinte: é derivado na hora, sem estado, sem dispensa e sem histórico (a função é STABLE, não há tabela de alerta e a rota só aceita GET)"
+    invariantes: [INV-38]
+    teste: ["tests/backend/test_alertas.py::test_alerta_derivado_na_hora_sem_estado", "tests/db/test_alertas.py::test_derivado_na_hora_sem_estado", "tests/db/test_migracao_0012.py::test_nenhuma_tabela_nova_e_leitura_funciona_depois_de_subir"]
+  - id: SPEC-011-AC-9
+    spec: SPEC-011
+    dado: "dois usuários, um com alertas R1, R2 e R4, e o outro consulta"
+    quando: "os alertas são consultados"
+    entao: "nada do dono aparece para o outro; o user_id vem da sessão e nem `user_id` nem `hoje` na query mudam a consulta"
+    invariantes: [INV-13]
+    teste: ["tests/backend/test_alertas.py::test_isolamento_entre_usuarios", "tests/backend/test_alertas.py::test_hoje_e_user_id_do_cliente_sao_ignorados", "tests/db/test_alertas.py::test_isolamento_por_user_id"]
+  - id: SPEC-011-AC-10
+    spec: SPEC-011
+    dado: "a API GET /api/alertas"
+    quando: "o front consulta (hoje = data civil em America/Sao_Paulo)"
+    entao: "exige sessão (401 sem ela), usa a data civil de São Paulo (decide na virada de dia), devolve dinheiro em texto, mensagens literais sem valores e não registra valores nem nomes em log"
+    invariantes: [INV-13, INV-14]
+    teste: ["tests/backend/test_alertas.py::test_sem_sessao_e_401", "tests/backend/test_alertas.py::test_hoje_usa_o_fuso_de_sao_paulo", "tests/backend/test_alertas.py::test_dinheiro_sempre_em_texto", "tests/backend/test_alertas.py::test_valores_e_nomes_fora_do_log", "tests/db/test_alertas.py::test_hoje_e_obrigatorio"]
+  - id: SPEC-011-AC-11
+    spec: SPEC-011
+    dado: "os papéis app e pipeline, a migração 0012 e o SQL da função"
+    quando: "a função é chamada, a migração é revertida e o SQL é inspecionado"
+    entao: "só o app executa alertas; a função é INVOKER, STABLE e sem escrita; mensagens literais (sem ||); o downgrade remove a função, sem recusa, e a migração sobe de novo"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_papeis.py::test_alertas_papeis", "tests/db/test_alertas_mensagens.py::test_mensagens_da_0012_sao_literais", "tests/db/test_alertas_mensagens.py::test_funcao_e_de_leitura_sem_escrita", "tests/db/test_migracao_0012.py::test_downgrade_remove_a_funcao_e_sobe_de_novo"]
+  - id: SPEC-011-AC-12
+    spec: SPEC-011
+    dado: "entradas fora do limite do integer ou com caractere de controle (endurecimento da entrega, ADR 049 item 8)"
+    quando: "versao de edição ou exclusão de lançamento, estorno, conta e linha de crédito, e mes de gasto-real e receita, são enviados"
+    entao: "versao acima de 2^31-1 é 422 (no teto, 409), nunca 500; mes com NUL, controle ou muito longo é 422/AB422 literal, sem eco do valor"
+    invariantes: [INV-29]
+    teste: ["tests/backend/test_limites_de_entrada.py::test_versao_de_lancamento_tem_teto_do_integer", "tests/backend/test_limites_de_entrada.py::test_versao_do_estorno_tem_teto_do_integer", "tests/backend/test_limites_de_entrada.py::test_versao_de_conta_e_de_linha_de_credito_tem_teto_do_integer", "tests/backend/test_limites_de_entrada.py::test_versao_sem_csrf_continua_403", "tests/backend/test_limites_de_entrada.py::test_mes_longo_ou_com_controle_e_ab422_literal_no_gasto_real_e_na_receita"]

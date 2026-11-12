@@ -39,6 +39,94 @@
         "title": "AReceberSaida",
         "type": "object"
       },
+      "AlertaSaida": {
+        "properties": {
+          "codigo": {
+            "title": "Codigo",
+            "type": "string"
+          },
+          "detalhe": {
+            "title": "Detalhe",
+            "type": "string"
+          },
+          "mensagem": {
+            "title": "Mensagem",
+            "type": "string"
+          },
+          "r2": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/R2Alerta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "r4": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/R4Alerta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reserva": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReservaAlerta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "severidade": {
+            "title": "Severidade",
+            "type": "string"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "codigo",
+          "tipo",
+          "severidade",
+          "detalhe",
+          "mensagem",
+          "reserva",
+          "r2",
+          "r4"
+        ],
+        "title": "AlertaSaida",
+        "type": "object"
+      },
+      "AlertasSaida": {
+        "properties": {
+          "data_referencia": {
+            "format": "date",
+            "title": "Data Referencia",
+            "type": "string"
+          },
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/AlertaSaida"
+            },
+            "title": "Itens",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_referencia",
+          "itens"
+        ],
+        "title": "AlertasSaida",
+        "type": "object"
+      },
       "ContaEdicao": {
         "properties": {
           "conta_mae_id": {
@@ -85,6 +173,7 @@
             "type": "string"
           },
           "versao": {
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Versao",
             "type": "integer"
@@ -283,6 +372,7 @@
             "title": "Descricao"
           },
           "versao": {
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Versao",
             "type": "integer"
@@ -780,6 +870,7 @@
             "title": "Valor"
           },
           "versao": {
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Versao",
             "type": "integer"
@@ -1103,6 +1194,7 @@
             "type": "string"
           },
           "versao": {
+            "maximum": 2147483647.0,
             "minimum": 1.0,
             "title": "Versao",
             "type": "integer"
@@ -1403,6 +1495,94 @@
         "title": "PessoaSaida",
         "type": "object"
       },
+      "R2Alerta": {
+        "properties": {
+          "compromissos": {
+            "title": "Compromissos",
+            "type": "string"
+          },
+          "data_fim": {
+            "format": "date",
+            "title": "Data Fim",
+            "type": "string"
+          },
+          "disponivel": {
+            "title": "Disponivel",
+            "type": "string"
+          },
+          "horizonte_dias": {
+            "title": "Horizonte Dias",
+            "type": "integer"
+          },
+          "pendencias_vencimento": {
+            "title": "Pendencias Vencimento",
+            "type": "integer"
+          },
+          "sobra": {
+            "title": "Sobra",
+            "type": "string"
+          },
+          "sobra_nao_confiavel": {
+            "title": "Sobra Nao Confiavel",
+            "type": "boolean"
+          },
+          "vencidas": {
+            "title": "Vencidas",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "horizonte_dias",
+          "data_fim",
+          "sobra",
+          "disponivel",
+          "compromissos",
+          "sobra_nao_confiavel",
+          "vencidas",
+          "pendencias_vencimento"
+        ],
+        "title": "R2Alerta",
+        "type": "object"
+      },
+      "R4Alerta": {
+        "properties": {
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "data_snapshot": {
+            "format": "date",
+            "title": "Data Snapshot",
+            "type": "string"
+          },
+          "divergencia": {
+            "title": "Divergencia",
+            "type": "string"
+          },
+          "quantidade": {
+            "title": "Quantidade",
+            "type": "integer"
+          },
+          "saldo_derivado": {
+            "title": "Saldo Derivado",
+            "type": "string"
+          },
+          "valor_snapshot": {
+            "title": "Valor Snapshot",
+            "type": "string"
+          }
+        },
+        "required": [
+          "conta_id",
+          "data_snapshot",
+          "valor_snapshot",
+          "saldo_derivado",
+          "divergencia",
+          "quantidade"
+        ],
+        "title": "R4Alerta",
+        "type": "object"
+      },
       "ReceitaSaida": {
         "properties": {
           "beneficio": {
@@ -1622,6 +1802,67 @@
           "versao"
         ],
         "title": "RecorrenteSaida",
+        "type": "object"
+      },
+      "ReservaAlerta": {
+        "properties": {
+          "cobertura_meses": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cobertura Meses"
+          },
+          "falta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Falta"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meta"
+          },
+          "nivel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel"
+          },
+          "saldo_liquido": {
+            "title": "Saldo Liquido",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nivel",
+          "saldo_liquido",
+          "meta",
+          "falta",
+          "cobertura_meses"
+        ],
+        "title": "ReservaAlerta",
         "type": "object"
       },
       "SaldoSaida": {
@@ -2101,6 +2342,28 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/alertas": {
+      "get": {
+        "description": "Alertas R1, R2 e R4 em `hoje` (data civil de São Paulo), derivados a cada consulta.",
+        "operationId": "alertas_listar",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertasSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Listar",
+        "tags": [
+          "alertas"
+        ]
+      }
+    },
     "/api/auth/eu": {
       "get": {
         "description": "Reentrega o token CSRF à página recarregada, sem expor o `user_id`.",
@@ -3003,6 +3266,7 @@
             "name": "versao",
             "required": true,
             "schema": {
+              "maximum": 2147483647,
               "minimum": 1,
               "title": "Versao",
               "type": "integer"

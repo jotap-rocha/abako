@@ -10,6 +10,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+from backend.routers import alertas as router_alertas
 from backend.routers import r2 as router_r2
 from backend.routers import recorrentes as router_recorrentes
 from tests.backend.conftest import ORIGEM, Usuario, logar
@@ -31,6 +32,7 @@ def hoje_em(client: TestClient, hoje: str) -> Iterator[None]:
     app: Any = client.app
     fixa = date.fromisoformat(hoje)
     app.dependency_overrides[router_r2.hoje_civil] = lambda: fixa
+    app.dependency_overrides[router_alertas.hoje_civil] = lambda: fixa
     app.dependency_overrides[router_recorrentes.hoje_civil] = lambda: fixa
     try:
         yield
@@ -181,6 +183,24 @@ class Cenario:
         return self.client.put(
             "/api/r2/horizonte",
             json={"dias": dias, "vigente_desde": desde},
+            headers=escrita(self.csrf),
+        )
+
+    # ---- reserva e contas de investimento (alertas R1 e R4)
+    def reserva(self, nome: str, saldo: str, data: str = "2026-01-01") -> int:
+        conta_id = self.conta(nome, "reserva", conta_mae_id=self.corrente)
+        self.snapshot(conta_id, saldo, data)
+        return conta_id
+
+    def parametro_reserva(self, gasto: str, meses: int = 3, desde: str = "2026-01-01") -> Any:
+        return self.client.put(
+            "/api/reserva/parametros",
+            json={
+                "meses": meses,
+                "gasto_essencial": gasto,
+                "data_alvo": None,
+                "vigente_desde": desde,
+            },
             headers=escrita(self.csrf),
         )
 

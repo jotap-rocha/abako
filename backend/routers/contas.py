@@ -70,7 +70,7 @@ class ContaEdicao(_Nome):
     conta_mae_id: Annotated[int, Field(ge=1, le=2**63 - 1)] | None = None
     linha_credito_id: Annotated[int, Field(ge=1, le=2**63 - 1)] | None = None
     # A versão que o front leu; se outra edição veio antes, 409.
-    versao: int = Field(ge=1)
+    versao: int = Field(ge=1, le=2**31 - 1)
 
 
 def _saida(conta: svc_contas.Conta) -> ContaSaida:

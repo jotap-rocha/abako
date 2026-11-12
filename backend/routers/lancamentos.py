@@ -99,7 +99,7 @@ class LancamentoEntrada(_Campos):
 
 class LancamentoEdicao(_Campos):
     # A versão que o front leu; se outra edição veio antes, 409 (INV-29).
-    versao: int = Field(ge=1)
+    versao: int = Field(ge=1, le=2**31 - 1)
 
 
 class LancamentoSaida(BaseModel):
@@ -126,7 +126,7 @@ class LancamentoSaida(BaseModel):
 
 class EstornoEntrada(BaseModel):
     # A versão da compra que o front leu; se outra edição veio antes, 409.
-    versao: int = Field(ge=1)
+    versao: int = Field(ge=1, le=2**31 - 1)
     data: date = Field(ge=DATA_MINIMA)
     descricao: str | None = None
 
@@ -264,7 +264,7 @@ async def excluir(
     transacao_id: IdLancamento,
     conn: Conexao,
     sessao: SessaoEscrita,
-    versao: Annotated[int, Query(ge=1)],
+    versao: Annotated[int, Query(ge=1, le=2**31 - 1)],
 ) -> None:
     """Exclusão lógica: nova versão marcada como excluída; deixa de contar no saldo."""
     async with regras_do_banco():

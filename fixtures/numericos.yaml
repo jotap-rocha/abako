@@ -1016,3 +1016,114 @@ fixtures:
         gasto_real_2025_05: "0.00"
         gasto_real_2025_06: "0.00"
         receita_caixa_2025_04: "1000.00"
+
+  # ---- SPEC-011 (ADR 049): alertas R1, R2 e R4, derivados na hora (contas à mão) ----
+
+  - id: F-ALERTA-01
+    invariantes: [INV-12, INV-17, INV-38]
+    descricao: >-
+      R1 por nível da reserva (meta 12000.00 = 3 x 4000.00, como F-RES-01): crítica é alerta
+      forte (severidade alta), atenção é aviso (media), saudável não gera alerta. Gasto essencial
+      ausente ou zero não é R1: gera só o item de configuração (tipo configuracao, severidade
+      baixa).
+    entrada:
+      hoje: "2026-04-01"
+      parametro: {desde: "2026-01-01", meses: 3, gasto_essencial: "4000.00"}
+    casos:
+      - {saldo: "3000.00", alerta: {codigo: R1, tipo: alerta, severidade: alta, detalhe: reserva_critica, nivel: critica, falta: "9000.00", cobertura_meses: "0.75"}}
+      - {saldo: "5999.99", alerta: {codigo: R1, tipo: alerta, severidade: alta, detalhe: reserva_critica, nivel: critica, falta: "6000.01", cobertura_meses: "1.50"}}
+      - {saldo: "6000.00", alerta: {codigo: R1, tipo: aviso, severidade: media, detalhe: reserva_atencao, nivel: atencao, falta: "6000.00", cobertura_meses: "1.50"}}
+      - {saldo: "11999.99", alerta: {codigo: R1, tipo: aviso, severidade: media, detalhe: reserva_atencao, nivel: atencao, falta: "0.01", cobertura_meses: "3.00"}}
+      - {saldo: "12000.00", alerta: null}
+      - {saldo: "20000.00", alerta: null}
+    config_pendente:
+      casos: [sem_parametro, gasto_essencial_zero]
+      saldo: "3000.00"
+      esperado: {codigo: CONFIG, tipo: configuracao, severidade: baixa, detalhe: reserva_gasto_essencial, r1: null}
+
+  - id: F-ALERTA-02
+    invariantes: [INV-18, INV-19, INV-38]
+    descricao: >-
+      R2: alerta forte (severidade alta) só com sobra < 0 estrito; sobra zero ou positiva não
+      alerta. Cartão com dívida sem vencimento torna a sobra não confiável (aviso media se a
+      sobra é >= 0; o flag também vem na sobra negativa). Ocorrência vencida sem vínculo é aviso
+      baixa com a quantidade. Base: hoje 2026-05-10, horizonte 10, corrente com saldo 5000.00 em
+      snapshot de 2026-01-01, receita recorrente de 3000.00 no dia 12 (pendente) e um fixo
+      recorrente no dia 15 (valor abaixo). Disponível = 8000.00.
+    entrada:
+      hoje: "2026-05-10"
+      horizonte_dias: 10
+      saldos_correntes: "5000.00"
+      receita_recorrente_pendente: "3000.00"
+    casos:
+      - {fixo: "7999.99", sobra: "0.01", alerta: null}
+      - {fixo: "8000.00", sobra: "0.00", alerta: null}
+      - {fixo: "8000.01", sobra: "-0.01", alerta: {codigo: R2, tipo: alerta, severidade: alta, detalhe: sobra_negativa, sobra_nao_confiavel: false}}
+      # cartão com dívida de 300.00 (compra em 2026-04-20), fechamento cadastrado e SEM vencimento
+      - {fixo: "2500.00", cartao_sem_vencimento: true, sobra: "5500.00", pendencias_vencimento: 1, alerta: {codigo: R2, tipo: aviso, severidade: media, detalhe: sobra_nao_confiavel, sobra_nao_confiavel: true}}
+      - {fixo: "9000.00", cartao_sem_vencimento: true, sobra: "-1000.00", pendencias_vencimento: 1, alerta: {codigo: R2, tipo: alerta, severidade: alta, detalhe: sobra_negativa, sobra_nao_confiavel: true}}
+    vencida:
+      # fixo de 400.00 no dia 5 de 2026-05, sem vínculo: sai da sobra (8000.00) e vira aviso à parte
+      fixo: {valor: "400.00", dia: 5, inicio: "2026-05"}
+      esperado: {sobra: "8000.00", vencidas: 1, alerta: {codigo: R2, tipo: aviso, severidade: baixa, detalhe: vencidas}}
+
+  - id: F-ALERTA-03
+    invariantes: [INV-23, INV-30, INV-38]
+    descricao: >-
+      R4 no alerta: uma linha por conta vigente com o snapshot divergente mais recente até hoje e
+      a quantidade de snapshots divergentes dela. Divergência = derivado - snapshot (ADR 041).
+      Cartão = conta de dívida. Snapshot com data posterior a hoje e conta excluída não geram
+      alerta. Hoje = 2026-05-10.
+    casos:
+      - nome: conta_a   # F-SALDO-01
+        snapshots: [{data: "2026-01-10", valor: "1000.00"}, {data: "2026-01-14", valor: "1040.00"}]
+        transacoes: [{data: "2026-01-11", valor: "-50.00"}, {data: "2026-01-12", valor: "200.00"}, {data: "2026-01-13", valor: "-100.00"}]
+        esperado: {data_snapshot: "2026-01-14", valor_snapshot: "1040.00", saldo_derivado: "1050.00", divergencia: "10.00", quantidade: 1}
+      - nome: cartao    # dívida: -500.00, compra de 100.00 em 03-05, snapshot -550.00
+        snapshots: [{data: "2026-03-01", valor: "-500.00"}, {data: "2026-03-10", valor: "-550.00"}]
+        compra: {data: "2026-03-05", total: "100.00", parcelas: 1}
+        esperado: {data_snapshot: "2026-03-10", valor_snapshot: "-550.00", saldo_derivado: "-600.00", divergencia: "-50.00", quantidade: 1}
+      - nome: conta_duas   # duas divergências: em 01-14 (900.00 - 950.00 = -50.00) e em 01-20 (930.00 - 900.00 = 30.00)
+        snapshots: [{data: "2026-01-10", valor: "1000.00"}, {data: "2026-01-14", valor: "950.00"}, {data: "2026-01-20", valor: "900.00"}]
+        transacoes: [{data: "2026-01-11", valor: "-100.00"}, {data: "2026-01-15", valor: "-20.00"}]
+        esperado: {data_snapshot: "2026-01-20", valor_snapshot: "900.00", saldo_derivado: "930.00", divergencia: "30.00", quantidade: 2}
+      - nome: conta_futura   # a divergência está em 2026-06-01, depois de hoje
+        snapshots: [{data: "2026-01-10", valor: "100.00"}, {data: "2026-06-01", valor: "90.00"}]
+        esperado: null
+      - nome: conta_conferida   # derivado = snapshot
+        snapshots: [{data: "2026-01-10", valor: "500.00"}, {data: "2026-01-14", valor: "400.00"}]
+        transacoes: [{data: "2026-01-12", valor: "-100.00"}]
+        esperado: null
+
+  - id: F-ALERTA-04
+    invariantes: [INV-38]
+    descricao: >-
+      Vários alertas juntos, ordenados por severidade (alta, media, baixa), depois por código.
+      Hoje 2026-05-10, horizonte 10. Reserva "caixinha" com snapshot de 8000.00 em 2026-01-01 e
+      parâmetro (3 meses, gasto essencial 4000.00): meta 12000.00, nível atenção. A corrente-mãe
+      dela tem saldo 0.00, um fixo de 100.00 no dia 15 (pendente) e um fixo de 50.00 no dia 5
+      (vencido, sem vínculo): disponível 0.00, compromissos 100.00, sobra -100.00. Uma conta de
+      investimento com snapshot 1000.00 (01-10), débito de 50.00 (01-11) e snapshot 1000.00
+      (01-14): derivado 950.00, divergência -50.00 (a conta de investimento não entra no R2).
+    esperado:
+      ordem:
+        - {codigo: R2, tipo: alerta, severidade: alta, detalhe: sobra_negativa, sobra: "-100.00"}
+        - {codigo: R1, tipo: aviso, severidade: media, detalhe: reserva_atencao, nivel: atencao, falta: "4000.00"}
+        - {codigo: R4, tipo: aviso, severidade: media, detalhe: divergencia_saldo, divergencia: "-50.00"}
+        - {codigo: R2, tipo: aviso, severidade: baixa, detalhe: vencidas, vencidas: 1}
+    sem_alertas:
+      descricao: usuário novo sem nada informado devolve só o item de configuração da reserva
+      esperado: [{codigo: CONFIG, tipo: configuracao, severidade: baixa}]
+
+  - id: F-ALERTA-05
+    invariantes: [INV-12, INV-17, INV-38]
+    descricao: >-
+      Sem nenhuma conta de reserva mas com gasto essencial configurado (4000.00, 3 meses): a
+      meta existe (12000.00) e o saldo é 0.00, então o nível é crítica e o R1 é alerta forte
+      (ADR 049 item 3). Cobertura 0 / 4000 = 0.00; falta = meta.
+    entrada:
+      hoje: "2026-04-01"
+      contas_reserva: 0
+      parametro: {desde: "2026-01-01", meses: 3, gasto_essencial: "4000.00"}
+    esperado:
+      alerta: {codigo: R1, tipo: alerta, severidade: alta, detalhe: reserva_critica, nivel: critica, saldo_liquido: "0.00", meta: "12000.00", falta: "12000.00", cobertura_meses: "0.00"}

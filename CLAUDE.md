@@ -38,7 +38,7 @@ Versões exatas: definidas na SPEC-001.
 
 ## Invariantes
 
-Fonte da verdade: `tests/contracts/invariantes.yaml` (INV-01..INV-37), cada uma com fixture em `fixtures/numericos.yaml` (ou teste de propriedade, quando não há valor fixo) e ao menos um teste. Resumo dos que mais importam:
+Fonte da verdade: `tests/contracts/invariantes.yaml` (INV-01..INV-38), cada uma com fixture em `fixtures/numericos.yaml` (ou teste de propriedade, quando não há valor fixo) e ao menos um teste. Resumo dos que mais importam:
 
 1. **Dinheiro nunca é float.** `NUMERIC`/`Decimal` no banco e no Python; JSON e front usam texto (INV-14).
 2. **Ledger:** edição cria nova versão (SCD2), só a vigente conta, exclusão lógica; saldo derivado = último snapshot + transações válidas posteriores; divergência é sinalizada, **nunca corrigida sozinha** (INV-03, 09, 23).
