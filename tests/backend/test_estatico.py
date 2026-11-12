@@ -78,6 +78,13 @@ def test_contrato_so_tem_rotas_da_api_e_nao_a_da_spa(cliente_spa: TestClient) ->
         "/api/linhas-credito/{linha_id}/limite",
         "/api/cartoes/{conta_id}/fechamentos",
         "/api/cartoes/{conta_id}/faturas/{competencia}",
+        "/api/cartoes/{conta_id}/vencimentos",
+        "/api/recorrentes",
+        "/api/recorrentes/ocorrencias",
+        "/api/recorrentes/{recorrente_id}",
+        "/api/recorrentes/{recorrente_id}/ocorrencias/{mes}/vinculo",
+        "/api/r2",
+        "/api/r2/horizonte",
     }
 
 

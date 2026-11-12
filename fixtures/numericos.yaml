@@ -430,6 +430,242 @@ fixtures:
       compromissos_fixos: "200.00"
       vencidas_nao_vinculadas: ["fixo_a"]
 
+  # ---- SPEC-010 (ADR 048): recorrentes, vencimento do cartão e limites do horizonte ----
+
+  - id: F-R2-05
+    invariantes: [INV-19]
+    descricao: >-
+      Limites do horizonte (inclusivo): hoje entra, hoje + horizonte entra, hoje + horizonte + 1
+      não. A de hoje - 1 é vencida (lista separada) e não entra.
+    entrada:
+      hoje: "2026-05-10"
+      horizonte_dias: 10          # fim = 2026-05-20
+      saldos_correntes: "1000.00"
+      fixos:                      # recorrentes mensais desde 2026-05, nenhum vinculado
+        - {nome: fixo_ontem, data: "2026-05-09", valor: "800.00"}
+        - {nome: fixo_hoje, data: "2026-05-10", valor: "100.00"}
+        - {nome: fixo_ultimo, data: "2026-05-20", valor: "200.00"}
+        - {nome: fixo_depois, data: "2026-05-21", valor: "400.00"}
+      receitas:
+        - {nome: receita_ultimo, data: "2026-05-20", valor: "50.00"}
+        - {nome: receita_depois, data: "2026-05-21", valor: "7000.00"}
+    esperado:
+      fixos_pendentes: "300.00"       # 100.00 + 200.00
+      receitas_pendentes: "50.00"
+      disponivel: "1050.00"           # 1000.00 + 50.00
+      compromissos: "300.00"
+      sobra: "750.00"
+      alerta: false
+      vencidas_nao_vinculadas: ["fixo_ontem"]
+
+  - id: F-R2-06
+    invariantes: [INV-18, INV-31]
+    descricao: >-
+      Vencimento da competência M com dias vigentes no último dia de M: se vencimento > fechamento,
+      vence em M; senão em M+1; dia inexistente usa o último dia do mês; a vigência do vencimento
+      vale por competência.
+    entrada:
+      casos:
+        - {fechamento: 10, vencimento: 20, competencia: "2026-05"}
+        - {fechamento: 25, vencimento: 5, competencia: "2026-04"}
+        - {fechamento: 10, vencimento: 31, competencia: "2026-02"}
+        - {fechamento: 31, vencimento: 10, competencia: "2026-12"}
+        - {fechamento: 10, vencimento: 10, competencia: "2026-05"}
+      vigencias_do_vencimento:
+        fechamento: 10
+        vencimentos: [{desde: "2026-01-01", dia: 20}, {desde: "2026-06-01", dia: 5}]
+        competencias: ["2026-05", "2026-06"]
+    esperado:
+      vencimentos: ["2026-05-20", "2026-05-05", "2026-02-28", "2027-01-10", "2026-06-10"]
+      vencimentos_com_vigencia: ["2026-05-20", "2026-07-05"]
+    r2_que_cruza_o_mes:
+      # cartão com fechamento 25 e vencimento 5; a competência 2026-04 vence em 2026-05-05
+      # (= hoje + horizonte, entra); a 2026-05 vence em 2026-06-05 (fora).
+      hoje: "2026-04-25"
+      horizonte_dias: 10
+      saldos_correntes: "2000.00"
+      compras:
+        - {data: "2026-03-30", total: "900.00", parcelas: 1}    # competência 2026-04
+        - {data: "2026-04-26", total: "500.00", parcelas: 1}    # competência 2026-05
+      esperado: {faturas_proprias: "900.00", compromissos: "900.00", sobra: "1100.00"}
+
+  - id: F-R2-07
+    invariantes: [INV-18, INV-26]
+    descricao: >-
+      Fatura com pagamento parcial já feito: o compromisso é a fatura própria menos o pago alocado
+      às parcelas próprias (ordem competência, data, parcela; ADR 044). O pago de 450.00 quita a
+      parcela de 200.00 da competência 2026-04 e sobra 250.00, que cai na compra própria de
+      12/04 (a de terceiro, de 15/04, vem depois e fica sem pago).
+    entrada:
+      hoje: "2026-05-10"
+      horizonte_dias: 10
+      saldos_correntes: {snapshot: {data: "2026-01-01", valor: "3000.00"}}
+      cartao: {fechamento: 10, vencimento: 20}     # competência 2026-05 vence em 2026-05-20
+      compras:
+        - {data: "2026-03-20", total: "200.00", parcelas: 1, pessoa: propria}    # 2026-04
+        - {data: "2026-04-12", total: "1000.00", parcelas: 1, pessoa: propria}   # 2026-05
+        - {data: "2026-04-15", total: "300.00", parcelas: 1, pessoa: pessoa_b}   # 2026-05
+      pagamentos: [{data: "2026-04-30", valor: "450.00"}]
+    esperado:
+      fatura_2026_05: {total: "1300.00", propria: "1000.00", terceiros: "300.00"}
+      pago_alocado_proprio: "250.00"
+      saldos_correntes: "2550.00"          # 3000.00 - 450.00
+      faturas_proprias: "750.00"           # 1000.00 - 250.00
+      compromissos: "750.00"
+      sobra: "1800.00"                     # 2550.00 - 750.00
+      parcial: false                       # fecha em 2026-05-10 = hoje
+
+  - id: F-R2-08
+    invariantes: [INV-19]
+    descricao: Fatura aberta (hoje antes do fechamento) entra na sobra como parcial.
+    entrada:
+      hoje: "2026-05-08"
+      horizonte_dias: 10                   # fim = 2026-05-18
+      saldos_correntes: {snapshot: {data: "2026-01-01", valor: "1000.00"}}
+      cartao: {fechamento: 10, vencimento: 15}     # competência 2026-05 vence em 2026-05-15
+      compras: [{data: "2026-04-20", total: "600.00", parcelas: 1}]   # competência 2026-05
+    esperado: {faturas_proprias: "600.00", compromissos: "600.00", sobra: "400.00", parcial: true}
+
+  - id: F-R2-09
+    invariantes: [INV-19]
+    descricao: >-
+      O horizonte tem vigência: o vigente na data de hoje decide. Dois fixos mensais desde 2026-06,
+      saldo corrente zero, horizonte 10 desde 2026-01-01 e 20 desde 2026-06-01.
+    entrada:
+      saldos_correntes: "0.00"
+      parametros: [{desde: "2026-01-01", dias: 10}, {desde: "2026-06-01", dias: 20}]
+      fixos:
+        - {nome: fixo_a, dia: 5, valor: "100.00"}
+        - {nome: fixo_b, dia: 20, valor: "300.00"}
+    esperado:
+      hoje_2026_05_31: {horizonte_dias: 10, data_fim: "2026-06-10", compromissos: "100.00", sobra: "-100.00", alerta: true}
+      hoje_2026_06_01: {horizonte_dias: 20, data_fim: "2026-06-21", compromissos: "400.00", sobra: "-400.00", alerta: true}
+      sem_parametro: {horizonte_dias: 10}
+
+  - id: F-R2-10
+    invariantes: [INV-19, INV-31]
+    descricao: Dia 29 a 31 do recorrente usa o último dia válido do mês (mesma regra do ADR 027).
+    entrada:
+      mes_inicio: "2026-01"
+      recorrentes: [{dia: 29}, {dia: 30}, {dia: 31}]
+      meses: ["2026-01", "2026-02", "2026-03", "2026-04", "2028-02"]
+    esperado:
+      dia_29: ["2026-01-29", "2026-02-28", "2026-03-29", "2026-04-29", "2028-02-29"]
+      dia_30: ["2026-01-30", "2026-02-28", "2026-03-30", "2026-04-30", "2028-02-29"]
+      dia_31: ["2026-01-31", "2026-02-28", "2026-03-31", "2026-04-30", "2028-02-29"]
+
+  - id: F-R2-11
+    invariantes: [INV-19]
+    descricao: >-
+      Valor da ocorrência = valor esperado até vincular; vinculada (transação com data <= hoje),
+      vale o valor da transação e a ocorrência sai do R2. Desvincular devolve o esperado e a
+      ocorrência volta ao R2.
+    entrada:
+      hoje: "2026-05-10"
+      horizonte_dias: 10
+      saldos_correntes: "0.00"
+      recorrente: {tipo: fixo, valor: "500.00", dia: 12, mes_inicio: "2026-05"}
+      transacao: {tipo: debito, data: "2026-05-08", valor: "480.00"}    # paga antes do dia 12
+    esperado:
+      antes: {ocorrencia_2026_05: {data: "2026-05-12", valor: "500.00", vinculada: false}, compromissos: "500.00"}
+      vinculada: {ocorrencia_2026_05: {valor: "480.00", vinculada: true}, compromissos: "0.00"}
+      desvinculada: {ocorrencia_2026_05: {valor: "500.00", vinculada: false}, compromissos: "500.00"}
+
+  - id: F-R2-12
+    invariantes: [INV-18, INV-26]
+    descricao: >-
+      Pago alocado na ordem competência, data, parcela (ADR 044), sem distinguir própria de
+      terceiros: parcela de terceiro ANTERIOR à própria absorve o pago e o compromisso sobe; pago
+      que não cobre a competência mais antiga não chega à fatura que vence no horizonte.
+      Fechamento 10, vencimento 20, hoje 2026-05-10 (horizonte 10), saldo inicial 3000.00 em
+      2026-01-01, pagamento em 2026-04-30. A competência 2026-04 vence em 2026-04-20 (fora).
+    entrada:
+      hoje: "2026-05-10"
+      saldo_inicial: "3000.00"
+      compras:
+        - {data: "2026-03-12", total: "100.00", pessoa: propria}     # competência 2026-04
+        - {data: "2026-04-11", total: "400.00", pessoa: pessoa_b}    # 2026-05, ANTES da própria
+        - {data: "2026-04-15", total: "600.00", pessoa: propria}     # 2026-05
+      casos:
+        - {pagamento: "500.00"}
+        - {pagamento: "60.00"}
+        - {pagamento: "800.00"}
+    esperado:
+      caso_1:   # 100.00 (2026-04) + 400.00 (terceiro) = 500.00: nada sobra para a própria
+        pago_alocado_proprio: "0.00"
+        faturas_proprias: "600.00"
+        saldos_correntes: "2500.00"
+        sobra: "1900.00"
+      caso_2:   # 60.00 não cobre nem a competência mais antiga (100.00)
+        pago_alocado_proprio: "0.00"
+        faturas_proprias: "600.00"
+        saldos_correntes: "2940.00"
+        sobra: "2340.00"
+      caso_3:   # 100.00 + 400.00 + 300.00 para a própria de 600.00
+        pago_alocado_proprio: "300.00"
+        faturas_proprias: "300.00"
+        saldos_correntes: "2200.00"
+        sobra: "1900.00"
+
+  - id: F-R2-13
+    invariantes: [INV-18, INV-31]
+    descricao: >-
+      Vigência retroativa: competência anterior à primeira vigência cadastrada usa a primeira. O
+      vencimento (dia 5) é cadastrado com vigente_desde = hoje (2026-05-02), mas a competência
+      2026-04 (fechamento 25) vence em 2026-05-05, dentro do horizonte, e pesa na sobra. O mesmo
+      vale para o fechamento. Cartão com dívida e sem vencimento nenhum é pendência.
+    entrada:
+      hoje: "2026-05-02"
+      horizonte_dias: 10
+      saldo_inicial: "2000.00"
+      cartao: {fechamento: {dia: 25, desde: "2026-01-01"}, vencimento: {dia: 5, desde: "2026-05-02"}}
+      compras: [{data: "2026-03-30", total: "900.00", parcelas: 1}]    # competência 2026-04
+      cartao_so_com_vigencia_futura:
+        fechamento: {dia: 15, desde: "2026-06-01"}
+        vencimento: {dia: 20, desde: "2026-06-01"}
+    esperado:
+      vencimento_2026_04: "2026-05-05"
+      vencimento_2026_05: "2026-06-05"
+      faturas_proprias: "900.00"
+      sobra: "1100.00"
+      pendencias_vencimento: 0
+      cartao_so_com_vigencia_futura: {fechamento_2026_04: "2026-04-15", vencimento_2026_04: "2026-04-20"}
+
+  - id: F-R2-14
+    invariantes: [INV-18, INV-19]
+    descricao: >-
+      Data futura não abate (conservador): pagamento de fatura com data > hoje não entra no pago
+      alocado do R2 e fixo vinculado a débito com data > hoje continua pendente. Quando a data
+      chega (hoje passa a ser a do pagamento/débito), passa a abater.
+    entrada:
+      pagamento_futuro:     # cenário de F-R2-07 com o pagamento de 450.00 em 2026-05-15
+        compras_e_cartao: F-R2-07
+        data_do_pagamento: "2026-05-15"
+      vinculo_futuro:
+        saldo_inicial: "1000.00"
+        recorrente: {tipo: fixo, valor: "500.00", dia: 12, mes_inicio: "2026-05"}
+        transacao: {tipo: debito, data: "2026-05-12", valor: "480.00"}
+    esperado:
+      pagamento_futuro:
+        hoje_2026_05_10: {saldos_correntes: "3000.00", faturas_proprias: "1000.00", sobra: "2000.00"}
+        hoje_2026_05_15: {saldos_correntes: "2550.00", faturas_proprias: "750.00", sobra: "1800.00"}
+      vinculo_futuro:
+        hoje_2026_05_10: {fixos_pendentes: "500.00", saldos_correntes: "1000.00", sobra: "500.00"}
+        hoje_2026_05_12: {fixos_pendentes: "0.00", saldos_correntes: "520.00", sobra: "520.00"}
+
+  - id: F-R2-15
+    invariantes: [INV-19]
+    descricao: >-
+      Vencidas não vinculadas só olham os últimos 24 meses a partir de hoje (2026-05-10 -> piso
+      2024-05-10, inclusive). Recorrente desde 2020-01, nenhuma ocorrência vinculada.
+    entrada:
+      hoje: "2026-05-10"
+      recorrentes: [{dia: 15}, {dia: 5}, {dia: 10}]
+    esperado:
+      dia_15: {vencidas: 24, primeira: "2024-05-15", ultima: "2026-04-15"}
+      dia_5: {vencidas: 24, primeira: "2024-06-05", ultima: "2026-05-05"}     # 2024-05-05 < piso
+      dia_10: {vencidas: 24, primeira: "2024-05-10", ultima: "2026-04-10"}    # piso inclusive
+
   - id: F-VALE-01
     invariantes: [INV-21, INV-22]
     descricao: Alocação por bolso a partir do crédito do mês.

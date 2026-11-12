@@ -291,6 +291,34 @@ export type HttpValidationError = {
 };
 
 /**
+ * HorizonteEntrada
+ */
+export type HorizonteEntrada = {
+    /**
+     * Dias
+     */
+    dias: number;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
+ * HorizonteSaida
+ */
+export type HorizonteSaida = {
+    /**
+     * Dias
+     */
+    dias: number;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
  * ItemFaturaSaida
  */
 export type ItemFaturaSaida = {
@@ -326,6 +354,52 @@ export type ItemFaturaSaida = {
      * Versao
      */
     versao: number;
+};
+
+/**
+ * ItemR2Saida
+ */
+export type ItemR2Saida = {
+    /**
+     * Bruto
+     */
+    bruto: string | null;
+    /**
+     * Competencia
+     */
+    competencia: string | null;
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Data
+     */
+    data: string;
+    /**
+     * Grupo
+     */
+    grupo: string;
+    /**
+     * Pago
+     */
+    pago: string | null;
+    /**
+     * Parcial
+     */
+    parcial: boolean | null;
+    /**
+     * Recorrente Id
+     */
+    recorrente_id: number | null;
+    /**
+     * Tipo
+     */
+    tipo: string | null;
+    /**
+     * Valor
+     */
+    valor: string;
 };
 
 /**
@@ -591,6 +665,52 @@ export type LoginSaida = {
 };
 
 /**
+ * OcorrenciaSaida
+ */
+export type OcorrenciaSaida = {
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Data
+     */
+    data: string;
+    /**
+     * Mes
+     */
+    mes: string;
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Recorrente Id
+     */
+    recorrente_id: number;
+    /**
+     * Tipo
+     */
+    tipo: string;
+    /**
+     * Transacao Id
+     */
+    transacao_id: number | null;
+    /**
+     * Valor
+     */
+    valor: string;
+    /**
+     * Valor Esperado
+     */
+    valor_esperado: string;
+    /**
+     * Vinculada
+     */
+    vinculada: boolean;
+};
+
+/**
  * ParametroEntrada
  */
 export type ParametroEntrada = {
@@ -699,6 +819,120 @@ export type ReceitaSaida = {
 };
 
 /**
+ * RecorrenteEdicao
+ */
+export type RecorrenteEdicao = {
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Dia
+     */
+    dia: number;
+    /**
+     * Mes Fim
+     */
+    mes_fim?: string | null;
+    /**
+     * Mes Inicio
+     */
+    mes_inicio: string;
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Tipo
+     */
+    tipo: 'fixo' | 'receita';
+    /**
+     * Valor
+     */
+    valor: string;
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
+ * RecorrenteEntrada
+ */
+export type RecorrenteEntrada = {
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Dia
+     */
+    dia: number;
+    /**
+     * Mes Fim
+     */
+    mes_fim?: string | null;
+    /**
+     * Mes Inicio
+     */
+    mes_inicio: string;
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Tipo
+     */
+    tipo: 'fixo' | 'receita';
+    /**
+     * Valor
+     */
+    valor: string;
+};
+
+/**
+ * RecorrenteSaida
+ */
+export type RecorrenteSaida = {
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Dia
+     */
+    dia: number;
+    /**
+     * Mes Fim
+     */
+    mes_fim: string | null;
+    /**
+     * Mes Inicio
+     */
+    mes_inicio: string;
+    /**
+     * Nome
+     */
+    nome: string;
+    /**
+     * Recorrente Id
+     */
+    recorrente_id: number;
+    /**
+     * Tipo
+     */
+    tipo: string;
+    /**
+     * Valor
+     */
+    valor: string;
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
  * SaldoSaida
  */
 export type SaldoSaida = {
@@ -734,6 +968,64 @@ export type SaldoSaida = {
      * Tipo
      */
     tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio' | 'divida';
+};
+
+/**
+ * SituacaoR2Saida
+ */
+export type SituacaoR2Saida = {
+    /**
+     * Alerta
+     */
+    alerta: boolean;
+    /**
+     * Compromissos
+     */
+    compromissos: string;
+    /**
+     * Data Fim
+     */
+    data_fim: string;
+    /**
+     * Disponivel
+     */
+    disponivel: string;
+    /**
+     * Faturas Proprias
+     */
+    faturas_proprias: string;
+    /**
+     * Fixos Pendentes
+     */
+    fixos_pendentes: string;
+    /**
+     * Horizonte Dias
+     */
+    horizonte_dias: number;
+    /**
+     * Itens
+     */
+    itens: Array<ItemR2Saida>;
+    /**
+     * Pendencias Vencimento
+     */
+    pendencias_vencimento: number;
+    /**
+     * Receitas Pendentes
+     */
+    receitas_pendentes: string;
+    /**
+     * Saldos Correntes
+     */
+    saldos_correntes: string;
+    /**
+     * Sobra
+     */
+    sobra: string;
+    /**
+     * Vencidas
+     */
+    vencidas: number;
 };
 
 /**
@@ -876,6 +1168,44 @@ export type ValidationError = {
      * Error Type
      */
     type: string;
+};
+
+/**
+ * VencimentoEntrada
+ */
+export type VencimentoEntrada = {
+    /**
+     * Dia
+     */
+    dia: number;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
+ * VencimentoSaida
+ */
+export type VencimentoSaida = {
+    /**
+     * Dia
+     */
+    dia: number;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
+ * VinculoEntrada
+ */
+export type VinculoEntrada = {
+    /**
+     * Transacao Id
+     */
+    transacao_id: number;
 };
 
 export type AuthEuData = {
@@ -1051,6 +1381,74 @@ export type CartoesRegistrarFechamentoResponses = {
 };
 
 export type CartoesRegistrarFechamentoResponse = CartoesRegistrarFechamentoResponses[keyof CartoesRegistrarFechamentoResponses];
+
+export type VencimentosListarVencimentosData = {
+    body?: never;
+    path: {
+        /**
+         * Conta Id
+         */
+        conta_id: number;
+    };
+    query?: never;
+    url: '/api/cartoes/{conta_id}/vencimentos';
+};
+
+export type VencimentosListarVencimentosErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type VencimentosListarVencimentosError = VencimentosListarVencimentosErrors[keyof VencimentosListarVencimentosErrors];
+
+export type VencimentosListarVencimentosResponses = {
+    /**
+     * Response Vencimentos Listar Vencimentos
+     *
+     * Successful Response
+     */
+    200: Array<VencimentoSaida>;
+};
+
+export type VencimentosListarVencimentosResponse = VencimentosListarVencimentosResponses[keyof VencimentosListarVencimentosResponses];
+
+export type VencimentosGravarVencimentoData = {
+    body: VencimentoEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Conta Id
+         */
+        conta_id: number;
+    };
+    query?: never;
+    url: '/api/cartoes/{conta_id}/vencimentos';
+};
+
+export type VencimentosGravarVencimentoErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type VencimentosGravarVencimentoError = VencimentosGravarVencimentoErrors[keyof VencimentosGravarVencimentoErrors];
+
+export type VencimentosGravarVencimentoResponses = {
+    /**
+     * Successful Response
+     */
+    200: VencimentoSaida;
+};
+
+export type VencimentosGravarVencimentoResponse = VencimentosGravarVencimentoResponses[keyof VencimentosGravarVencimentoResponses];
 
 export type ContasListarData = {
     body?: never;
@@ -1781,6 +2179,71 @@ export type PessoasAReceberDaPessoaResponses = {
 
 export type PessoasAReceberDaPessoaResponse = PessoasAReceberDaPessoaResponses[keyof PessoasAReceberDaPessoaResponses];
 
+export type R2SituacaoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/r2';
+};
+
+export type R2SituacaoResponses = {
+    /**
+     * Successful Response
+     */
+    200: SituacaoR2Saida;
+};
+
+export type R2SituacaoResponse = R2SituacaoResponses[keyof R2SituacaoResponses];
+
+export type R2ListarHorizontesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/r2/horizonte';
+};
+
+export type R2ListarHorizontesResponses = {
+    /**
+     * Response R2 Listar Horizontes
+     *
+     * Successful Response
+     */
+    200: Array<HorizonteSaida>;
+};
+
+export type R2ListarHorizontesResponse = R2ListarHorizontesResponses[keyof R2ListarHorizontesResponses];
+
+export type R2GravarHorizonteData = {
+    body: HorizonteEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/r2/horizonte';
+};
+
+export type R2GravarHorizonteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type R2GravarHorizonteError = R2GravarHorizonteErrors[keyof R2GravarHorizonteErrors];
+
+export type R2GravarHorizonteResponses = {
+    /**
+     * Successful Response
+     */
+    200: HorizonteSaida;
+};
+
+export type R2GravarHorizonteResponse = R2GravarHorizonteResponses[keyof R2GravarHorizonteResponses];
+
 export type SaldosR4Data = {
     body?: never;
     path?: never;
@@ -1830,6 +2293,280 @@ export type GastoRealReceitaResponses = {
 };
 
 export type GastoRealReceitaResponse = GastoRealReceitaResponses[keyof GastoRealReceitaResponses];
+
+export type RecorrentesListarData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/recorrentes';
+};
+
+export type RecorrentesListarResponses = {
+    /**
+     * Response Recorrentes Listar
+     *
+     * Successful Response
+     */
+    200: Array<RecorrenteSaida>;
+};
+
+export type RecorrentesListarResponse = RecorrentesListarResponses[keyof RecorrentesListarResponses];
+
+export type RecorrentesCriarData = {
+    body: RecorrenteEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/recorrentes';
+};
+
+export type RecorrentesCriarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RecorrentesCriarError = RecorrentesCriarErrors[keyof RecorrentesCriarErrors];
+
+export type RecorrentesCriarResponses = {
+    /**
+     * Successful Response
+     */
+    201: RecorrenteSaida;
+};
+
+export type RecorrentesCriarResponse = RecorrentesCriarResponses[keyof RecorrentesCriarResponses];
+
+export type RecorrentesOcorrenciasData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Mes
+         *
+         * Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo
+         */
+        mes?: string | null;
+    };
+    url: '/api/recorrentes/ocorrencias';
+};
+
+export type RecorrentesOcorrenciasErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RecorrentesOcorrenciasError = RecorrentesOcorrenciasErrors[keyof RecorrentesOcorrenciasErrors];
+
+export type RecorrentesOcorrenciasResponses = {
+    /**
+     * Response Recorrentes Ocorrencias
+     *
+     * Successful Response
+     */
+    200: Array<OcorrenciaSaida>;
+};
+
+export type RecorrentesOcorrenciasResponse = RecorrentesOcorrenciasResponses[keyof RecorrentesOcorrenciasResponses];
+
+export type RecorrentesExcluirData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Recorrente Id
+         */
+        recorrente_id: number;
+    };
+    query: {
+        /**
+         * Versao
+         */
+        versao: number;
+    };
+    url: '/api/recorrentes/{recorrente_id}';
+};
+
+export type RecorrentesExcluirErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RecorrentesExcluirError = RecorrentesExcluirErrors[keyof RecorrentesExcluirErrors];
+
+export type RecorrentesExcluirResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type RecorrentesExcluirResponse = RecorrentesExcluirResponses[keyof RecorrentesExcluirResponses];
+
+export type RecorrentesObterData = {
+    body?: never;
+    path: {
+        /**
+         * Recorrente Id
+         */
+        recorrente_id: number;
+    };
+    query?: never;
+    url: '/api/recorrentes/{recorrente_id}';
+};
+
+export type RecorrentesObterErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RecorrentesObterError = RecorrentesObterErrors[keyof RecorrentesObterErrors];
+
+export type RecorrentesObterResponses = {
+    /**
+     * Successful Response
+     */
+    200: RecorrenteSaida;
+};
+
+export type RecorrentesObterResponse = RecorrentesObterResponses[keyof RecorrentesObterResponses];
+
+export type RecorrentesEditarData = {
+    body: RecorrenteEdicao;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Recorrente Id
+         */
+        recorrente_id: number;
+    };
+    query?: never;
+    url: '/api/recorrentes/{recorrente_id}';
+};
+
+export type RecorrentesEditarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RecorrentesEditarError = RecorrentesEditarErrors[keyof RecorrentesEditarErrors];
+
+export type RecorrentesEditarResponses = {
+    /**
+     * Successful Response
+     */
+    200: RecorrenteSaida;
+};
+
+export type RecorrentesEditarResponse = RecorrentesEditarResponses[keyof RecorrentesEditarResponses];
+
+export type RecorrentesDesvincularData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Recorrente Id
+         */
+        recorrente_id: number;
+        /**
+         * Mes
+         *
+         * Mês da ocorrência, AAAA-MM
+         */
+        mes: string;
+    };
+    query?: never;
+    url: '/api/recorrentes/{recorrente_id}/ocorrencias/{mes}/vinculo';
+};
+
+export type RecorrentesDesvincularErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RecorrentesDesvincularError = RecorrentesDesvincularErrors[keyof RecorrentesDesvincularErrors];
+
+export type RecorrentesDesvincularResponses = {
+    /**
+     * Successful Response
+     */
+    200: OcorrenciaSaida;
+};
+
+export type RecorrentesDesvincularResponse = RecorrentesDesvincularResponses[keyof RecorrentesDesvincularResponses];
+
+export type RecorrentesVincularData = {
+    body: VinculoEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path: {
+        /**
+         * Recorrente Id
+         */
+        recorrente_id: number;
+        /**
+         * Mes
+         *
+         * Mês da ocorrência, AAAA-MM
+         */
+        mes: string;
+    };
+    query?: never;
+    url: '/api/recorrentes/{recorrente_id}/ocorrencias/{mes}/vinculo';
+};
+
+export type RecorrentesVincularErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RecorrentesVincularError = RecorrentesVincularErrors[keyof RecorrentesVincularErrors];
+
+export type RecorrentesVincularResponses = {
+    /**
+     * Successful Response
+     */
+    200: OcorrenciaSaida;
+};
+
+export type RecorrentesVincularResponse = RecorrentesVincularResponses[keyof RecorrentesVincularResponses];
 
 export type ReservaSituacaoData = {
     body?: never;

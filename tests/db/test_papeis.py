@@ -31,7 +31,13 @@ def test_app_sem_update_delete(esquema: str, url_app: str) -> None:
                 "WHERE table_schema = 'public' AND column_name = 'vigente' ORDER BY 1"
             ).fetchall()
         ]
-        assert tabelas == ["conta_versao", "linha_credito", "pessoa", "transacao_versao"]
+        assert tabelas == [
+            "conta_versao",
+            "linha_credito",
+            "pessoa",
+            "recorrente",
+            "transacao_versao",
+        ]
         # ADR 042: nas tabelas de versão a aplicação só lê; a escrita passa pelas funções.
         for t in tabelas:
             assert _tem_privilegio(app, t, "SELECT")
@@ -256,4 +262,145 @@ def test_reserva_papeis(esquema: str, url_app: str, url_pipeline: str) -> None:
         pipe.rollback()
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             pipe.execute("SELECT reserva_parametro_gravar(1, 3, 1.00, NULL, DATE '2026-01-01')")
+        pipe.rollback()
+
+
+FUNCOES_DE_LEITURA_DO_R2 = (
+    "data_no_mes(integer, date)",
+    "meses_entre(date, date)",
+    "ocorrencias_do_mes(bigint, text)",
+    "fatura_fechamento(bigint, bigint, text)",
+    "vencimento_fatura(bigint, bigint, text)",
+    "r2_horizonte(bigint, date)",
+    "pool_pago_ate(bigint, bigint, date)",
+    "alocacao_pago_ate(bigint, bigint, date)",
+    "r2_itens(bigint, date)",
+    "r2_situacao(bigint, date)",
+)
+FUNCOES_DE_ESCRITA_DO_R2 = (
+    "recorrente_gravar(bigint, bigint, integer, text, text, numeric, integer, bigint, text, text)",
+    "recorrente_excluir(bigint, bigint, integer)",
+    "recorrente_vincular(bigint, bigint, text, bigint)",
+    "recorrente_desvincular(bigint, bigint, text)",
+    "r2_parametro_gravar(bigint, integer, date)",
+    "vencimento_gravar(bigint, bigint, integer, date)",
+)
+TABELAS_DO_R2 = (
+    "recorrente",
+    "recorrente_vigente",
+    "recorrente_vinculo",
+    "recorrente_vinculo_vigente",
+    "recorrente_vinculo_efetivo",
+    "r2_parametro",
+    "r2_parametro_vigente",
+    "cartao_vencimento",
+    "vencimento_vigente",
+)
+TABELAS_DO_R2_PARA_O_PIPELINE = (
+    "r2_parametro",
+    "r2_parametro_vigente",
+    "cartao_vencimento",
+    "vencimento_vigente",
+)
+
+
+def test_r2_papeis(esquema: str, url_app: str, url_pipeline: str) -> None:
+    """SPEC-010 / ADR 048: app executa e grava só pelas funções; pipeline só lê (sem o nome)."""
+    with psycopg.connect(url_app) as app, psycopg.connect(url_pipeline) as pipe:
+        for t in TABELAS_DO_R2:
+            assert _tem_privilegio(app, t, "SELECT"), t
+            for priv in ("INSERT", "UPDATE", "DELETE", "TRUNCATE"):
+                assert not _tem_privilegio(app, t, priv), f"app tem {priv} em {t}"
+        for t in TABELAS_DO_R2_PARA_O_PIPELINE:
+            assert _tem_privilegio(pipe, t, "SELECT"), t
+        for t in TABELAS_DO_R2:
+            for priv in ("INSERT", "UPDATE", "DELETE", "TRUNCATE"):
+                assert not _tem_privilegio(pipe, t, priv), f"pipeline tem {priv} em {t}"
+        # recorrente e vínculo (nome, valor, dia, conta) não chegam ao pipeline (ADR 048 item 12)
+        for t in ("recorrente", "recorrente_vigente", "recorrente_vinculo"):
+            assert not _tem_privilegio(pipe, t, "SELECT"), t
+        assert pipe.execute(
+            "SELECT has_column_privilege(current_user, 'recorrente', 'nome', 'SELECT')"
+        ).fetchone() == (False,)
+        for funcao in (*FUNCOES_DE_LEITURA_DO_R2, *FUNCOES_DE_ESCRITA_DO_R2):
+            assert app.execute(
+                "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
+            ).fetchone() == (True,), funcao
+            assert pipe.execute(
+                "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
+            ).fetchone() == (False,), funcao
+        for funcao in FUNCOES_DE_LEITURA_DO_R2:
+            invoker = app.execute(
+                "SELECT NOT prosecdef FROM pg_proc WHERE oid = %s::regprocedure", (funcao,)
+            ).fetchone()
+            assert invoker == (True,), funcao
+        for funcao in FUNCOES_DE_ESCRITA_DO_R2:
+            definer = app.execute(
+                "SELECT prosecdef, proconfig FROM pg_proc WHERE oid = %s::regprocedure", (funcao,)
+            ).fetchone()
+            assert definer == (True, ["search_path=public, pg_temp"]), funcao
+        assert app.execute(
+            "SELECT has_sequence_privilege('recorrente_id_seq', 'USAGE')"
+        ).fetchone() == (False,)
+
+        # o app grava pelo papel dele, só pelas funções, e lê a situação
+        novo = app.execute(
+            "INSERT INTO usuario (login) VALUES ('u_papel_r2') RETURNING user_id"
+        ).fetchone()
+        assert novo is not None
+        uid = novo[0]
+        corrente = app.execute(
+            "SELECT conta_id FROM conta_gravar(%s, NULL, NULL, 'c', 'corrente', NULL)", (uid,)
+        ).fetchone()
+        assert corrente is not None
+        app.execute("SELECT r2_parametro_gravar(%s, 15, DATE '2026-01-01')", (uid,))
+        rec = app.execute(
+            "SELECT recorrente_id FROM recorrente_gravar("
+            "%s, NULL, NULL, 'aluguel', 'fixo', 300.00, 12, %s, '2026-05', NULL)",
+            (uid, corrente[0]),
+        ).fetchone()
+        assert rec is not None
+        pago = app.execute(
+            "SELECT transacao_id FROM lancamento_gravar("
+            "%s, NULL, NULL, 'debito', DATE '2026-05-08', 300.00, %s, "
+            "NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)",
+            (uid, corrente[0]),
+        ).fetchone()
+        assert pago is not None
+        antes = app.execute(
+            "SELECT horizonte_dias, fixos_pendentes FROM r2_situacao(%s, DATE '2026-05-10')",
+            (uid,),
+        ).fetchone()
+        assert antes == (15, Decimal("300.00"))
+        app.execute("SELECT recorrente_vincular(%s, %s, '2026-05', %s)", (uid, rec[0], pago[0]))
+        depois = app.execute(
+            "SELECT fixos_pendentes FROM r2_situacao(%s, DATE '2026-05-10')", (uid,)
+        ).fetchone()
+        assert depois == (Decimal("0.00"),)
+        for comando in (
+            "INSERT INTO recorrente (user_id, nome, tipo, valor, dia, conta_id, mes_inicio) "
+            "VALUES (%s, 'x', 'fixo', 1.00, 5, 1, DATE '2026-05-01')",
+            "INSERT INTO recorrente_vinculo (user_id, recorrente_id, mes) "
+            "VALUES (%s, 1, DATE '2026-05-01')",
+            "INSERT INTO r2_parametro (user_id, dias, vigente_desde) "
+            "VALUES (%s, 5, DATE '2026-01-01')",
+            "INSERT INTO cartao_vencimento (user_id, conta_id, dia, vigente_desde) "
+            "VALUES (%s, 1, 5, DATE '2026-01-01')",
+            "UPDATE recorrente SET vigente = false WHERE user_id = %s",
+            "DELETE FROM recorrente_vinculo WHERE user_id = %s",
+        ):
+            with pytest.raises(psycopg.errors.InsufficientPrivilege):
+                app.execute(comando, (uid,))
+            app.rollback()  # nada fica no banco (a transação inteira é desfeita)
+            novo = app.execute("SELECT 1").fetchone()
+            assert novo == (1,)
+        app.rollback()
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            pipe.execute("SELECT * FROM r2_situacao(1, DATE '2026-05-10')")
+        pipe.rollback()
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            pipe.execute("SELECT * FROM recorrente_vinculo")
+        pipe.rollback()
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            pipe.execute("SELECT r2_parametro_gravar(1, 5, DATE '2026-01-01')")
         pipe.rollback()

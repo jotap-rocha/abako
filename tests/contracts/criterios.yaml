@@ -738,3 +738,101 @@ criterios:
     entao: "a API usa o user_id da sessão, devolve dinheiro em texto, traduz AB422/AB404 em 422/404, exige CSRF nas escritas e não registra valores em log"
     invariantes: [INV-13, INV-14]
     teste: ["tests/backend/test_reserva_api.py::test_nivel_nos_cortes_de_50_e_100_por_cento_f_res_01", "tests/backend/test_reserva_api.py::test_cobertura_meio_para_cima_f_res_06", "tests/backend/test_reserva_api.py::test_bruto_vs_liquido_f_res_03", "tests/backend/test_reserva_api.py::test_soma_de_duas_reservas_f_res_04", "tests/backend/test_reserva_api.py::test_aporte_nao_exato_e_casos_de_borda_f_res_05", "tests/backend/test_reserva_api.py::test_sem_parametro_e_config_pendente_f_res_07", "tests/backend/test_reserva_api.py::test_vigencia_dos_parametros_f_res_08", "tests/backend/test_reserva_api.py::test_hoje_usa_o_fuso_de_sao_paulo", "tests/backend/test_reserva_api.py::test_limites_de_negocio_sao_ab422_do_banco", "tests/backend/test_reserva_api.py::test_escrita_sem_csrf_e_403", "tests/backend/test_reserva_api.py::test_sem_sessao_e_401", "tests/backend/test_reserva_api.py::test_isolamento_entre_usuarios", "tests/backend/test_reserva_api.py::test_valores_fora_do_log"]
+  - id: SPEC-010-AC-1
+    spec: SPEC-010
+    dado: "recorrentes com ocorrências dentro e fora do horizonte, vinculadas e não vinculadas (F-R2-01, F-R2-02, F-R2-04)"
+    quando: "a situação do R2 é consultada"
+    entao: "só entram ocorrências não vinculadas com data de hoje até hoje + horizonte; disponível = saldos correntes + receitas pendentes, compromissos = fixos pendentes + faturas próprias, sobra = disponível - compromissos (1300.00 e -500.00); vencidas não vinculadas (até 24 meses atrás, F-R2-15) ficam em lista separada e fora da sobra"
+    invariantes: [INV-19]
+    fixtures: [F-R2-01, F-R2-02, F-R2-04, F-R2-15]
+    teste: ["tests/db/test_r2.py::test_f_r2_01", "tests/db/test_r2.py::test_f_r2_02", "tests/db/test_r2.py::test_f_r2_04", "tests/db/test_r2_propriedades.py::test_sobra_e_disponivel_menos_compromissos", "tests/db/test_r2.py::test_vencidas_ate_24_meses_f_r2_15"]
+  - id: SPEC-010-AC-2
+    spec: SPEC-010
+    dado: "fatura com compras próprias e de terceiro, 'a receber' e crédito na conta de benefício (F-R2-03)"
+    quando: "a situação do R2 é consultada"
+    entao: "a sobra usa só a fatura própria (4200.00 de 5000.00); terceiros, a receber e o crédito do vale não entram; a sobra é 1300.00"
+    invariantes: [INV-18, INV-26]
+    fixtures: [F-R2-03, F-FAT-01]
+    teste: ["tests/db/test_r2.py::test_f_r2_03"]
+  - id: SPEC-010-AC-3
+    spec: SPEC-010
+    dado: "ocorrências em hoje - 1, hoje, hoje + horizonte e hoje + horizonte + 1 (F-R2-05)"
+    quando: "a situação do R2 é consultada"
+    entao: "hoje e hoje + horizonte entram; hoje + horizonte + 1 fica fora; a de hoje - 1 é vencida e fica na lista separada; a regra vale para qualquer horizonte e data"
+    invariantes: [INV-19]
+    fixtures: [F-R2-05]
+    teste: ["tests/db/test_r2.py::test_limites_do_horizonte", "tests/db/test_r2_propriedades.py::test_horizonte_inclusivo_exato"]
+  - id: SPEC-010-AC-4
+    spec: SPEC-010
+    dado: "uma ocorrência com valor esperado e uma transação do mesmo tipo e conta (F-R2-04, F-R2-11)"
+    quando: "a transação é vinculada, desvinculada e excluída"
+    entao: "uma ocorrência por mês, valor esperado até vincular e valor da transação depois; vinculada sai do R2; desvincular ou excluir a transação a devolve ao R2; o vínculo é evento com histórico (sem UPDATE); vínculo com transação de data > hoje mantém a ocorrência pendente (F-R2-14); limite aceito (ADR 048 item 3): receita recorrente não vinculada com a transação já lançada conta em dobro, por isso a tela sugere vincular"
+    invariantes: [INV-19]
+    fixtures: [F-R2-11, F-R2-04, F-R2-14]
+    teste: ["tests/db/test_recorrente.py::test_valor_e_vinculo_f_r2_11", "tests/db/test_recorrente.py::test_transacao_excluida_devolve_a_ocorrencia", "tests/db/test_recorrente.py::test_vinculo_e_historico_append_only", "tests/db/test_r2.py::test_data_futura_nao_abate_f_r2_14"]
+  - id: SPEC-010-AC-5
+    spec: SPEC-010
+    dado: "recorrentes de dia 29, 30 e 31 (F-R2-10)"
+    quando: "as ocorrências de meses curtos e de ano bissexto são calculadas"
+    entao: "a data usa o último dia válido do mês (ADR 027); para qualquer ano e mês a data é min(dia, último dia)"
+    invariantes: [INV-31]
+    fixtures: [F-R2-10]
+    teste: ["tests/db/test_recorrente.py::test_dia_29_a_31_f_r2_10", "tests/db/test_r2_propriedades.py::test_dia_29_a_31_usa_o_ultimo_dia_valido"]
+  - id: SPEC-010-AC-6
+    spec: SPEC-010
+    dado: "dias de fechamento e de vencimento do cartão com vigência (F-R2-06)"
+    quando: "o vencimento da competência é calculado e a sobra do R2 é consultada"
+    entao: "vence no mês M se vencimento > fechamento, senão em M+1; dia inexistente usa o último dia do mês; vale a vigência do último dia de M; a fatura que cruza o mês e vence em hoje + horizonte entra; competência anterior à primeira vigência usa a primeira (vencimento cadastrado hoje não faz a fatura sumir, F-R2-13); sem nenhum vencimento é pendência; vigência a mais de 5 anos no futuro é recusada"
+    invariantes: [INV-18, INV-31]
+    fixtures: [F-R2-06, F-R2-13]
+    teste: ["tests/db/test_r2.py::test_vencimento_f_r2_06", "tests/db/test_r2.py::test_vencimento_com_vigencia_f_r2_06", "tests/db/test_r2.py::test_r2_que_cruza_o_mes_f_r2_06", "tests/db/test_r2.py::test_vencimento_gravar_validacao_e_idempotencia", "tests/db/test_r2.py::test_vigencia_retroativa_f_r2_13", "tests/db/test_r2.py::test_vigencia_absurda_e_recusada"]
+  - id: SPEC-010-AC-7
+    spec: SPEC-010
+    dado: "fatura própria com pagamento parcial já feito e fatura ainda aberta (F-R2-07, F-R2-08)"
+    quando: "a situação do R2 é consultada"
+    entao: "o compromisso da fatura é a própria menos o pago alocado às parcelas próprias (1000.00 - 250.00 = 750.00), sem contar duas vezes o que já saiu da conta; só pagamento com data <= hoje abate (F-R2-14); parcela de terceiro anterior à própria absorve o pago e o compromisso sobe, e pago que não cobre a competência mais antiga não chega à fatura do horizonte (F-R2-12); a fatura aberta aparece como parcial; cartão com dívida e sem vencimento vira pendência"
+    invariantes: [INV-18]
+    fixtures: [F-R2-07, F-R2-08, F-R2-12, F-R2-14]
+    teste: ["tests/db/test_r2.py::test_pagamento_parcial_f_r2_07", "tests/db/test_r2.py::test_fatura_aberta_aparece_como_parcial_f_r2_08", "tests/db/test_r2.py::test_cartao_sem_vencimento_vira_pendencia", "tests/db/test_r2.py::test_terceiro_anterior_absorve_o_pago_f_r2_12", "tests/db/test_r2.py::test_data_futura_nao_abate_f_r2_14"]
+  - id: SPEC-010-AC-8
+    spec: SPEC-010
+    dado: "contas de reserva, investimento, benefício e dívida, e recorrente em conta que não é corrente"
+    quando: "o recorrente é gravado e o disponível é calculado"
+    entao: "recorrente só em conta corrente (recusa nas demais); o disponível soma só contas correntes; reserva, investimento, benefício e dívida ficam fora"
+    invariantes: [INV-18, INV-26]
+    teste: ["tests/db/test_recorrente.py::test_recorrente_so_em_conta_corrente", "tests/db/test_r2.py::test_disponivel_so_contas_correntes"]
+  - id: SPEC-010-AC-9
+    spec: SPEC-010
+    dado: "horizonte com vigência (F-R2-09)"
+    quando: "a situação do R2 é consultada em datas de vigências diferentes e sem parâmetro"
+    entao: "vale o horizonte de maior vigente_desde <= hoje; sem parâmetro vale 10; regravar a mesma vigência vale a última; validação de 1 a 90 dias"
+    invariantes: [INV-19]
+    fixtures: [F-R2-09]
+    teste: ["tests/db/test_r2.py::test_horizonte_com_vigencia_f_r2_09", "tests/db/test_r2.py::test_r2_parametro_validacao_e_idempotencia"]
+  - id: SPEC-010-AC-10
+    spec: SPEC-010
+    dado: "recorrentes versionados e vínculos entre transações e ocorrências"
+    quando: "o recorrente é editado, excluído e vinculado com regras violadas"
+    entao: "editar cria versão nova e exige a versão lida; excluir é lógico; tipo e conta não mudam com vínculo; uma transação em uma ocorrência; transação de outro tipo ou conta é recusada, com AB404, AB409, AB410 e AB422 literais"
+    teste: ["tests/db/test_recorrente.py::test_versionamento_do_recorrente", "tests/db/test_recorrente.py::test_regras_do_vinculo", "tests/db/test_recorrente.py::test_validacoes_do_recorrente"]
+  - id: SPEC-010-AC-11
+    spec: SPEC-010
+    dado: "dois usuários, um com recorrentes, vínculos, cartão e parâmetros, e o outro consulta"
+    quando: "as leituras do R2 e das ocorrências usam o user_id do outro usuário"
+    entao: "nada do dono aparece (zero e vazio); a escrita com recorrente ou transação de outro usuário é recusada; o user_id vem da sessão"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_r2.py::test_isolamento_por_user_id", "tests/db/test_recorrente.py::test_isolamento_do_recorrente"]
+  - id: SPEC-010-AC-12
+    spec: SPEC-010
+    dado: "os papéis app e pipeline, a migração 0011 e o SQL das funções"
+    quando: "as funções são chamadas, a migração é revertida e o SQL é inspecionado"
+    entao: "a escrita é só pelas funções SECURITY DEFINER com search_path fixo (sem INSERT/UPDATE/DELETE direto); as leituras são INVOKER; só o app executa e o pipeline só lê as tabelas de configuração (horizonte e vencimento) e não lê recorrente nem vínculo; mensagens de erro literais; o downgrade com dados é recusado e, sem dados, remove tudo"
+    invariantes: [INV-13, INV-14]
+    teste: ["tests/db/test_papeis.py::test_r2_papeis", "tests/db/test_r2_mensagens.py::test_mensagens_de_erro_da_0011_sao_literais", "tests/db/test_r2_mensagens.py::test_escrita_e_definer_com_search_path_fixo_e_leitura_e_invoker", "tests/db/test_migracao_0011.py::test_downgrade_com_dados_e_recusado", "tests/db/test_migracao_0011.py::test_downgrade_sem_dados_remove_tudo_e_sobe_de_novo"]
+  - id: SPEC-010-AC-13
+    spec: SPEC-010
+    dado: "a API de recorrentes, vínculo, horizonte, vencimento do cartão e situação do R2"
+    quando: "o front consulta e grava (hoje = data civil em America/Sao_Paulo)"
+    entao: "a API usa o user_id da sessão, devolve dinheiro em texto, traduz AB404/AB409/AB410/AB422 em 404/409/409/422, exige CSRF nas escritas e não registra valores em log"
+    invariantes: [INV-13, INV-14]
+    teste: ["tests/backend/test_recorrentes_api.py::test_criar_listar_obter_e_texto_com_duas_casas", "tests/backend/test_recorrentes_api.py::test_editar_cria_versao_e_exige_a_versao_lida", "tests/backend/test_recorrentes_api.py::test_nome_repetido_e_409_ab410", "tests/backend/test_recorrentes_api.py::test_excluir_e_logico_com_versao", "tests/backend/test_recorrentes_api.py::test_regras_de_cadastro_do_banco", "tests/backend/test_recorrentes_api.py::test_corpo_invalido_e_422_sem_eco", "tests/backend/test_recorrentes_api.py::test_ocorrencias_dia_29_a_31_f_r2_10", "tests/backend/test_recorrentes_api.py::test_mes_padrao_e_o_corrente_de_sao_paulo", "tests/backend/test_recorrentes_api.py::test_vinculo_valor_e_historico_f_r2_11", "tests/backend/test_recorrentes_api.py::test_regras_do_vinculo", "tests/backend/test_recorrentes_api.py::test_edicao_com_vinculo", "tests/backend/test_recorrentes_api.py::test_sem_sessao_e_401", "tests/backend/test_recorrentes_api.py::test_escrita_sem_csrf_e_403_e_nada_e_gravado", "tests/backend/test_recorrentes_api.py::test_isolamento_entre_usuarios", "tests/backend/test_recorrentes_api.py::test_nome_e_valores_fora_do_log", "tests/backend/test_recorrentes_api.py::test_metodos_nao_previstos", "tests/backend/test_r2_api.py::test_sobra_positiva_e_negativa_f_r2_01_e_02", "tests/backend/test_r2_api.py::test_terceiros_vale_e_outras_contas_fora_da_sobra_f_r2_03", "tests/backend/test_r2_api.py::test_vinculada_sai_e_vencida_fica_a_parte_f_r2_04", "tests/backend/test_r2_api.py::test_limites_do_horizonte_f_r2_05", "tests/backend/test_r2_api.py::test_horizonte_com_vigencia_f_r2_09", "tests/backend/test_r2_api.py::test_horizonte_gravar_listar_e_idempotencia", "tests/backend/test_r2_api.py::test_horizonte_fora_dos_limites_e_ab422", "tests/backend/test_r2_api.py::test_vencimento_gravar_listar_e_idempotencia", "tests/backend/test_r2_api.py::test_vencimento_da_competencia_f_r2_06", "tests/backend/test_r2_api.py::test_pagamento_parcial_f_r2_07", "tests/backend/test_r2_api.py::test_fatura_aberta_aparece_como_parcial_f_r2_08", "tests/backend/test_r2_api.py::test_cartao_sem_vencimento_vira_pendencia", "tests/backend/test_r2_api.py::test_hoje_decide_na_virada_de_mes_e_de_ano", "tests/backend/test_r2_api.py::test_hoje_usa_o_fuso_de_sao_paulo", "tests/backend/test_r2_api.py::test_sem_sessao_e_401", "tests/backend/test_r2_api.py::test_escrita_sem_csrf_e_403", "tests/backend/test_r2_api.py::test_user_id_no_corpo_e_descartado", "tests/backend/test_r2_api.py::test_isolamento_entre_usuarios", "tests/backend/test_r2_api.py::test_valores_e_nome_fora_do_log", "tests/backend/test_r2_api.py::test_metodos_nao_previstos"]

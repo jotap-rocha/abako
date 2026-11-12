@@ -1,0 +1,155 @@
+task_id: "16"
+criteria:
+  SPEC-010-AC-1:
+    id: SPEC-010-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_r2.py::test_f_r2_01 tests/db/test_r2.py::test_f_r2_02 tests/db/test_r2.py::test_f_r2_04 tests/db/test_r2_propriedades.py::test_sobra_e_disponivel_menos_compromissos tests/db/test_r2.py::test_vencidas_ate_24_meses_f_r2_15"
+    test_paths:
+      - "tests/db/test_r2.py::test_f_r2_01"
+      - "tests/db/test_r2.py::test_f_r2_02"
+      - "tests/db/test_r2.py::test_f_r2_04"
+      - "tests/db/test_r2_propriedades.py::test_sobra_e_disponivel_menos_compromissos"
+      - "tests/db/test_r2.py::test_vencidas_ate_24_meses_f_r2_15"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-1.log"
+  SPEC-010-AC-10:
+    id: SPEC-010-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_recorrente.py::test_versionamento_do_recorrente tests/db/test_recorrente.py::test_regras_do_vinculo tests/db/test_recorrente.py::test_validacoes_do_recorrente"
+    test_paths:
+      - "tests/db/test_recorrente.py::test_versionamento_do_recorrente"
+      - "tests/db/test_recorrente.py::test_regras_do_vinculo"
+      - "tests/db/test_recorrente.py::test_validacoes_do_recorrente"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-10.log"
+  SPEC-010-AC-11:
+    id: SPEC-010-AC-11
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_r2.py::test_isolamento_por_user_id tests/db/test_recorrente.py::test_isolamento_do_recorrente"
+    test_paths:
+      - "tests/db/test_r2.py::test_isolamento_por_user_id"
+      - "tests/db/test_recorrente.py::test_isolamento_do_recorrente"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-11.log"
+  SPEC-010-AC-12:
+    id: SPEC-010-AC-12
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_papeis.py::test_r2_papeis tests/db/test_r2_mensagens.py::test_mensagens_de_erro_da_0011_sao_literais tests/db/test_r2_mensagens.py::test_escrita_e_definer_com_search_path_fixo_e_leitura_e_invoker tests/db/test_migracao_0011.py::test_downgrade_com_dados_e_recusado tests/db/test_migracao_0011.py::test_downgrade_sem_dados_remove_tudo_e_sobe_de_novo"
+    test_paths:
+      - "tests/db/test_papeis.py::test_r2_papeis"
+      - "tests/db/test_r2_mensagens.py::test_mensagens_de_erro_da_0011_sao_literais"
+      - "tests/db/test_r2_mensagens.py::test_escrita_e_definer_com_search_path_fixo_e_leitura_e_invoker"
+      - "tests/db/test_migracao_0011.py::test_downgrade_com_dados_e_recusado"
+      - "tests/db/test_migracao_0011.py::test_downgrade_sem_dados_remove_tudo_e_sobe_de_novo"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-12.log"
+  SPEC-010-AC-13:
+    id: SPEC-010-AC-13
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_recorrentes_api.py::test_criar_listar_obter_e_texto_com_duas_casas tests/backend/test_recorrentes_api.py::test_editar_cria_versao_e_exige_a_versao_lida tests/backend/test_recorrentes_api.py::test_nome_repetido_e_409_ab410 tests/backend/test_recorrentes_api.py::test_excluir_e_logico_com_versao tests/backend/test_recorrentes_api.py::test_regras_de_cadastro_do_banco tests/backend/test_recorrentes_api.py::test_corpo_invalido_e_422_sem_eco tests/backend/test_recorrentes_api.py::test_ocorrencias_dia_29_a_31_f_r2_10 tests/backend/test_recorrentes_api.py::test_mes_padrao_e_o_corrente_de_sao_paulo tests/backend/test_recorrentes_api.py::test_vinculo_valor_e_historico_f_r2_11 tests/backend/test_recorrentes_api.py::test_regras_do_vinculo tests/backend/test_recorrentes_api.py::test_edicao_com_vinculo tests/backend/test_recorrentes_api.py::test_sem_sessao_e_401 tests/backend/test_recorrentes_api.py::test_escrita_sem_csrf_e_403_e_nada_e_gravado tests/backend/test_recorrentes_api.py::test_isolamento_entre_usuarios tests/backend/test_recorrentes_api.py::test_nome_e_valores_fora_do_log tests/backend/test_recorrentes_api.py::test_metodos_nao_previstos tests/backend/test_r2_api.py::test_sobra_positiva_e_negativa_f_r2_01_e_02 tests/backend/test_r2_api.py::test_terceiros_vale_e_outras_contas_fora_da_sobra_f_r2_03 tests/backend/test_r2_api.py::test_vinculada_sai_e_vencida_fica_a_parte_f_r2_04 tests/backend/test_r2_api.py::test_limites_do_horizonte_f_r2_05 tests/backend/test_r2_api.py::test_horizonte_com_vigencia_f_r2_09 tests/backend/test_r2_api.py::test_horizonte_gravar_listar_e_idempotencia tests/backend/test_r2_api.py::test_horizonte_fora_dos_limites_e_ab422 tests/backend/test_r2_api.py::test_vencimento_gravar_listar_e_idempotencia tests/backend/test_r2_api.py::test_vencimento_da_competencia_f_r2_06 tests/backend/test_r2_api.py::test_pagamento_parcial_f_r2_07 tests/backend/test_r2_api.py::test_fatura_aberta_aparece_como_parcial_f_r2_08 tests/backend/test_r2_api.py::test_cartao_sem_vencimento_vira_pendencia tests/backend/test_r2_api.py::test_hoje_decide_na_virada_de_mes_e_de_ano tests/backend/test_r2_api.py::test_hoje_usa_o_fuso_de_sao_paulo tests/backend/test_r2_api.py::test_sem_sessao_e_401 tests/backend/test_r2_api.py::test_escrita_sem_csrf_e_403 tests/backend/test_r2_api.py::test_user_id_no_corpo_e_descartado tests/backend/test_r2_api.py::test_isolamento_entre_usuarios tests/backend/test_r2_api.py::test_valores_e_nome_fora_do_log tests/backend/test_r2_api.py::test_metodos_nao_previstos"
+    test_paths:
+      - "tests/backend/test_recorrentes_api.py::test_criar_listar_obter_e_texto_com_duas_casas"
+      - "tests/backend/test_recorrentes_api.py::test_editar_cria_versao_e_exige_a_versao_lida"
+      - "tests/backend/test_recorrentes_api.py::test_nome_repetido_e_409_ab410"
+      - "tests/backend/test_recorrentes_api.py::test_excluir_e_logico_com_versao"
+      - "tests/backend/test_recorrentes_api.py::test_regras_de_cadastro_do_banco"
+      - "tests/backend/test_recorrentes_api.py::test_corpo_invalido_e_422_sem_eco"
+      - "tests/backend/test_recorrentes_api.py::test_ocorrencias_dia_29_a_31_f_r2_10"
+      - "tests/backend/test_recorrentes_api.py::test_mes_padrao_e_o_corrente_de_sao_paulo"
+      - "tests/backend/test_recorrentes_api.py::test_vinculo_valor_e_historico_f_r2_11"
+      - "tests/backend/test_recorrentes_api.py::test_regras_do_vinculo"
+      - "tests/backend/test_recorrentes_api.py::test_edicao_com_vinculo"
+      - "tests/backend/test_recorrentes_api.py::test_sem_sessao_e_401"
+      - "tests/backend/test_recorrentes_api.py::test_escrita_sem_csrf_e_403_e_nada_e_gravado"
+      - "tests/backend/test_recorrentes_api.py::test_isolamento_entre_usuarios"
+      - "tests/backend/test_recorrentes_api.py::test_nome_e_valores_fora_do_log"
+      - "tests/backend/test_recorrentes_api.py::test_metodos_nao_previstos"
+      - "tests/backend/test_r2_api.py::test_sobra_positiva_e_negativa_f_r2_01_e_02"
+      - "tests/backend/test_r2_api.py::test_terceiros_vale_e_outras_contas_fora_da_sobra_f_r2_03"
+      - "tests/backend/test_r2_api.py::test_vinculada_sai_e_vencida_fica_a_parte_f_r2_04"
+      - "tests/backend/test_r2_api.py::test_limites_do_horizonte_f_r2_05"
+      - "tests/backend/test_r2_api.py::test_horizonte_com_vigencia_f_r2_09"
+      - "tests/backend/test_r2_api.py::test_horizonte_gravar_listar_e_idempotencia"
+      - "tests/backend/test_r2_api.py::test_horizonte_fora_dos_limites_e_ab422"
+      - "tests/backend/test_r2_api.py::test_vencimento_gravar_listar_e_idempotencia"
+      - "tests/backend/test_r2_api.py::test_vencimento_da_competencia_f_r2_06"
+      - "tests/backend/test_r2_api.py::test_pagamento_parcial_f_r2_07"
+      - "tests/backend/test_r2_api.py::test_fatura_aberta_aparece_como_parcial_f_r2_08"
+      - "tests/backend/test_r2_api.py::test_cartao_sem_vencimento_vira_pendencia"
+      - "tests/backend/test_r2_api.py::test_hoje_decide_na_virada_de_mes_e_de_ano"
+      - "tests/backend/test_r2_api.py::test_hoje_usa_o_fuso_de_sao_paulo"
+      - "tests/backend/test_r2_api.py::test_sem_sessao_e_401"
+      - "tests/backend/test_r2_api.py::test_escrita_sem_csrf_e_403"
+      - "tests/backend/test_r2_api.py::test_user_id_no_corpo_e_descartado"
+      - "tests/backend/test_r2_api.py::test_isolamento_entre_usuarios"
+      - "tests/backend/test_r2_api.py::test_valores_e_nome_fora_do_log"
+      - "tests/backend/test_r2_api.py::test_metodos_nao_previstos"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-13.log"
+  SPEC-010-AC-2:
+    id: SPEC-010-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_r2.py::test_f_r2_03"
+    test_paths:
+      - "tests/db/test_r2.py::test_f_r2_03"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-2.log"
+  SPEC-010-AC-3:
+    id: SPEC-010-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_r2.py::test_limites_do_horizonte tests/db/test_r2_propriedades.py::test_horizonte_inclusivo_exato"
+    test_paths:
+      - "tests/db/test_r2.py::test_limites_do_horizonte"
+      - "tests/db/test_r2_propriedades.py::test_horizonte_inclusivo_exato"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-3.log"
+  SPEC-010-AC-4:
+    id: SPEC-010-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_recorrente.py::test_valor_e_vinculo_f_r2_11 tests/db/test_recorrente.py::test_transacao_excluida_devolve_a_ocorrencia tests/db/test_recorrente.py::test_vinculo_e_historico_append_only tests/db/test_r2.py::test_data_futura_nao_abate_f_r2_14"
+    test_paths:
+      - "tests/db/test_recorrente.py::test_valor_e_vinculo_f_r2_11"
+      - "tests/db/test_recorrente.py::test_transacao_excluida_devolve_a_ocorrencia"
+      - "tests/db/test_recorrente.py::test_vinculo_e_historico_append_only"
+      - "tests/db/test_r2.py::test_data_futura_nao_abate_f_r2_14"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-4.log"
+  SPEC-010-AC-5:
+    id: SPEC-010-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_recorrente.py::test_dia_29_a_31_f_r2_10 tests/db/test_r2_propriedades.py::test_dia_29_a_31_usa_o_ultimo_dia_valido"
+    test_paths:
+      - "tests/db/test_recorrente.py::test_dia_29_a_31_f_r2_10"
+      - "tests/db/test_r2_propriedades.py::test_dia_29_a_31_usa_o_ultimo_dia_valido"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-5.log"
+  SPEC-010-AC-6:
+    id: SPEC-010-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_r2.py::test_vencimento_f_r2_06 tests/db/test_r2.py::test_vencimento_com_vigencia_f_r2_06 tests/db/test_r2.py::test_r2_que_cruza_o_mes_f_r2_06 tests/db/test_r2.py::test_vencimento_gravar_validacao_e_idempotencia tests/db/test_r2.py::test_vigencia_retroativa_f_r2_13 tests/db/test_r2.py::test_vigencia_absurda_e_recusada"
+    test_paths:
+      - "tests/db/test_r2.py::test_vencimento_f_r2_06"
+      - "tests/db/test_r2.py::test_vencimento_com_vigencia_f_r2_06"
+      - "tests/db/test_r2.py::test_r2_que_cruza_o_mes_f_r2_06"
+      - "tests/db/test_r2.py::test_vencimento_gravar_validacao_e_idempotencia"
+      - "tests/db/test_r2.py::test_vigencia_retroativa_f_r2_13"
+      - "tests/db/test_r2.py::test_vigencia_absurda_e_recusada"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-6.log"
+  SPEC-010-AC-7:
+    id: SPEC-010-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_r2.py::test_pagamento_parcial_f_r2_07 tests/db/test_r2.py::test_fatura_aberta_aparece_como_parcial_f_r2_08 tests/db/test_r2.py::test_cartao_sem_vencimento_vira_pendencia tests/db/test_r2.py::test_terceiro_anterior_absorve_o_pago_f_r2_12 tests/db/test_r2.py::test_data_futura_nao_abate_f_r2_14"
+    test_paths:
+      - "tests/db/test_r2.py::test_pagamento_parcial_f_r2_07"
+      - "tests/db/test_r2.py::test_fatura_aberta_aparece_como_parcial_f_r2_08"
+      - "tests/db/test_r2.py::test_cartao_sem_vencimento_vira_pendencia"
+      - "tests/db/test_r2.py::test_terceiro_anterior_absorve_o_pago_f_r2_12"
+      - "tests/db/test_r2.py::test_data_futura_nao_abate_f_r2_14"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-7.log"
+  SPEC-010-AC-8:
+    id: SPEC-010-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_recorrente.py::test_recorrente_so_em_conta_corrente tests/db/test_r2.py::test_disponivel_so_contas_correntes"
+    test_paths:
+      - "tests/db/test_recorrente.py::test_recorrente_so_em_conta_corrente"
+      - "tests/db/test_r2.py::test_disponivel_so_contas_correntes"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-8.log"
+  SPEC-010-AC-9:
+    id: SPEC-010-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_r2.py::test_horizonte_com_vigencia_f_r2_09 tests/db/test_r2.py::test_r2_parametro_validacao_e_idempotencia"
+    test_paths:
+      - "tests/db/test_r2.py::test_horizonte_com_vigencia_f_r2_09"
+      - "tests/db/test_r2.py::test_r2_parametro_validacao_e_idempotencia"
+    exit_code: 0
+    log_path: "logs/16/SPEC-010-AC-9.log"
