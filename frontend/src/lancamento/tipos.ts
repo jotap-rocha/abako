@@ -8,8 +8,10 @@ export type InfoTipo = {
   valor: TipoLancamento;
   rotulo: string;
   ajuda: string;
-  /** Crédito e repasse chegam com as SPECs 005 e 007: aparecem, mas ainda não se pode usar. */
-  emBreve: boolean;
+  /** Compra no cartão: número de parcelas (o valor digitado é o total da compra). */
+  pedeParcelas: boolean;
+  /** Pessoa (terceiro): opcional na compra a crédito (sem pessoa = compra própria), obrigatória no repasse. */
+  pessoa: "opcional" | "obrigatoria" | null;
   /** Rendimento informa bruto e imposto; os outros, um valor só. */
   pedeBrutoEImposto: boolean;
   /** Transferência e investimento levam o dinheiro de uma conta para outra. */
@@ -22,7 +24,8 @@ export const TIPOS_LANCAMENTO: InfoTipo[] = [
     valor: "debito",
     rotulo: "Despesa (débito)",
     ajuda: "Dinheiro que sai da conta: compra no débito, Pix, boleto pago.",
-    emBreve: false,
+    pedeParcelas: false,
+    pessoa: null,
     pedeBrutoEImposto: false,
     pedeDestino: false,
     rotuloConta: "Conta de onde saiu",
@@ -31,7 +34,8 @@ export const TIPOS_LANCAMENTO: InfoTipo[] = [
     valor: "receita",
     rotulo: "Receita",
     ajuda: "Dinheiro que entra na conta: salário, venda, reembolso.",
-    emBreve: false,
+    pedeParcelas: false,
+    pessoa: null,
     pedeBrutoEImposto: false,
     pedeDestino: false,
     rotuloConta: "Conta que recebeu",
@@ -41,7 +45,8 @@ export const TIPOS_LANCAMENTO: InfoTipo[] = [
     rotulo: "Transferência entre contas",
     ajuda:
       "Move dinheiro entre duas contas suas, inclusive para a caixinha ou o cofre. Não conta como gasto.",
-    emBreve: false,
+    pedeParcelas: false,
+    pessoa: null,
     pedeBrutoEImposto: false,
     pedeDestino: true,
     rotuloConta: "Conta de origem",
@@ -51,7 +56,8 @@ export const TIPOS_LANCAMENTO: InfoTipo[] = [
     rotulo: "Investimento (aplicar)",
     ajuda:
       "Dinheiro enviado a uma conta de investimento. Guardar na caixinha ou na reserva é transferência, não investimento.",
-    emBreve: false,
+    pedeParcelas: false,
+    pessoa: null,
     pedeBrutoEImposto: false,
     pedeDestino: true,
     rotuloConta: "Conta de origem",
@@ -60,28 +66,33 @@ export const TIPOS_LANCAMENTO: InfoTipo[] = [
     valor: "rendimento",
     rotulo: "Rendimento",
     ajuda: "Juros que a conta rendeu. Informe o valor bruto e o imposto; o abako credita a diferença.",
-    emBreve: false,
+    pedeParcelas: false,
+    pessoa: null,
     pedeBrutoEImposto: true,
     pedeDestino: false,
     rotuloConta: "Conta que rendeu",
   },
   {
     valor: "credito",
-    rotulo: "Compra no cartão de crédito (em breve)",
-    ajuda: "Chega junto com o cartão e as faturas.",
-    emBreve: true,
+    rotulo: "Compra no cartão de crédito",
+    ajuda:
+      "Compra à vista ou parcelada no cartão. Ela é toda sua ou toda de uma pessoa: o abako não divide a compra.",
+    pedeParcelas: true,
+    pessoa: "opcional",
     pedeBrutoEImposto: false,
     pedeDestino: false,
-    rotuloConta: "Conta",
+    rotuloConta: "Cartão",
   },
   {
     valor: "repasse",
-    rotulo: "Repasse a terceiros (em breve)",
-    ajuda: "Chega junto com o controle de gastos de terceiros.",
-    emBreve: true,
+    rotulo: "Repasse recebido de terceiro",
+    ajuda:
+      "Dinheiro que uma pessoa devolveu e entrou na sua conta corrente. Não é receita nem gasto: só abate o que ela deve.",
+    pedeParcelas: false,
+    pessoa: "obrigatoria",
     pedeBrutoEImposto: false,
     pedeDestino: false,
-    rotuloConta: "Conta",
+    rotuloConta: "Conta corrente que recebeu",
   },
 ];
 
@@ -93,10 +104,17 @@ export function rotuloDoTipo(tipo: string): string {
   return TIPOS_LANCAMENTO.find((t) => t.valor === tipo)?.rotulo ?? tipo;
 }
 
-/** Benefício (vale) não entra em transferência nem recebe rendimento: o servidor recusa. */
+/**
+ * Compra a crédito só em cartão (conta do tipo dívida); repasse só em conta corrente; os demais
+ * tipos não usam o cartão como origem. Benefício (vale) não entra em transferência nem recebe
+ * rendimento. Tudo isso o servidor recusa de qualquer jeito: aqui só se evita a escolha errada.
+ */
 export function contasDeOrigem(tipo: TipoLancamento, contas: SaldoSaida[]): SaldoSaida[] {
+  if (tipo === "credito") return contas.filter((c) => c.tipo === "divida");
+  if (tipo === "repasse") return contas.filter((c) => c.tipo === "corrente");
+  const semCartao = contas.filter((c) => c.tipo !== "divida");
   const semBeneficio = tipo === "transferencia" || tipo === "rendimento";
-  return semBeneficio ? contas.filter((c) => !c.conta_beneficio) : contas;
+  return semBeneficio ? semCartao.filter((c) => !c.conta_beneficio) : semCartao;
 }
 
 /** Transferência vai para outra conta que não seja benefício; investimento, para um investimento. */

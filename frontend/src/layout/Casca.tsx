@@ -8,6 +8,9 @@ import {
   IconeGasto,
   IconeInicio,
   IconeLancamentos,
+  IconeParametros,
+  IconePessoas,
+  IconeRecorrentes,
   IconeReserva,
   IconeSair,
   IconeSobra,
@@ -24,6 +27,9 @@ const MENU: ItemMenu[] = [
   { para: "/reserva", texto: "Reserva", icone: <IconeReserva /> },
   { para: "/sobra", texto: "Sobra (R2)", icone: <IconeSobra /> },
   { para: "/alertas", texto: "Alertas", icone: <IconeAlertas /> },
+  { para: "/pessoas", texto: "Pessoas", icone: <IconePessoas /> },
+  { para: "/recorrentes", texto: "Recorrentes", icone: <IconeRecorrentes /> },
+  { para: "/parametros", texto: "Parâmetros", icone: <IconeParametros /> },
 ];
 
 /** O que as páginas recebem da casca (via `useOutletContext`). */

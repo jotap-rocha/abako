@@ -1,0 +1,104 @@
+task_id: "19"
+criteria:
+  SPEC-012-AC-15:
+    id: SPEC-012-AC-15
+    command: "npm --prefix frontend test -- src/estorno/Estorno.test.tsx -t \"tipos_de_estorno|estorno_com_parcelas_pagas|recusas_do_servidor|so_a_compra_a_credito_tem_estornar|reconhece_o_zero_do_servidor_pelo_texto|duplo_clique_envia_uma_vez_so\""
+    test_paths:
+      - "frontend/src/estorno/Estorno.test.tsx::tipos_de_estorno"
+      - "frontend/src/estorno/Estorno.test.tsx::estorno_com_parcelas_pagas"
+      - "frontend/src/estorno/Estorno.test.tsx::recusas_do_servidor"
+      - "frontend/src/estorno/Estorno.test.tsx::so_a_compra_a_credito_tem_estornar"
+      - "frontend/src/estorno/Estorno.test.tsx::reconhece_o_zero_do_servidor_pelo_texto"
+      - "frontend/src/estorno/Estorno.test.tsx::duplo_clique_envia_uma_vez_so"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-15.log"
+  SPEC-012-AC-16:
+    id: SPEC-012-AC-16
+    command: "npm --prefix frontend test -- src/terceiros/Terceiros.test.tsx -t \"cem_por_cento|repasse_exige_pessoa_e_conta_corrente|recusa_do_banco_aparece_literal\" && npm --prefix frontend test -- src/lancamento/Lancamentos.test.tsx -t \"nome_da_pessoa_neutro_se_a_lista_de_pessoas_nao_veio\""
+    test_paths:
+      - "frontend/src/terceiros/Terceiros.test.tsx::cem_por_cento"
+      - "frontend/src/terceiros/Terceiros.test.tsx::repasse_exige_pessoa_e_conta_corrente"
+      - "frontend/src/terceiros/Terceiros.test.tsx::recusa_do_banco_aparece_literal"
+      - "frontend/src/lancamento/Lancamentos.test.tsx::nome_da_pessoa_neutro_se_a_lista_de_pessoas_nao_veio"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-16.log"
+  SPEC-012-AC-17:
+    id: SPEC-012-AC-17
+    command: "npm --prefix frontend test -- src/pwa/Pwa.test.ts -t \"sem_cache_autenticado|instalavel|nada_pessoal_no_navegador\""
+    test_paths:
+      - "frontend/src/pwa/Pwa.test.ts::sem_cache_autenticado"
+      - "frontend/src/pwa/Pwa.test.ts::instalavel"
+      - "frontend/src/pwa/Pwa.test.ts::nada_pessoal_no_navegador"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-17.log"
+  SPEC-012-AC-18:
+    id: SPEC-012-AC-18
+    command: "npm --prefix frontend test -- src/terceiros/Terceiros.test.tsx -t \"mostra_a_receber_como_a_api_devolveu|cria_pessoa_e_explica_nome_repetido|renomeia_com_a_versao_que_o_usuario_viu|exclui_com_confirmacao_e_mostra_a_recusa_do_banco|estados_vazio_erro_e_sessao|sessao_vencida_volta_ao_login\""
+    test_paths:
+      - "frontend/src/terceiros/Terceiros.test.tsx::mostra_a_receber_como_a_api_devolveu"
+      - "frontend/src/terceiros/Terceiros.test.tsx::cria_pessoa_e_explica_nome_repetido"
+      - "frontend/src/terceiros/Terceiros.test.tsx::renomeia_com_a_versao_que_o_usuario_viu"
+      - "frontend/src/terceiros/Terceiros.test.tsx::exclui_com_confirmacao_e_mostra_a_recusa_do_banco"
+      - "frontend/src/terceiros/Terceiros.test.tsx::estados_vazio_erro_e_sessao"
+      - "frontend/src/terceiros/Terceiros.test.tsx::sessao_vencida_volta_ao_login"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-18.log"
+  SPEC-012-AC-19:
+    id: SPEC-012-AC-19
+    command: "npm --prefix frontend test -- src/recorrentes/Recorrentes.test.tsx -t \"mostra_cadastro_ocorrencias_e_vencidas|cria_recorrente_com_validacao_e_recusa_do_banco|vincula_e_desvincula_e_mostra_a_recusa|edita_com_a_versao_lida_e_explica_o_409|exclui_com_confirmacao_e_versao|avisa_quando_a_lista_de_transacoes_chega_ao_teto|estados_vazio_erro_e_sessao|sessao_vencida_volta_ao_login\""
+    test_paths:
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::mostra_cadastro_ocorrencias_e_vencidas"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::cria_recorrente_com_validacao_e_recusa_do_banco"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::vincula_e_desvincula_e_mostra_a_recusa"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::edita_com_a_versao_lida_e_explica_o_409"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::exclui_com_confirmacao_e_versao"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::avisa_quando_a_lista_de_transacoes_chega_ao_teto"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::estados_vazio_erro_e_sessao"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::sessao_vencida_volta_ao_login"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-19.log"
+  SPEC-012-AC-20:
+    id: SPEC-012-AC-20
+    command: "npm --prefix frontend test -- src/cartao/ConfigCartao.test.tsx -t \"grava_fechamento_com_vigencia_e_atualiza_a_fatura|grava_vencimento_e_mostra_a_recusa_do_banco|sessao_vencida_ao_gravar_volta_ao_login|erro_ao_carregar_o_historico_tem_nova_tentativa\""
+    test_paths:
+      - "frontend/src/cartao/ConfigCartao.test.tsx::grava_fechamento_com_vigencia_e_atualiza_a_fatura"
+      - "frontend/src/cartao/ConfigCartao.test.tsx::grava_vencimento_e_mostra_a_recusa_do_banco"
+      - "frontend/src/cartao/ConfigCartao.test.tsx::sessao_vencida_ao_gravar_volta_ao_login"
+      - "frontend/src/cartao/ConfigCartao.test.tsx::erro_ao_carregar_o_historico_tem_nova_tentativa"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-20.log"
+  SPEC-012-AC-21:
+    id: SPEC-012-AC-21
+    command: "npm --prefix frontend test -- src/parametros/Parametros.test.tsx -t \"mostra_o_historico_de_vigencias_e_parte_da_ultima|grava_a_meta_da_reserva_com_vigencia|grava_o_horizonte_e_mostra_a_recusa_do_banco|estados_vazio_erro_e_sessao|sessao_vencida_volta_ao_login\""
+    test_paths:
+      - "frontend/src/parametros/Parametros.test.tsx::mostra_o_historico_de_vigencias_e_parte_da_ultima"
+      - "frontend/src/parametros/Parametros.test.tsx::grava_a_meta_da_reserva_com_vigencia"
+      - "frontend/src/parametros/Parametros.test.tsx::grava_o_horizonte_e_mostra_a_recusa_do_banco"
+      - "frontend/src/parametros/Parametros.test.tsx::estados_vazio_erro_e_sessao"
+      - "frontend/src/parametros/Parametros.test.tsx::sessao_vencida_volta_ao_login"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-21.log"
+  SPEC-012-AC-22:
+    id: SPEC-012-AC-22
+    command: "npm --prefix frontend test -- src/api/escrita.test.ts -t \"traduz_cada_status|distingue_os_dois_409_pelo_codigo_e_nao_pelo_texto|422_leva_a_mensagem_literal_do_banco|exclusao_so_vale_com_204\""
+    test_paths:
+      - "frontend/src/api/escrita.test.ts::traduz_cada_status"
+      - "frontend/src/api/escrita.test.ts::distingue_os_dois_409_pelo_codigo_e_nao_pelo_texto"
+      - "frontend/src/api/escrita.test.ts::422_leva_a_mensagem_literal_do_banco"
+      - "frontend/src/api/escrita.test.ts::exclusao_so_vale_com_204"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-22.log"
+  SPEC-012-AC-23:
+    id: SPEC-012-AC-23
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/e2e/test_formularios.py::test_pessoa_compra_de_terceiro_repasse_e_a_receber"
+    test_paths:
+      - "tests/e2e/test_formularios.py::test_pessoa_compra_de_terceiro_repasse_e_a_receber"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-23.log"
+  SPEC-012-AC-24:
+    id: SPEC-012-AC-24
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/e2e/test_formularios.py::test_estornar_compra"
+    test_paths:
+      - "tests/e2e/test_formularios.py::test_estornar_compra"
+    exit_code: 0
+    log_path: "logs/19/SPEC-012-AC-24.log"

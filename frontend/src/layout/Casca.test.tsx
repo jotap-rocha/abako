@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, vi } from "vitest";
@@ -26,6 +26,7 @@ function renderizar(rota = "/") {
 beforeEach(() => {
   apiSessao.recuperarSessao.mockResolvedValue(true);
   apiSaldos.listarSaldos.mockResolvedValue({ tipo: "ok", saldos: [] });
+  apiLeitura.listarPessoas.mockResolvedValue({ tipo: "ok", dados: [] });
   // As telas de leitura buscam dados ao abrir; aqui basta que fiquem carregando.
   const pendente = () => new Promise<never>(() => undefined);
   apiLeitura.obterReceita.mockImplementation(pendente);
@@ -55,6 +56,9 @@ describe("casca do app", () => {
       "Reserva",
       "Sobra (R2)",
       "Alertas",
+      "Pessoas",
+      "Recorrentes",
+      "Parâmetros",
     ]);
 
     const usuario = userEvent.setup();
@@ -74,7 +78,11 @@ describe("casca do app", () => {
   it("inicio_busca_os_numeros_na_api", async () => {
     renderizar();
     expect(await screen.findByRole("heading", { name: "Início" })).toBeInTheDocument();
-    expect(apiLeitura.obterR2).toHaveBeenCalled();
-    expect(apiLeitura.obterAlertas).toHaveBeenCalled();
+    // O título aparece antes de os efeitos (useEffect) de busca rodarem; `waitFor` repete a
+    // checagem até a chamada acontecer (e falha por tempo se a tela nunca buscar na API).
+    await waitFor(() => {
+      expect(apiLeitura.obterR2).toHaveBeenCalled();
+      expect(apiLeitura.obterAlertas).toHaveBeenCalled();
+    });
   });
 });

@@ -22,30 +22,39 @@ export type EstadoCarga<T> =
 export function useCarga<T>(buscar: (() => Promise<Leitura<T>>) | null): {
   estado: EstadoCarga<T>;
   recarregar: () => void;
+  /** Busca de novo sem trocar a tela por "carregando" (o que o usuário digitou não some). */
+  atualizar: () => void;
 } {
   const { aoSessaoExpirar } = useOutletContext<ContextoCasca>();
   const [estado, setEstado] = useState<EstadoCarga<T>>({ tipo: "carregando" });
   const ultimoPedido = useRef(0);
 
-  const carregar = useCallback(async () => {
+  const carregar = useCallback(
+    async (silencioso: boolean) => {
     const pedido = ++ultimoPedido.current;
     if (buscar === null) return;
-    setEstado({ tipo: "carregando" });
+    if (!silencioso) setEstado({ tipo: "carregando" });
     const resultado = await buscar();
     if (pedido !== ultimoPedido.current) return;
     if (resultado.tipo === "sessao_expirada") aoSessaoExpirar();
     else if (resultado.tipo === "ok") setEstado({ tipo: "ok", dados: resultado.dados });
     else setEstado({ tipo: resultado.tipo });
-  }, [buscar, aoSessaoExpirar]);
+    },
+    [buscar, aoSessaoExpirar],
+  );
 
   useEffect(() => {
-    void carregar();
+    void carregar(false);
     return () => {
       ultimoPedido.current += 1;
     };
   }, [carregar]);
 
-  return { estado, recarregar: () => void carregar() };
+  return {
+    estado,
+    recarregar: () => void carregar(false),
+    atualizar: () => void carregar(true),
+  };
 }
 
 type Falha = Exclude<Leitura<never>, { tipo: "ok" }>;

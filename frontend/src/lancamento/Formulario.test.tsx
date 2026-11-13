@@ -65,9 +65,18 @@ describe("formulário de lançamento", () => {
     expect(screen.queryByLabelText("Valor (R$)")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Conta de destino")).not.toBeInTheDocument();
 
-    // Crédito e repasse aparecem, mas "em breve": não dá para escolher.
-    expect(screen.getByRole("option", { name: /Compra no cartão de crédito \(em breve\)/ })).toBeDisabled();
-    expect(screen.getByRole("option", { name: /Repasse a terceiros \(em breve\)/ })).toBeDisabled();
+    // Crédito: só cartão, com parcelas e a pessoa (opcional); o valor é o total da compra.
+    await usuario.selectOptions(tipo, "credito");
+    expect(screen.getByLabelText("Cartão")).toHaveTextContent("Cartão A");
+    expect(screen.getByLabelText("Cartão")).not.toHaveTextContent("Banco A");
+    expect(screen.getByLabelText("Parcelas")).toBeInTheDocument();
+    expect(screen.getByLabelText("De quem é a compra")).toBeInTheDocument();
+    expect(screen.getByLabelText("Valor total da compra (R$)")).toBeInTheDocument();
+
+    // Repasse: conta corrente e a pessoa obrigatória, sem parcelas.
+    await usuario.selectOptions(tipo, "repasse");
+    expect(screen.getByLabelText("Quem repassou")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Parcelas")).not.toBeInTheDocument();
     expect(apiLanc.criarLancamento).not.toHaveBeenCalled();
   });
 
@@ -97,6 +106,34 @@ describe("formulário de lançamento", () => {
     await usuario.click(screen.getByRole("button", { name: "Salvar lançamento" }));
     await vi.waitFor(() => expect(apiLanc.criarLancamento).toHaveBeenCalledTimes(3));
     expect(apiLanc.criarLancamento.mock.calls[2]?.[0]).not.toBe(primeira?.[0]);
+  });
+});
+
+describe("chave de idempotência", () => {
+  it("chave_nova_se_algo_mudar_depois_do_erro", async () => {
+    const usuario = userEvent.setup();
+    apiLanc.criarLancamento
+      .mockResolvedValueOnce({ tipo: "erro" })
+      .mockResolvedValueOnce({ tipo: "erro" })
+      .mockResolvedValueOnce({ tipo: "ok", lancamento: SALVO, repetido: false });
+    renderizar();
+    const enviar = () => usuario.click(screen.getByRole("button", { name: "Salvar lançamento" }));
+
+    await usuario.type(screen.getByLabelText("Valor (R$)"), "50,00");
+    await enviar();
+    await screen.findByRole("alert");
+    // Nada mudou: o retry leva a mesma chave (o servidor não duplica se o 1o gravou).
+    await enviar();
+    await vi.waitFor(() => expect(apiLanc.criarLancamento).toHaveBeenCalledTimes(2));
+    // O valor mudou: é outro lançamento, então chave nova.
+    await usuario.clear(screen.getByLabelText("Valor (R$)"));
+    await usuario.type(screen.getByLabelText("Valor (R$)"), "60,00");
+    await enviar();
+    await vi.waitFor(() => expect(apiLanc.criarLancamento).toHaveBeenCalledTimes(3));
+    const [primeira, segunda, terceira] = apiLanc.criarLancamento.mock.calls;
+    expect(segunda?.[0]).toBe(primeira?.[0]);
+    expect(terceira?.[0]).not.toBe(primeira?.[0]);
+    expect(terceira?.[1]).toMatchObject({ valor: "60.00" });
   });
 });
 

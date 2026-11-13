@@ -17,4 +17,5 @@ export const CONTAS: SaldoSaida[] = [
   conta({ conta_id: 1, nome: "Banco A" }),
   conta({ conta_id: 2, nome: "Corretora", tipo: "investimento" }),
   conta({ conta_id: 3, nome: "Vale", tipo: "beneficio", conta_beneficio: true }),
+  conta({ conta_id: 4, nome: "Cartão A", tipo: "divida" }),
 ];

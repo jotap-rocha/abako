@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 
 import type { ContaSaida, FaturaSaida, ItemFaturaSaida, LimiteSaida, PessoaSaida } from "../api/gerado";
 import { type Leitura, listarContas, listarPessoas, obterFatura, obterLimite } from "../api/leitura";
+import { ConfigCartao } from "../cartao/ConfigCartao";
 import { formatarData, mesAtual } from "../datas";
 import { formatarMoeda } from "../dinheiro";
 import { Cartao, EstadoVazio, Pagina } from "../ui/componentes";
@@ -27,6 +28,8 @@ export function Cartoes() {
   const { estado, recarregar } = useCarga(buscarCartoes);
   const [escolhido, setEscolhido] = useState<string | null>(null);
   const [competencia, setCompetencia] = useState(mesAtual);
+  // Mudar fechamento/vencimento muda a situação da fatura: busca a fatura de novo.
+  const [versaoFatura, setVersaoFatura] = useState(0);
 
   return (
     <Pagina
@@ -76,10 +79,15 @@ export function Cartoes() {
               />
               {/* `key`: trocar cartão ou competência recria o bloco, sem mostrar a fatura antiga. */}
               <FaturaDoCartao
-                key={`${cartao.conta_id}-${competencia}`}
+                key={`${cartao.conta_id}-${competencia}-${versaoFatura}`}
                 cartao={cartao}
                 competencia={competencia}
                 pessoas={pessoas}
+              />
+              <ConfigCartao
+                key={cartao.conta_id}
+                cartao={cartao}
+                aoGravar={() => setVersaoFatura((n) => n + 1)}
               />
             </>
           );

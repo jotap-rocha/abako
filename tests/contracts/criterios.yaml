@@ -372,8 +372,8 @@ criterios:
   - id: SPEC-012-AC-7
     spec: SPEC-012
     dado: "o formulário de lançamento aberto"
-    quando: "o usuário troca o tipo (despesa, receita, transferência, investimento, rendimento)"
-    entao: "os campos mudam por tipo (destino só em transferência e investimento; bruto e imposto no lugar de valor em rendimento); crédito e repasse aparecem como em breve e não enviam nada"
+    quando: "o usuário troca o tipo (despesa, receita, transferência, investimento, rendimento, crédito, repasse)"
+    entao: "os campos mudam por tipo (destino só em transferência e investimento; bruto e imposto no lugar de valor em rendimento); crédito pede cartão, parcelas e pessoa opcional; repasse pede conta corrente e pessoa"
     invariantes: []
     teste: ["frontend/src/lancamento/Formulario.test.tsx::campos_por_tipo"]
   - id: SPEC-012-AC-8
@@ -396,7 +396,7 @@ criterios:
     quando: "o usuário envia de novo"
     entao: "o segundo envio leva a mesma chave de idempotência do primeiro; depois de um sucesso, o próximo lançamento usa chave nova"
     invariantes: [INV-28]
-    teste: ["frontend/src/lancamento/Formulario.test.tsx::mesma_chave_no_retry"]
+    teste: ["frontend/src/lancamento/Formulario.test.tsx::mesma_chave_no_retry", "frontend/src/lancamento/Formulario.test.tsx::chave_nova_se_algo_mudar_depois_do_erro"]
   - id: SPEC-012-AC-11
     spec: SPEC-012
     dado: "a lista de lançamentos vigentes"
@@ -440,6 +440,116 @@ criterios:
     entao: "a fatura mostra total, própria, terceiros, itens com a pessoa, situação fechada e limite usado; o gasto do mês e os alertas (divergência com o nome da conta e pedido de configuração) mostram o que a API calculou"
     invariantes: []
     teste: ["tests/e2e/test_leitura.py::test_jornada_leitura"]
+  - id: SPEC-012-AC-15
+    spec: SPEC-012
+    dado: "uma compra a crédito e a resposta do estorno com valores incoerentes de propósito (limite devolvido diferente de total menos pago)"
+    quando: "o usuário confirma o estorno, com as regras do ADR 044 em texto fixo na tela antes de enviar"
+    entao: "pago zero mostra estorno integral (limite devolvido por inteiro, nada na conta corrente); pago acima de zero mostra estorno com parcelas pagas (crédito na fatura da competência devolvida); os valores são os da API, sem conta; a versão enviada é a que o usuário viu; só a compra a crédito tem Estornar; recusas (já estornada, regra do banco, rede, versão antiga, sessão vencida) são explicadas"
+    invariantes: [INV-08, INV-29]
+    teste:
+      - "frontend/src/estorno/Estorno.test.tsx::tipos_de_estorno"
+      - "frontend/src/estorno/Estorno.test.tsx::estorno_com_parcelas_pagas"
+      - "frontend/src/estorno/Estorno.test.tsx::recusas_do_servidor"
+      - "frontend/src/estorno/Estorno.test.tsx::so_a_compra_a_credito_tem_estornar"
+      - "frontend/src/estorno/Estorno.test.tsx::reconhece_o_zero_do_servidor_pelo_texto"
+      - "frontend/src/estorno/Estorno.test.tsx::duplo_clique_envia_uma_vez_so"
+  - id: SPEC-012-AC-16
+    spec: SPEC-012
+    dado: "o formulário de lançamento com pessoas cadastradas"
+    quando: "o usuário lança uma compra a crédito (própria ou de uma pessoa) ou um repasse"
+    entao: "a compra é 100% própria (pessoa nula) ou 100% de uma pessoa, sem campo de divisão, e o corpo enviado só tem campos conhecidos; o repasse exige a pessoa e só oferece conta corrente (nunca benefício, investimento ou cartão); a recusa do banco aparece literal"
+    invariantes: [INV-32]
+    teste:
+      - "frontend/src/terceiros/Terceiros.test.tsx::cem_por_cento"
+      - "frontend/src/terceiros/Terceiros.test.tsx::repasse_exige_pessoa_e_conta_corrente"
+      - "frontend/src/terceiros/Terceiros.test.tsx::recusa_do_banco_aparece_literal"
+      - "frontend/src/lancamento/Lancamentos.test.tsx::nome_da_pessoa_neutro_se_a_lista_de_pessoas_nao_veio"
+  - id: SPEC-012-AC-17
+    spec: SPEC-012
+    dado: "o app instalado como PWA e o service worker ativo"
+    quando: "o navegador pede a API (com ou sem credencial), uma tela do app ou a casca estática, e o usuário sai"
+    entao: "o manifesto e os ícones permitem instalar; o service worker nunca toca na API nem nas telas, só guarda a casca pública; no logout todos os caches são apagados; o código do app não usa storage do navegador, cookie manual nem console"
+    invariantes: []
+    teste:
+      - "frontend/src/pwa/Pwa.test.ts::sem_cache_autenticado"
+      - "frontend/src/pwa/Pwa.test.ts::instalavel"
+      - "frontend/src/pwa/Pwa.test.ts::nada_pessoal_no_navegador"
+  - id: SPEC-012-AC-18
+    spec: SPEC-012
+    dado: "a API devolve pessoas e o a receber de cada uma com valores incoerentes de propósito"
+    quando: "o usuário abre Pessoas, cadastra, renomeia e exclui uma pessoa"
+    entao: "dívida, repassado, a receber e crédito aparecem como a API mandou; nome repetido (AB410) e recusa do banco ao excluir são explicados; renomear e excluir levam a versão lida; excluir pede confirmação com foco em Cancelar; erro de campo liga ao campo (aria-describedby) e leva o foco; estados vazio, erro com nova tentativa e sessão vencida são tratados"
+    invariantes: [INV-10, INV-29, INV-33]
+    teste:
+      - "frontend/src/terceiros/Terceiros.test.tsx::mostra_a_receber_como_a_api_devolveu"
+      - "frontend/src/terceiros/Terceiros.test.tsx::cria_pessoa_e_explica_nome_repetido"
+      - "frontend/src/terceiros/Terceiros.test.tsx::renomeia_com_a_versao_que_o_usuario_viu"
+      - "frontend/src/terceiros/Terceiros.test.tsx::exclui_com_confirmacao_e_mostra_a_recusa_do_banco"
+      - "frontend/src/terceiros/Terceiros.test.tsx::estados_vazio_erro_e_sessao"
+      - "frontend/src/terceiros/Terceiros.test.tsx::sessao_vencida_volta_ao_login"
+  - id: SPEC-012-AC-19
+    spec: SPEC-012
+    dado: "recorrentes, ocorrências do mês, transações e a lista de vencidas devolvidas pela API"
+    quando: "o usuário cria, edita, exclui, vincula e desvincula"
+    entao: "as ocorrências e as vencidas aparecem como a API mandou; o nome sem caractere de controle, o dia de 1 a 31 e a conta corrente (nunca benefício) são exigidos na tela; edição e exclusão levam a versão lida, com versão antiga explicada; o vínculo já usado e a recusa do banco aparecem; excluir pede confirmação"
+    invariantes: [INV-29]
+    teste:
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::mostra_cadastro_ocorrencias_e_vencidas"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::cria_recorrente_com_validacao_e_recusa_do_banco"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::vincula_e_desvincula_e_mostra_a_recusa"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::edita_com_a_versao_lida_e_explica_o_409"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::exclui_com_confirmacao_e_versao"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::avisa_quando_a_lista_de_transacoes_chega_ao_teto"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::estados_vazio_erro_e_sessao"
+      - "frontend/src/recorrentes/Recorrentes.test.tsx::sessao_vencida_volta_ao_login"
+  - id: SPEC-012-AC-20
+    spec: SPEC-012
+    dado: "um cartão com fechamento e vencimento cadastrados ou não"
+    quando: "o usuário grava o dia de fechamento ou de vencimento com a data de vigência"
+    entao: "o histórico de vigências é listado; o dia de 1 a 31 e a data são enviados; a tela explica que dia inexistente no mês usa o último dia do mês; depois de gravar, histórico e fatura são buscados de novo; recusa do banco, sessão vencida e erro com nova tentativa são tratados"
+    invariantes: []
+    teste:
+      - "frontend/src/cartao/ConfigCartao.test.tsx::grava_fechamento_com_vigencia_e_atualiza_a_fatura"
+      - "frontend/src/cartao/ConfigCartao.test.tsx::grava_vencimento_e_mostra_a_recusa_do_banco"
+      - "frontend/src/cartao/ConfigCartao.test.tsx::sessao_vencida_ao_gravar_volta_ao_login"
+      - "frontend/src/cartao/ConfigCartao.test.tsx::erro_ao_carregar_o_historico_tem_nova_tentativa"
+  - id: SPEC-012-AC-21
+    spec: SPEC-012
+    dado: "o histórico de vigências da meta da reserva e do horizonte do R2"
+    quando: "o usuário abre /parametros e grava a meta (meses, gasto essencial em texto, data-alvo opcional) ou o horizonte (dias) com vigente_desde"
+    entao: "o histórico aparece com o mais recente primeiro e o formulário parte da última vigência; meses de 1 a 120 e dias de 1 a 90 são exigidos na tela; o gasto vai como texto decimal; recusa literal do banco, estados vazio, erro com nova tentativa e sessão vencida são tratados"
+    invariantes: [INV-14]
+    teste:
+      - "frontend/src/parametros/Parametros.test.tsx::mostra_o_historico_de_vigencias_e_parte_da_ultima"
+      - "frontend/src/parametros/Parametros.test.tsx::grava_a_meta_da_reserva_com_vigencia"
+      - "frontend/src/parametros/Parametros.test.tsx::grava_o_horizonte_e_mostra_a_recusa_do_banco"
+      - "frontend/src/parametros/Parametros.test.tsx::estados_vazio_erro_e_sessao"
+      - "frontend/src/parametros/Parametros.test.tsx::sessao_vencida_volta_ao_login"
+  - id: SPEC-012-AC-22
+    spec: SPEC-012
+    dado: "respostas de escrita do servidor (201/200/204, 401, 404, 409 com X-Abako-Erro AB409 ou AB410, 422 com detail, 500, falha de rede)"
+    quando: "a camada de escrita as traduz para a tela"
+    entao: "os dois 409 se distinguem só pelo código do cabeçalho (nunca pelo texto), o 422 leva o detail literal, a exclusão só vale com 204 e a falha de rede nunca lança"
+    invariantes: [INV-29]
+    teste:
+      - "frontend/src/api/escrita.test.ts::traduz_cada_status"
+      - "frontend/src/api/escrita.test.ts::distingue_os_dois_409_pelo_codigo_e_nao_pelo_texto"
+      - "frontend/src/api/escrita.test.ts::422_leva_a_mensagem_literal_do_banco"
+      - "frontend/src/api/escrita.test.ts::exclusao_so_vale_com_204"
+  - id: SPEC-012-AC-23
+    spec: SPEC-012
+    dado: "o servidor de verdade no tst, um usuário de teste com conta corrente e cartão"
+    quando: "no navegador, o usuário cadastra uma pessoa, lança uma compra de terceiro parcelada e um repasse, e abre Pessoas"
+    entao: "a lista de lançamentos mostra a compra e o repasse com a pessoa, e Pessoas mostra dívida 100,00, repassado 30,00 e a receber 70,00 como o servidor calculou"
+    invariantes: [INV-10, INV-32]
+    teste: ["tests/e2e/test_formularios.py::test_pessoa_compra_de_terceiro_repasse_e_a_receber"]
+  - id: SPEC-012-AC-24
+    spec: SPEC-012
+    dado: "o servidor de verdade no tst e uma compra a crédito própria sem nada pago"
+    quando: "no navegador, o usuário abre Lançamentos, lê as regras e confirma o estorno"
+    entao: "o resultado mostra estorno integral com o limite devolvido de 100,00 e a lista passa a ter a linha do estorno"
+    invariantes: [INV-08]
+    teste: ["tests/e2e/test_formularios.py::test_estornar_compra"]
   - id: SPEC-003-AC-1
     spec: SPEC-003
     dado: "uma conta com snapshot e transações vigentes posteriores (F-SALDO-01), versões editadas e excluídas (F-SALDO-02)"

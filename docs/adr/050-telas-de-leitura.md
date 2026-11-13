@@ -63,6 +63,8 @@ Faltavam decisões de tela e um dado que a API não expunha.
 
 ## Exceção declarada à regra de mascaramento
 
+**Confirmada pelo usuário em 2026-11-13:** o nome de terceiro pode aparecer em claro na sessão dele.
+
 A regra geral (`.claude/rules/seguranca.md`) é exibir dado pessoal só mascarado. `pessoa.nome`
 (o terceiro cuja compra está no cartão) é exibido **em claro**, e só na sessão autenticada do
 próprio dono, porque a finalidade do app exige saber quem comprou o quê. É **proibido** fora dela:

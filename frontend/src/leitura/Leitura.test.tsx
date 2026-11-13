@@ -8,6 +8,7 @@ import type { GastoRealSaida } from "../api/gerado";
 import type { Leitura } from "../api/leitura";
 import * as leitura from "../api/leitura";
 import * as sessao from "../api/sessao";
+import * as vigencias from "../api/vigencias";
 import { deslocarMes, mesAtual } from "../datas";
 import {
   ALERTAS,
@@ -27,7 +28,9 @@ import {
 // A fronteira com o servidor é a única coisa simulada; o App e as telas rodam de verdade.
 vi.mock("../api/sessao");
 vi.mock("../api/leitura");
+vi.mock("../api/vigencias");
 const api = vi.mocked(leitura);
+const apiVigencias = vi.mocked(vigencias);
 const apiSessao = vi.mocked(sessao);
 
 function renderizar(rota: string) {
@@ -43,6 +46,9 @@ beforeEach(() => {
   api.listarContas.mockResolvedValue({ tipo: "ok", dados: [CORRENTE, CARTAO] });
   api.listarPessoas.mockResolvedValue({ tipo: "ok", dados: PESSOAS });
   api.listarRecorrentes.mockResolvedValue({ tipo: "ok", dados: RECORRENTES });
+  // O cartão também mostra fechamento e vencimento (aqui sem nada cadastrado).
+  apiVigencias.listarFechamentos.mockResolvedValue({ tipo: "ok", dados: [] });
+  apiVigencias.listarVencimentos.mockResolvedValue({ tipo: "ok", dados: [] });
   api.obterFatura.mockResolvedValue({ tipo: "ok", dados: FATURA });
   api.obterLimite.mockResolvedValue({ tipo: "ok", dados: LIMITE });
   api.obterGastoReal.mockResolvedValue({ tipo: "ok", dados: GASTO });

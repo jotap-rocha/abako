@@ -97,3 +97,32 @@ export const IconeSobra = () => (
     <path d="M12 7.5v9M9.5 10c0-1 1-1.7 2.5-1.7s2.5.7 2.5 1.7-1 1.5-2.5 1.9S9.5 13 9.5 14s1 1.7 2.5 1.7 2.5-.7 2.5-1.7" />
   </Icone>
 );
+
+export const IconePessoas = () => (
+  <Icone>
+    <circle cx="9" cy="8.5" r="3" />
+    <path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
+    <path d="M16 6.2a3 3 0 0 1 0 5.6" />
+    <path d="M17.5 14.3c2 .6 3 2.3 3 4.7" />
+  </Icone>
+);
+
+export const IconeRecorrentes = () => (
+  <Icone>
+    <path d="M5 12a7 7 0 0 1 12-4.9L19 9" />
+    <path d="M19 4.5V9h-4.5" />
+    <path d="M19 12a7 7 0 0 1-12 4.9L5 15" />
+    <path d="M5 19.5V15h4.5" />
+  </Icone>
+);
+
+export const IconeParametros = () => (
+  <Icone>
+    <path d="M5 7h14" />
+    <path d="M5 12h14" />
+    <path d="M5 17h14" />
+    <circle cx="9" cy="7" r="1.8" />
+    <circle cx="15" cy="12" r="1.8" />
+    <circle cx="8" cy="17" r="1.8" />
+  </Icone>
+);
