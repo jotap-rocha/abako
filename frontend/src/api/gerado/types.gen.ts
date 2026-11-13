@@ -246,6 +246,10 @@ export type FaturaSaida = {
      */
     competencia: string;
     /**
+     * Fechamento
+     */
+    fechamento: string | null;
+    /**
      * Itens
      */
     itens: Array<ItemFaturaSaida>;
@@ -253,6 +257,10 @@ export type FaturaSaida = {
      * Propria
      */
     propria: string;
+    /**
+     * Situacao
+     */
+    situacao: 'aberta' | 'fechada' | null;
     /**
      * Terceiros
      */

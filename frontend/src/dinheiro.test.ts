@@ -1,4 +1,4 @@
-import { formatarMoeda, lerValorDigitado } from "./dinheiro";
+import { formatarDecimal, formatarMoeda, lerValorDigitado } from "./dinheiro";
 
 // Todo código de produção do front, exceto o cliente gerado, testes e a configuração dos testes.
 const fontes = import.meta.glob(
@@ -13,6 +13,13 @@ describe("dinheiro", () => {
     expect(formatarMoeda("-1526.59")).toBe("-R$ 1.526,59");
     expect(formatarMoeda("abc")).toBe("abc");
     expect(formatarMoeda("1.5")).toBe("1.5");
+  });
+
+  it("formata_decimal_sem_conta", () => {
+    expect(formatarDecimal("9.99")).toBe("9,99");
+    expect(formatarDecimal("12345678901234567.89")).toBe("12345678901234567,89");
+    expect(formatarDecimal("3")).toBe("3");
+    expect(formatarDecimal("abc")).toBe("abc");
   });
 
   it("le_valor_digitado_no_jeito_brasileiro", () => {

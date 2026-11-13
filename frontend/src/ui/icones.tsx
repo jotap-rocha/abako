@@ -70,3 +70,30 @@ export const IconeOlhoRiscado = () => (
     <path d="M6.2 7.8A17 17 0 0 0 2.5 12S6 18.5 12 18.5a9.6 9.6 0 0 0 3.8-.8" />
   </Icone>
 );
+
+export const IconeCartoes = () => (
+  <Icone>
+    <rect x="3" y="5.5" width="18" height="13" rx="2.5" />
+    <path d="M3 10h18" />
+    <path d="M6.5 15h4" />
+  </Icone>
+);
+
+export const IconeGasto = () => (
+  <Icone>
+    <path d="M5 19V11M12 19V5M19 19v-6" />
+  </Icone>
+);
+
+export const IconeReserva = () => (
+  <Icone>
+    <path d="M12 3.5 5 6v5.5c0 4.2 2.8 7.2 7 9 4.2-1.8 7-4.8 7-9V6l-7-2.5Z" />
+  </Icone>
+);
+
+export const IconeSobra = () => (
+  <Icone>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5v9M9.5 10c0-1 1-1.7 2.5-1.7s2.5.7 2.5 1.7-1 1.5-2.5 1.9S9.5 13 9.5 14s1 1.7 2.5 1.7 2.5-.7 2.5-1.7" />
+  </Icone>
+);

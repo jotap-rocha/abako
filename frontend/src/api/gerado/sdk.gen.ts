@@ -52,7 +52,8 @@ export const authLogout = <ThrowOnError extends boolean = false>(options?: Optio
 /**
  * Fatura
  *
- * Parcelas da competência (mês do fechamento, "YYYY-MM"), total, própria e terceiros.
+ * Parcelas da competência (mês do fechamento, "YYYY-MM"), total, própria e terceiros,
+ * mais a data de fechamento e se a fatura está aberta ou fechada em `hoje`.
  */
 export const cartoesFatura = <ThrowOnError extends boolean = false>(options: Options<CartoesFaturaData, ThrowOnError>): RequestResult<CartoesFaturaResponses, CartoesFaturaErrors, ThrowOnError> => (options.client ?? client).get<CartoesFaturaResponses, CartoesFaturaErrors, ThrowOnError>({ url: '/api/cartoes/{conta_id}/faturas/{competencia}', ...options });
 

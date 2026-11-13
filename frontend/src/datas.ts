@@ -26,3 +26,28 @@ export function formatarData(data: string): string {
   const [, ano, mes, dia] = partes;
   return `${dia}/${mes}/${ano}`;
 }
+
+/** O mês de hoje em São Paulo, "AAAA-MM". */
+export function mesAtual(agora: Date = new Date()): string {
+  return hojeEmSaoPaulo(agora).slice(0, 7);
+}
+
+/**
+ * Anda `meses` meses no calendário ("2026-01", -1 → "2025-12"). É conta de calendário, não de
+ * dinheiro: usa o meio do mês em UTC para nenhum fuso empurrar o dia para o mês vizinho.
+ */
+export function deslocarMes(mes: string, meses: number): string {
+  const data = new Date(`${mes}-15T12:00:00Z`);
+  data.setUTCMonth(data.getUTCMonth() + meses);
+  return data.toISOString().slice(0, 7);
+}
+
+/** "2026-11" → "novembro de 2026". Texto fora do formato volta como veio. */
+export function nomeDoMes(mes: string): string {
+  if (!/^\d{4}-\d{2}$/.test(mes)) return mes;
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "UTC",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${mes}-15T12:00:00Z`));
+}

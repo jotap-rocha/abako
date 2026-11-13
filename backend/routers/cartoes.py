@@ -5,9 +5,9 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException, Path, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from pydantic import BaseModel, Field, field_validator
 
 from backend.deps import Conexao, Sessao, SessaoEscrita
@@ -15,6 +15,7 @@ from backend.dinheiro import texto_dinheiro
 from backend.erros_banco import regras_do_banco
 from backend.routers.saldos import DATA_MINIMA
 from backend.services import cartoes as svc
+from backend.services import gasto_real as svc_data
 
 router_linhas = APIRouter(prefix="/linhas-credito", tags=["linhas_credito"])
 router_cartoes = APIRouter(prefix="/cartoes", tags=["cartoes"])
@@ -158,6 +159,16 @@ class FaturaSaida(BaseModel):
     propria: str
     terceiros: str
     itens: list[ItemFaturaSaida]
+    # Data do fechamento efetivo da competência; nula se o cartão não tem dia de fechamento.
+    fechamento: date | None
+    # "aberta" enquanto hoje < fechamento, senão "fechada"; nula sem fechamento. Não há estado
+    # "paga" (ADR 044): pagamento é transferência, não muda a situação.
+    situacao: Literal["aberta", "fechada"] | None
+
+
+def hoje_civil() -> date:
+    """Dependência (substituível em teste): hoje em America/Sao_Paulo."""
+    return svc_data.hoje_civil()
 
 
 async def _exigir_cartao(conn: Conexao, user_id: int, conta_id: int) -> None:
@@ -192,14 +203,24 @@ async def listar_fechamentos(
 
 @router_cartoes.get("/{conta_id}/faturas/{competencia}", response_model=FaturaSaida)
 async def fatura(
-    conta_id: IdConta, competencia: Competencia, conn: Conexao, sessao: Sessao
+    conta_id: IdConta,
+    competencia: Competencia,
+    conn: Conexao,
+    sessao: Sessao,
+    hoje: Annotated[date, Depends(hoje_civil)],
 ) -> FaturaSaida:
-    """Parcelas da competência (mês do fechamento, "YYYY-MM"), total, própria e terceiros."""
+    """Parcelas da competência (mês do fechamento, "YYYY-MM"), total, própria e terceiros,
+    mais a data de fechamento e se a fatura está aberta ou fechada em `hoje`."""
     await _exigir_cartao(conn, sessao.user_id, conta_id)
     itens = await svc.itens_da_fatura(conn, sessao.user_id, conta_id, competencia)
     resumo = await svc.resumo_da_fatura(conn, sessao.user_id, conta_id, competencia)
+    fechamento, aberta = await svc.fechamento_da_fatura(
+        conn, sessao.user_id, conta_id, competencia, hoje
+    )
     return FaturaSaida(
         competencia=competencia,
+        fechamento=fechamento,
+        situacao=None if aberta is None else ("aberta" if aberta else "fechada"),
         total=texto_dinheiro(resumo.total),
         propria=texto_dinheiro(resumo.propria),
         terceiros=texto_dinheiro(resumo.terceiros),

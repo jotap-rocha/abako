@@ -44,3 +44,11 @@ export function lerValorDigitado(digitado: string): string | null {
   const resultado = `${negativo ? "-" : ""}${normalizado}`;
   return VALOR_DA_API.test(resultado) ? resultado : null;
 }
+
+/**
+ * Decimal que não é dinheiro (ex.: cobertura "9.99" meses) no jeito brasileiro ("9,99"). Só troca
+ * o ponto pela vírgula no texto: nenhuma conta, nenhum `number`. Fora do formato, volta como veio.
+ */
+export function formatarDecimal(valor: string): string {
+  return /^-?\d+(\.\d+)?$/.test(valor) ? valor.replace(".", ",") : valor;
+}

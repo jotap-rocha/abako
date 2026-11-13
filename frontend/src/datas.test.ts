@@ -1,4 +1,4 @@
-import { formatarData, hojeEmSaoPaulo } from "./datas";
+import { deslocarMes, formatarData, hojeEmSaoPaulo, mesAtual, nomeDoMes } from "./datas";
 
 describe("datas", () => {
   it("hoje_e_o_dia_civil_de_sao_paulo", () => {
@@ -13,5 +13,14 @@ describe("datas", () => {
   it("formata_data_iso", () => {
     expect(formatarData("2026-11-04")).toBe("04/11/2026");
     expect(formatarData("04/11/2026")).toBe("04/11/2026");
+  });
+
+  it("navega_entre_meses_do_calendario", () => {
+    expect(deslocarMes("2026-01", -1)).toBe("2025-12");
+    expect(deslocarMes("2026-11", 1)).toBe("2026-12");
+    expect(deslocarMes("2026-12", 1)).toBe("2027-01");
+    expect(deslocarMes("2026-03", -13)).toBe("2025-02");
+    expect(mesAtual(new Date("2026-12-01T02:00:00Z"))).toBe("2026-11");
+    expect(nomeDoMes("2026-11")).toBe("novembro de 2026");
   });
 });
