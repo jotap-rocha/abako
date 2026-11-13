@@ -43,7 +43,7 @@ class LinhaEntrada(BaseModel):
 
 class LinhaEdicao(LinhaEntrada):
     # A versão que o front leu; se outra edição veio antes, 409.
-    versao: int = Field(ge=1)
+    versao: int = Field(ge=1, le=2**31 - 1)
 
 
 class LinhaSaida(BaseModel):

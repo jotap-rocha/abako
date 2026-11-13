@@ -18,7 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from backend.deps import Conexao, Sessao, SessaoEscrita
 from backend.dinheiro import texto_dinheiro
-from backend.erros_banco import CABECALHO_CODIGO, regras_do_banco
+from backend.erros_banco import mes_valido, regras_do_banco
 from backend.services import gasto_real as svc_data
 from backend.services import recorrentes as svc
 
@@ -37,18 +37,6 @@ MesConsulta = Annotated[
     str | None,
     Query(description="Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo"),
 ]
-
-
-def _mes_valido(mes: str) -> str:
-    """Barra o que o banco nem chegaria a ler (muito longo; NUL e controle dariam 500 no driver)
-    com o mesmo 422/AB422 literal que o banco devolve para formato inválido (mes_inicio)."""
-    if len(mes) > 16 or any(unicodedata.category(c) == "Cc" for c in mes):
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT,
-            "o mês precisa estar no formato AAAA-MM",
-            headers={CABECALHO_CODIGO: "AB422"},
-        )
-    return mes
 
 
 def hoje_civil() -> date:
@@ -227,7 +215,7 @@ async def ocorrencias(
     mes: MesConsulta = None,
 ) -> list[OcorrenciaSaida]:
     """Ocorrências do mês (uma por recorrente vigente no período), derivadas a cada consulta."""
-    alvo = _mes_valido(mes) if mes is not None else hoje.strftime("%Y-%m")
+    alvo = mes_valido(mes) if mes is not None else hoje.strftime("%Y-%m")
     async with regras_do_banco():
         lista = await svc.ocorrencias_do_mes(conn, sessao.user_id, alvo)
     return [_saida_ocorrencia(o) for o in lista]
@@ -280,7 +268,7 @@ async def vincular(
     sessao: SessaoEscrita,
 ) -> OcorrenciaSaida:
     """Liga a transação (mesmo tipo e conta) à ocorrência; repetir o mesmo vínculo é idempotente."""
-    _mes_valido(mes)
+    mes_valido(mes)
     async with regras_do_banco():
         await svc.vincular(conn, sessao.user_id, recorrente_id, mes, entrada.transacao_id)
         return await _ocorrencia_do_vinculo(conn, sessao.user_id, recorrente_id, mes)
@@ -291,7 +279,7 @@ async def desvincular(
     recorrente_id: IdRecorrente, mes: MesCaminho, conn: Conexao, sessao: SessaoEscrita
 ) -> OcorrenciaSaida:
     """Desfaz o vínculo (evento novo, o histórico fica); a ocorrência volta ao valor esperado."""
-    _mes_valido(mes)
+    mes_valido(mes)
     async with regras_do_banco():
         await svc.desvincular(conn, sessao.user_id, recorrente_id, mes)
         return await _ocorrencia_do_vinculo(conn, sessao.user_id, recorrente_id, mes)

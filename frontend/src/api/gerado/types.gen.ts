@@ -35,6 +35,49 @@ export type AReceberSaida = {
 };
 
 /**
+ * AlertaSaida
+ */
+export type AlertaSaida = {
+    /**
+     * Codigo
+     */
+    codigo: string;
+    /**
+     * Detalhe
+     */
+    detalhe: string;
+    /**
+     * Mensagem
+     */
+    mensagem: string;
+    r2: R2Alerta | null;
+    r4: R4Alerta | null;
+    reserva: ReservaAlerta | null;
+    /**
+     * Severidade
+     */
+    severidade: string;
+    /**
+     * Tipo
+     */
+    tipo: string;
+};
+
+/**
+ * AlertasSaida
+ */
+export type AlertasSaida = {
+    /**
+     * Data Referencia
+     */
+    data_referencia: string;
+    /**
+     * Itens
+     */
+    itens: Array<AlertaSaida>;
+};
+
+/**
  * ContaEdicao
  */
 export type ContaEdicao = {
@@ -797,6 +840,74 @@ export type PessoaSaida = {
 };
 
 /**
+ * R2Alerta
+ */
+export type R2Alerta = {
+    /**
+     * Compromissos
+     */
+    compromissos: string;
+    /**
+     * Data Fim
+     */
+    data_fim: string;
+    /**
+     * Disponivel
+     */
+    disponivel: string;
+    /**
+     * Horizonte Dias
+     */
+    horizonte_dias: number;
+    /**
+     * Pendencias Vencimento
+     */
+    pendencias_vencimento: number;
+    /**
+     * Sobra
+     */
+    sobra: string;
+    /**
+     * Sobra Nao Confiavel
+     */
+    sobra_nao_confiavel: boolean;
+    /**
+     * Vencidas
+     */
+    vencidas: number;
+};
+
+/**
+ * R4Alerta
+ */
+export type R4Alerta = {
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Data Snapshot
+     */
+    data_snapshot: string;
+    /**
+     * Divergencia
+     */
+    divergencia: string;
+    /**
+     * Quantidade
+     */
+    quantidade: number;
+    /**
+     * Saldo Derivado
+     */
+    saldo_derivado: string;
+    /**
+     * Valor Snapshot
+     */
+    valor_snapshot: string;
+};
+
+/**
  * ReceitaSaida
  */
 export type ReceitaSaida = {
@@ -930,6 +1041,32 @@ export type RecorrenteSaida = {
      * Versao
      */
     versao: number;
+};
+
+/**
+ * ReservaAlerta
+ */
+export type ReservaAlerta = {
+    /**
+     * Cobertura Meses
+     */
+    cobertura_meses: string | null;
+    /**
+     * Falta
+     */
+    falta: string | null;
+    /**
+     * Meta
+     */
+    meta: string | null;
+    /**
+     * Nivel
+     */
+    nivel: string | null;
+    /**
+     * Saldo Liquido
+     */
+    saldo_liquido: string;
 };
 
 /**
@@ -1207,6 +1344,22 @@ export type VinculoEntrada = {
      */
     transacao_id: number;
 };
+
+export type AlertasListarData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/alertas';
+};
+
+export type AlertasListarResponses = {
+    /**
+     * Successful Response
+     */
+    200: AlertasSaida;
+};
+
+export type AlertasListarResponse = AlertasListarResponses[keyof AlertasListarResponses];
 
 export type AuthEuData = {
     body?: never;

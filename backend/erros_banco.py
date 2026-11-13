@@ -8,6 +8,7 @@ depender do texto. Qualquer outro erro de banco segue adiante (500 sem detalhe, 
 
 from __future__ import annotations
 
+import unicodedata
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -36,3 +37,15 @@ async def regras_do_banco() -> AsyncIterator[None]:
         raise HTTPException(
             STATUS_POR_CODIGO[codigo], mensagem, headers={CABECALHO_CODIGO: codigo}
         ) from None
+
+
+def mes_valido(mes: str) -> str:
+    """Barra o que o banco nem chegaria a ler (muito longo; NUL e controle dariam 500 no driver)
+    com o mesmo 422/AB422 literal que o banco devolve para formato inválido (`mes_inicio`)."""
+    if len(mes) > 16 or any(unicodedata.category(c) == "Cc" for c in mes):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "o mês precisa estar no formato AAAA-MM",
+            headers={CABECALHO_CODIGO: "AB422"},
+        )
+    return mes

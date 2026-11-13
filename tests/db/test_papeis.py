@@ -404,3 +404,31 @@ def test_r2_papeis(esquema: str, url_app: str, url_pipeline: str) -> None:
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             pipe.execute("SELECT r2_parametro_gravar(1, 5, DATE '2026-01-01')")
         pipe.rollback()
+
+
+def test_alertas_papeis(esquema: str, url_app: str, url_pipeline: str) -> None:
+    """SPEC-011 / ADR 049: só o app executa `alertas`; é INVOKER e não cria tabela nem escrita."""
+    funcao = "alertas(bigint, date)"
+    with psycopg.connect(url_app) as app, psycopg.connect(url_pipeline) as pipe:
+        assert app.execute(
+            "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
+        ).fetchone() == (True,)
+        assert pipe.execute(
+            "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
+        ).fetchone() == (False,)
+        assert app.execute(
+            "SELECT NOT prosecdef, provolatile = 's' FROM pg_proc WHERE oid = %s::regprocedure",
+            (funcao,),
+        ).fetchone() == (True, True)
+        novo = app.execute(
+            "INSERT INTO usuario (login) VALUES ('u_papel_alertas') RETURNING user_id"
+        ).fetchone()
+        assert novo is not None
+        itens = app.execute(
+            "SELECT codigo, severidade FROM alertas(%s, DATE '2026-05-10')", (novo[0],)
+        ).fetchall()
+        assert itens == [("CONFIG", "baixa")]
+        app.rollback()
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            pipe.execute("SELECT * FROM alertas(1, DATE '2026-05-10')")
+        pipe.rollback()

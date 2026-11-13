@@ -1,0 +1,117 @@
+task_id: "17"
+criteria:
+  SPEC-011-AC-1:
+    id: SPEC-011-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_r1 tests/db/test_alertas.py::test_r1_severidade_por_nivel_f_alerta_01 tests/db/test_alertas.py::test_sem_conta_de_reserva_com_gasto_configurado_e_r1_critico_f_alerta_05 tests/db/test_alertas_propriedades.py::test_severidade_do_r1_muda_exatamente_nos_cortes"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_r1"
+      - "tests/db/test_alertas.py::test_r1_severidade_por_nivel_f_alerta_01"
+      - "tests/db/test_alertas.py::test_sem_conta_de_reserva_com_gasto_configurado_e_r1_critico_f_alerta_05"
+      - "tests/db/test_alertas_propriedades.py::test_severidade_do_r1_muda_exatamente_nos_cortes"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-1.log"
+  SPEC-011-AC-10:
+    id: SPEC-011-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_sem_sessao_e_401 tests/backend/test_alertas.py::test_hoje_usa_o_fuso_de_sao_paulo tests/backend/test_alertas.py::test_dinheiro_sempre_em_texto tests/backend/test_alertas.py::test_valores_e_nomes_fora_do_log tests/db/test_alertas.py::test_hoje_e_obrigatorio"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_sem_sessao_e_401"
+      - "tests/backend/test_alertas.py::test_hoje_usa_o_fuso_de_sao_paulo"
+      - "tests/backend/test_alertas.py::test_dinheiro_sempre_em_texto"
+      - "tests/backend/test_alertas.py::test_valores_e_nomes_fora_do_log"
+      - "tests/db/test_alertas.py::test_hoje_e_obrigatorio"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-10.log"
+  SPEC-011-AC-11:
+    id: SPEC-011-AC-11
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_papeis.py::test_alertas_papeis tests/db/test_alertas_mensagens.py::test_mensagens_da_0012_sao_literais tests/db/test_alertas_mensagens.py::test_funcao_e_de_leitura_sem_escrita tests/db/test_migracao_0012.py::test_downgrade_remove_a_funcao_e_sobe_de_novo"
+    test_paths:
+      - "tests/db/test_papeis.py::test_alertas_papeis"
+      - "tests/db/test_alertas_mensagens.py::test_mensagens_da_0012_sao_literais"
+      - "tests/db/test_alertas_mensagens.py::test_funcao_e_de_leitura_sem_escrita"
+      - "tests/db/test_migracao_0012.py::test_downgrade_remove_a_funcao_e_sobe_de_novo"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-11.log"
+  SPEC-011-AC-12:
+    id: SPEC-011-AC-12
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_limites_de_entrada.py::test_versao_de_lancamento_tem_teto_do_integer tests/backend/test_limites_de_entrada.py::test_versao_do_estorno_tem_teto_do_integer tests/backend/test_limites_de_entrada.py::test_versao_de_conta_e_de_linha_de_credito_tem_teto_do_integer tests/backend/test_limites_de_entrada.py::test_versao_sem_csrf_continua_403 tests/backend/test_limites_de_entrada.py::test_mes_longo_ou_com_controle_e_ab422_literal_no_gasto_real_e_na_receita"
+    test_paths:
+      - "tests/backend/test_limites_de_entrada.py::test_versao_de_lancamento_tem_teto_do_integer"
+      - "tests/backend/test_limites_de_entrada.py::test_versao_do_estorno_tem_teto_do_integer"
+      - "tests/backend/test_limites_de_entrada.py::test_versao_de_conta_e_de_linha_de_credito_tem_teto_do_integer"
+      - "tests/backend/test_limites_de_entrada.py::test_versao_sem_csrf_continua_403"
+      - "tests/backend/test_limites_de_entrada.py::test_mes_longo_ou_com_controle_e_ab422_literal_no_gasto_real_e_na_receita"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-12.log"
+  SPEC-011-AC-2:
+    id: SPEC-011-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_r2 tests/db/test_alertas.py::test_r2_sobra_estrita_f_alerta_02"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_r2"
+      - "tests/db/test_alertas.py::test_r2_sobra_estrita_f_alerta_02"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-2.log"
+  SPEC-011-AC-3:
+    id: SPEC-011-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_r4_visivel tests/db/test_alertas.py::test_r4_por_conta_f_alerta_03 tests/db/test_alertas.py::test_r4_de_cartao_e_a_divergencia_da_conta_de_divida_f_alerta_03 tests/db/test_alertas.py::test_r4_ignora_conta_excluida tests/db/test_alertas.py::test_r4_dois_snapshots_no_mesmo_dia_valem_o_ultimo"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_r4_visivel"
+      - "tests/db/test_alertas.py::test_r4_por_conta_f_alerta_03"
+      - "tests/db/test_alertas.py::test_r4_de_cartao_e_a_divergencia_da_conta_de_divida_f_alerta_03"
+      - "tests/db/test_alertas.py::test_r4_ignora_conta_excluida"
+      - "tests/db/test_alertas.py::test_r4_dois_snapshots_no_mesmo_dia_valem_o_ultimo"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-3.log"
+  SPEC-011-AC-4:
+    id: SPEC-011-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_r2_sobra_zero_ou_positiva_nao_alerta tests/backend/test_alertas.py::test_r2_vencidas_sao_aviso_a_parte tests/db/test_alertas.py::test_r2_sobra_estrita_f_alerta_02 tests/db/test_alertas.py::test_r2_vencidas_sao_aviso_a_parte_f_alerta_02 tests/db/test_alertas_propriedades.py::test_r2_alerta_so_com_sobra_negativa_estrita"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_r2_sobra_zero_ou_positiva_nao_alerta"
+      - "tests/backend/test_alertas.py::test_r2_vencidas_sao_aviso_a_parte"
+      - "tests/db/test_alertas.py::test_r2_sobra_estrita_f_alerta_02"
+      - "tests/db/test_alertas.py::test_r2_vencidas_sao_aviso_a_parte_f_alerta_02"
+      - "tests/db/test_alertas_propriedades.py::test_r2_alerta_so_com_sobra_negativa_estrita"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-4.log"
+  SPEC-011-AC-5:
+    id: SPEC-011-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_config_pendente_nao_e_r1 tests/db/test_alertas.py::test_config_pendente_nao_e_r1_f_alerta_01 tests/db/test_alertas.py::test_usuario_novo_so_tem_a_configuracao_da_reserva"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_config_pendente_nao_e_r1"
+      - "tests/db/test_alertas.py::test_config_pendente_nao_e_r1_f_alerta_01"
+      - "tests/db/test_alertas.py::test_usuario_novo_so_tem_a_configuracao_da_reserva"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-5.log"
+  SPEC-011-AC-6:
+    id: SPEC-011-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_r2_sobra_nao_confiavel tests/db/test_alertas.py::test_r2_sobra_nao_confiavel_f_alerta_02"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_r2_sobra_nao_confiavel"
+      - "tests/db/test_alertas.py::test_r2_sobra_nao_confiavel_f_alerta_02"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-6.log"
+  SPEC-011-AC-7:
+    id: SPEC-011-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_varios_alertas_ordenados_por_severidade tests/db/test_alertas.py::test_combinacao_ordenada_por_severidade_f_alerta_04"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_varios_alertas_ordenados_por_severidade"
+      - "tests/db/test_alertas.py::test_combinacao_ordenada_por_severidade_f_alerta_04"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-7.log"
+  SPEC-011-AC-8:
+    id: SPEC-011-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_alerta_derivado_na_hora_sem_estado tests/db/test_alertas.py::test_derivado_na_hora_sem_estado tests/db/test_migracao_0012.py::test_nenhuma_tabela_nova_e_leitura_funciona_depois_de_subir"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_alerta_derivado_na_hora_sem_estado"
+      - "tests/db/test_alertas.py::test_derivado_na_hora_sem_estado"
+      - "tests/db/test_migracao_0012.py::test_nenhuma_tabela_nova_e_leitura_funciona_depois_de_subir"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-8.log"
+  SPEC-011-AC-9:
+    id: SPEC-011-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_alertas.py::test_isolamento_entre_usuarios tests/backend/test_alertas.py::test_hoje_e_user_id_do_cliente_sao_ignorados tests/db/test_alertas.py::test_isolamento_por_user_id"
+    test_paths:
+      - "tests/backend/test_alertas.py::test_isolamento_entre_usuarios"
+      - "tests/backend/test_alertas.py::test_hoje_e_user_id_do_cliente_sao_ignorados"
+      - "tests/db/test_alertas.py::test_isolamento_por_user_id"
+    exit_code: 0
+    log_path: "logs/17/SPEC-011-AC-9.log"

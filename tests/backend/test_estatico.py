@@ -85,6 +85,7 @@ def test_contrato_so_tem_rotas_da_api_e_nao_a_da_spa(cliente_spa: TestClient) ->
         "/api/recorrentes/{recorrente_id}/ocorrencias/{mes}/vinculo",
         "/api/r2",
         "/api/r2/horizonte",
+        "/api/alertas",
     }
 
 

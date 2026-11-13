@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from backend.deps import Conexao, Sessao
 from backend.dinheiro import texto_dinheiro
-from backend.erros_banco import regras_do_banco
+from backend.erros_banco import mes_valido, regras_do_banco
 from backend.services import gasto_real as svc
 
 router = APIRouter(tags=["gasto_real"])
@@ -33,7 +33,7 @@ MesParam = Annotated[
 
 
 def _mes(mes: str | None, hoje: date) -> str:
-    return mes if mes is not None else hoje.strftime("%Y-%m")
+    return mes_valido(mes) if mes is not None else hoje.strftime("%Y-%m")
 
 
 class GastoContaSaida(BaseModel):
