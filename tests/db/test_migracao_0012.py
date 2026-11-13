@@ -32,7 +32,7 @@ def _revisao(url: str) -> str:
 
 def test_downgrade_remove_a_funcao_e_sobe_de_novo(esquema: str) -> None:
     cfg = Config(str(RAIZ / "alembic.ini"))
-    assert _revisao(esquema) == "0012"
+    assert _revisao(esquema) == "0013"
     assert _funcao_existe(esquema)
     try:
         command.downgrade(cfg, "0011")
@@ -40,7 +40,7 @@ def test_downgrade_remove_a_funcao_e_sobe_de_novo(esquema: str) -> None:
         assert not _funcao_existe(esquema)
     finally:
         command.upgrade(cfg, "head")
-    assert _revisao(esquema) == "0012"
+    assert _revisao(esquema) == "0013"
     assert _funcao_existe(esquema)
 
 

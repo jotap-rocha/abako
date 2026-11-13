@@ -28,6 +28,8 @@ class Dados:
     parcelas: int | None = None
     # Compra a crédito de terceiro (100% da pessoa) ou repasse (obrigatória); o banco confere.
     pessoa_id: int | None = None
+    # Despesa na conta do VR: trabalho | pessoal (obrigatório lá, proibido fora; o banco confere).
+    bolso: str | None = None
 
 
 @dataclass(frozen=True)
@@ -49,6 +51,8 @@ class Lancamento:
     estorno_credito: Decimal | None = None
     # Compra de terceiro ou repasse: a pessoa (o nome vem de /pessoas, nunca daqui).
     pessoa_id: int | None = None
+    # Só na despesa do VR (ADR 052), da versão vigente.
+    bolso: str | None = None
 
 
 @dataclass(frozen=True)
@@ -79,22 +83,26 @@ def hash_corpo(dados: Dados) -> str:
     }
     if dados.pessoa_id is not None:  # ausente quando nula: o hash antigo continua valendo
         canonico["pessoa_id"] = dados.pessoa_id
+    if dados.bolso is not None:  # idem: sem bolso, o hash antigo continua valendo
+        canonico["bolso"] = dados.bolso
     texto = json.dumps(canonico, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(texto.encode("utf-8")).hexdigest()
 
 
 _SELECT = (
-    "SELECT transacao_id, versao, tipo, data_transacao, valor, conta_id, conta_destino_id, "
-    "bruto, imposto, descricao, parcelas, competencia, estorno_de, estorno_credito, "
-    "pessoa_id "
-    "FROM lancamento_vigente WHERE user_id = %s"
+    "SELECT l.transacao_id, l.versao, l.tipo, l.data_transacao, l.valor, l.conta_id, "
+    "l.conta_destino_id, l.bruto, l.imposto, l.descricao, l.parcelas, l.competencia, "
+    "l.estorno_de, l.estorno_credito, l.pessoa_id, b.bolso "
+    "FROM lancamento_vigente l "
+    "LEFT JOIN vale_bolso b ON b.user_id = l.user_id AND b.transacao_id = l.transacao_id "
+    "AND b.versao = l.versao WHERE l.user_id = %s"
 )
 
 
 async def obter(
     conn: psycopg.AsyncConnection, user_id: int, transacao_id: int
 ) -> Lancamento | None:
-    cur = await conn.execute(_SELECT + " AND transacao_id = %s", (user_id, transacao_id))
+    cur = await conn.execute(_SELECT + " AND l.transacao_id = %s", (user_id, transacao_id))
     linha = await cur.fetchone()
     return Lancamento(*linha) if linha else None
 
@@ -111,15 +119,15 @@ async def listar(
     sql = _SELECT
     params: list[object] = [user_id]
     if conta_id is not None:
-        sql += " AND (conta_id = %s OR conta_destino_id = %s)"
+        sql += " AND (l.conta_id = %s OR l.conta_destino_id = %s)"
         params += [conta_id, conta_id]
     if de is not None:
-        sql += " AND data_transacao >= %s"
+        sql += " AND l.data_transacao >= %s"
         params.append(de)
     if ate is not None:
-        sql += " AND data_transacao <= %s"
+        sql += " AND l.data_transacao <= %s"
         params.append(ate)
-    sql += " ORDER BY data_transacao DESC, transacao_id DESC LIMIT %s"
+    sql += " ORDER BY l.data_transacao DESC, l.transacao_id DESC LIMIT %s"
     params.append(limite)
     cur = await conn.execute(sql, params)
     return [Lancamento(*linha) for linha in await cur.fetchall()]
@@ -140,7 +148,7 @@ async def gravar(
     """
     cur = await conn.execute(
         "SELECT transacao_id, criado FROM lancamento_gravar("
-        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             user_id,
             transacao_id,
@@ -157,6 +165,7 @@ async def gravar(
             hash_corpo(dados) if chave is not None else None,
             dados.parcelas,
             dados.pessoa_id,
+            dados.bolso,
         ),
     )
     linha = await cur.fetchone()

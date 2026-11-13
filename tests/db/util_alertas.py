@@ -37,6 +37,11 @@ COLUNAS = (
     "saldo_derivado",
     "divergencia",
     "quantidade",
+    "bolso",
+    "alocacao",
+    "consumo",
+    "resta",
+    "mes",
 )
 HOJE = "2026-05-10"
 

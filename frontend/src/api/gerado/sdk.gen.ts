@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AlertasListarData, AlertasListarResponses, AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, GastoRealGastoRealData, GastoRealGastoRealErrors, GastoRealGastoRealResponses, GastoRealReceitaData, GastoRealReceitaErrors, GastoRealReceitaResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosEstornarData, LancamentosEstornarErrors, LancamentosEstornarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, PessoasAReceberDaPessoaData, PessoasAReceberDaPessoaErrors, PessoasAReceberDaPessoaResponses, PessoasAReceberData, PessoasAReceberResponses, PessoasCriarData, PessoasCriarErrors, PessoasCriarResponses, PessoasExcluirData, PessoasExcluirErrors, PessoasExcluirResponses, PessoasListarData, PessoasListarResponses, PessoasObterData, PessoasObterErrors, PessoasObterResponses, PessoasRenomearData, PessoasRenomearErrors, PessoasRenomearResponses, R2GravarHorizonteData, R2GravarHorizonteErrors, R2GravarHorizonteResponses, R2ListarHorizontesData, R2ListarHorizontesResponses, R2SituacaoData, R2SituacaoResponses, RecorrentesCriarData, RecorrentesCriarErrors, RecorrentesCriarResponses, RecorrentesDesvincularData, RecorrentesDesvincularErrors, RecorrentesDesvincularResponses, RecorrentesEditarData, RecorrentesEditarErrors, RecorrentesEditarResponses, RecorrentesExcluirData, RecorrentesExcluirErrors, RecorrentesExcluirResponses, RecorrentesListarData, RecorrentesListarResponses, RecorrentesObterData, RecorrentesObterErrors, RecorrentesObterResponses, RecorrentesOcorrenciasData, RecorrentesOcorrenciasErrors, RecorrentesOcorrenciasResponses, RecorrentesVincularData, RecorrentesVincularErrors, RecorrentesVincularResponses, ReservaGravarParametrosData, ReservaGravarParametrosErrors, ReservaGravarParametrosResponses, ReservaListarParametrosData, ReservaListarParametrosResponses, ReservaSituacaoData, ReservaSituacaoResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses, VencimentosGravarVencimentoData, VencimentosGravarVencimentoErrors, VencimentosGravarVencimentoResponses, VencimentosListarVencimentosData, VencimentosListarVencimentosErrors, VencimentosListarVencimentosResponses } from './types.gen';
+import type { AlertasListarData, AlertasListarResponses, AuthEuData, AuthEuResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, CartoesFaturaData, CartoesFaturaErrors, CartoesFaturaResponses, CartoesListarFechamentosData, CartoesListarFechamentosErrors, CartoesListarFechamentosResponses, CartoesRegistrarFechamentoData, CartoesRegistrarFechamentoErrors, CartoesRegistrarFechamentoResponses, ContasCriarData, ContasCriarErrors, ContasCriarResponses, ContasEditarData, ContasEditarErrors, ContasEditarResponses, ContasListarData, ContasListarResponses, ContasObterData, ContasObterErrors, ContasObterResponses, GastoRealGastoRealData, GastoRealGastoRealErrors, GastoRealGastoRealResponses, GastoRealReceitaData, GastoRealReceitaErrors, GastoRealReceitaResponses, LancamentosCriarData, LancamentosCriarErrors, LancamentosCriarResponses, LancamentosEditarData, LancamentosEditarErrors, LancamentosEditarResponses, LancamentosEstornarData, LancamentosEstornarErrors, LancamentosEstornarResponses, LancamentosExcluirData, LancamentosExcluirErrors, LancamentosExcluirResponses, LancamentosListarData, LancamentosListarErrors, LancamentosListarResponses, LancamentosObterData, LancamentosObterErrors, LancamentosObterResponses, LinhasCreditoCriarData, LinhasCreditoCriarErrors, LinhasCreditoCriarResponses, LinhasCreditoEditarData, LinhasCreditoEditarErrors, LinhasCreditoEditarResponses, LinhasCreditoLimiteData, LinhasCreditoLimiteErrors, LinhasCreditoLimiteResponses, LinhasCreditoListarData, LinhasCreditoListarResponses, PessoasAReceberDaPessoaData, PessoasAReceberDaPessoaErrors, PessoasAReceberDaPessoaResponses, PessoasAReceberData, PessoasAReceberResponses, PessoasCriarData, PessoasCriarErrors, PessoasCriarResponses, PessoasExcluirData, PessoasExcluirErrors, PessoasExcluirResponses, PessoasListarData, PessoasListarResponses, PessoasObterData, PessoasObterErrors, PessoasObterResponses, PessoasRenomearData, PessoasRenomearErrors, PessoasRenomearResponses, R2GravarHorizonteData, R2GravarHorizonteErrors, R2GravarHorizonteResponses, R2ListarHorizontesData, R2ListarHorizontesResponses, R2SituacaoData, R2SituacaoResponses, RecorrentesCriarData, RecorrentesCriarErrors, RecorrentesCriarResponses, RecorrentesDesvincularData, RecorrentesDesvincularErrors, RecorrentesDesvincularResponses, RecorrentesEditarData, RecorrentesEditarErrors, RecorrentesEditarResponses, RecorrentesExcluirData, RecorrentesExcluirErrors, RecorrentesExcluirResponses, RecorrentesListarData, RecorrentesListarResponses, RecorrentesObterData, RecorrentesObterErrors, RecorrentesObterResponses, RecorrentesOcorrenciasData, RecorrentesOcorrenciasErrors, RecorrentesOcorrenciasResponses, RecorrentesVincularData, RecorrentesVincularErrors, RecorrentesVincularResponses, ReservaGravarParametrosData, ReservaGravarParametrosErrors, ReservaGravarParametrosResponses, ReservaListarParametrosData, ReservaListarParametrosResponses, ReservaSituacaoData, ReservaSituacaoResponses, SaldosListarData, SaldosListarErrors, SaldosListarResponses, SaldosR4Data, SaldosR4Responses, SaldosRegistrarSnapshotData, SaldosRegistrarSnapshotErrors, SaldosRegistrarSnapshotResponses, ValeBeneficiosData, ValeBeneficiosErrors, ValeBeneficiosResponses, ValeGravarDecisaoData, ValeGravarDecisaoErrors, ValeGravarDecisaoResponses, ValeGravarParametroData, ValeGravarParametroErrors, ValeGravarParametroResponses, ValeListarDecisoesData, ValeListarDecisoesErrors, ValeListarDecisoesResponses, ValeObterParametroData, ValeObterParametroErrors, ValeObterParametroResponses, ValeSituacaoData, ValeSituacaoErrors, ValeSituacaoResponses, VencimentosGravarVencimentoData, VencimentosGravarVencimentoErrors, VencimentosGravarVencimentoResponses, VencimentosListarVencimentosData, VencimentosListarVencimentosErrors, VencimentosListarVencimentosResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -451,3 +451,59 @@ export const reservaGravarParametros = <ThrowOnError extends boolean = false>(op
  * Saldo derivado de cada conta em `em` (padrão: hoje). Não aceita data futura.
  */
 export const saldosListar = <ThrowOnError extends boolean = false>(options?: Options<SaldosListarData, ThrowOnError>): RequestResult<SaldosListarResponses, SaldosListarErrors, ThrowOnError> => (options?.client ?? client).get<SaldosListarResponses, SaldosListarErrors, ThrowOnError>({ url: '/api/saldos', ...options });
+
+/**
+ * Situacao
+ *
+ * Situação do vale no mês, derivada a cada consulta (ADR 052).
+ */
+export const valeSituacao = <ThrowOnError extends boolean = false>(options?: Options<ValeSituacaoData, ThrowOnError>): RequestResult<ValeSituacaoResponses, ValeSituacaoErrors, ThrowOnError> => (options?.client ?? client).get<ValeSituacaoResponses, ValeSituacaoErrors, ThrowOnError>({ url: '/api/vale', ...options });
+
+/**
+ * Beneficios
+ *
+ * Contas de benefício vigentes (VR e VA) com receita e despesa do mês e saldo.
+ */
+export const valeBeneficios = <ThrowOnError extends boolean = false>(options?: Options<ValeBeneficiosData, ThrowOnError>): RequestResult<ValeBeneficiosResponses, ValeBeneficiosErrors, ThrowOnError> => (options?.client ?? client).get<ValeBeneficiosResponses, ValeBeneficiosErrors, ThrowOnError>({ url: '/api/vale/beneficios', ...options });
+
+/**
+ * Listar Decisoes
+ *
+ * Histórico das decisões (todas as versões), do mês mais antigo ao mais novo.
+ */
+export const valeListarDecisoes = <ThrowOnError extends boolean = false>(options?: Options<ValeListarDecisoesData, ThrowOnError>): RequestResult<ValeListarDecisoesResponses, ValeListarDecisoesErrors, ThrowOnError> => (options?.client ?? client).get<ValeListarDecisoesResponses, ValeListarDecisoesErrors, ThrowOnError>({ url: '/api/vale/decisoes', ...options });
+
+/**
+ * Gravar Decisao
+ *
+ * Decide o destino da sobra de um mês encerrado; nunca move saldo (INV-25).
+ */
+export const valeGravarDecisao = <ThrowOnError extends boolean = false>(options: Options<ValeGravarDecisaoData, ThrowOnError>): RequestResult<ValeGravarDecisaoResponses, ValeGravarDecisaoErrors, ThrowOnError> => (options.client ?? client).put<ValeGravarDecisaoResponses, ValeGravarDecisaoErrors, ThrowOnError>({
+    url: '/api/vale/decisoes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Obter Parametro
+ *
+ * Parâmetro vigente no mês (padrão: o corrente); nulo se nenhuma conta é o VR.
+ */
+export const valeObterParametro = <ThrowOnError extends boolean = false>(options?: Options<ValeObterParametroData, ThrowOnError>): RequestResult<ValeObterParametroResponses, ValeObterParametroErrors, ThrowOnError> => (options?.client ?? client).get<ValeObterParametroResponses, ValeObterParametroErrors, ThrowOnError>({ url: '/api/vale/parametro', ...options });
+
+/**
+ * Gravar Parametro
+ *
+ * Marca a conta do VR, a base e o destino padrão a partir de `vigente_desde`; idempotente.
+ */
+export const valeGravarParametro = <ThrowOnError extends boolean = false>(options: Options<ValeGravarParametroData, ThrowOnError>): RequestResult<ValeGravarParametroResponses, ValeGravarParametroErrors, ThrowOnError> => (options.client ?? client).put<ValeGravarParametroResponses, ValeGravarParametroErrors, ThrowOnError>({
+    url: '/api/vale/parametro',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});

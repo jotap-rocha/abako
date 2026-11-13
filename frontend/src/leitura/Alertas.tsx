@@ -2,12 +2,18 @@ import { Link } from "react-router";
 
 import type { AlertaSaida, ContaSaida } from "../api/gerado";
 import { listarContas, obterAlertas } from "../api/leitura";
-import { formatarData } from "../datas";
+import { formatarData, nomeDoMes } from "../datas";
 import { formatarDecimal, formatarMoeda } from "../dinheiro";
 import { EstadoVazio, Pagina } from "../ui/componentes";
 import { Glossario, Termo } from "./Glossario";
 import { Estado } from "./pecas";
-import { ROTA_PARAMETROS, acaoSugerida, rotuloDaSeveridade, rotuloDoNivel } from "./rotulos";
+import {
+  ROTA_PARAMETROS,
+  acaoSugerida,
+  rotuloDaSeveridade,
+  rotuloDoBolso,
+  rotuloDoNivel,
+} from "./rotulos";
 import { juntar, useCarga } from "./useCarga";
 
 const buscarAlertas = () => juntar(obterAlertas(), listarContas());
@@ -35,7 +41,11 @@ export function Alertas() {
               {alertas.itens.map((alerta, indice) => (
                 <li
                   key={`${alerta.codigo}-${alerta.detalhe}-${alerta.r4?.conta_id ?? indice}`}
-                  className="lista-item lista-item-coluna"
+                  className={
+                    alerta.vale === null
+                      ? "lista-item lista-item-coluna"
+                      : "lista-item lista-item-coluna alerta-forte"
+                  }
                 >
                   <ItemDeAlerta alerta={alerta} contas={contas} />
                 </li>
@@ -44,7 +54,20 @@ export function Alertas() {
           )
         }
       </Estado>
-      <Glossario termos={["nivel_reserva", "sobra", "horizonte", "snapshot", "divergencia"]} />
+      <Glossario
+        termos={[
+          "nivel_reserva",
+          "sobra",
+          "horizonte",
+          "snapshot",
+          "divergencia",
+          "vale",
+          "bolso",
+          "resta",
+          "sobra_vale",
+          "estouro",
+        ]}
+      />
     </Pagina>
   );
 }
@@ -100,6 +123,17 @@ export function ItemDeAlerta({ alerta, contas }: { alerta: AlertaSaida; contas: 
           {formatarMoeda(alerta.r4.valor_snapshot)} (<Termo id="divergencia">diferença</Termo>{" "}
           {formatarMoeda(alerta.r4.divergencia)}). Snapshots divergentes na conta:{" "}
           {alerta.r4.quantidade}.
+        </span>
+      )}
+      {alerta.vale !== null && (
+        <span className="texto-suave">
+          Bolso {rotuloDoBolso(alerta.vale.bolso)} em {nomeDoMes(alerta.vale.mes.slice(0, 7))}:
+          alocação {formatarMoeda(alerta.vale.alocacao)}, consumo{" "}
+          {formatarMoeda(alerta.vale.consumo)}, <Termo id="resta">resta</Termo>{" "}
+          {formatarMoeda(alerta.vale.resta)} (<Termo id="estouro">estouro</Termo>).{" "}
+          <Link className="link" to="/vale">
+            Ver o vale
+          </Link>
         </span>
       )}
       {acao !== null && <span className="texto-suave">O que fazer: {acao}</span>}

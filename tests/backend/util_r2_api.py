@@ -14,6 +14,7 @@ from backend.routers import alertas as router_alertas
 from backend.routers import cartoes as router_cartoes
 from backend.routers import r2 as router_r2
 from backend.routers import recorrentes as router_recorrentes
+from backend.routers import vale as router_vale
 from tests.backend.conftest import ORIGEM, Usuario, logar
 
 _contador = itertools.count(1)
@@ -36,6 +37,7 @@ def hoje_em(client: TestClient, hoje: str) -> Iterator[None]:
     app.dependency_overrides[router_alertas.hoje_civil] = lambda: fixa
     app.dependency_overrides[router_cartoes.hoje_civil] = lambda: fixa
     app.dependency_overrides[router_recorrentes.hoje_civil] = lambda: fixa
+    app.dependency_overrides[router_vale.hoje_civil] = lambda: fixa
     try:
         yield
     finally:

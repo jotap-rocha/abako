@@ -625,7 +625,7 @@ FUNCOES_DO_APP = (
     "fatura_resumo(bigint, bigint, text)",
     "fatura_itens(bigint, bigint, text)",
     "lancamento_gravar(bigint, bigint, integer, text, date, numeric, bigint, bigint, numeric, "
-    "numeric, text, text, text, integer, bigint)",
+    "numeric, text, text, text, integer, bigint, text)",
 )
 
 

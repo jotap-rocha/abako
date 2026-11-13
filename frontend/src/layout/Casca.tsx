@@ -14,6 +14,7 @@ import {
   IconeReserva,
   IconeSair,
   IconeSobra,
+  IconeVale,
 } from "../ui/icones";
 
 type ItemMenu = { para: string; texto: string; icone: ReactNode };
@@ -26,6 +27,7 @@ const MENU: ItemMenu[] = [
   { para: "/gasto-real", texto: "Gasto do mês", icone: <IconeGasto /> },
   { para: "/reserva", texto: "Reserva", icone: <IconeReserva /> },
   { para: "/sobra", texto: "Sobra (R2)", icone: <IconeSobra /> },
+  { para: "/vale", texto: "Vale", icone: <IconeVale /> },
   { para: "/alertas", texto: "Alertas", icone: <IconeAlertas /> },
   { para: "/pessoas", texto: "Pessoas", icone: <IconePessoas /> },
   { para: "/recorrentes", texto: "Recorrentes", icone: <IconeRecorrentes /> },

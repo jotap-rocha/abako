@@ -4,10 +4,12 @@ import { useOutletContext } from "react-router";
 import type { LancamentoSaida, PessoaSaida, SaldoSaida } from "../api/gerado";
 import { excluirLancamento, listarLancamentos } from "../api/lancamentos";
 import { listarPessoas } from "../api/leitura";
+import { obterParametroVale } from "../api/vale";
 import { listarSaldos } from "../api/saldos";
 import { formatarData } from "../datas";
 import { formatarMoeda } from "../dinheiro";
 import type { ContextoCasca } from "../layout/Casca";
+import { rotuloDoBolso } from "../leitura/rotulos";
 import { Estornar } from "../estorno/Estornar";
 import { Cartao, Carregando, EstadoVazio, MensagemErro, Pagina } from "../ui/componentes";
 import { Formulario } from "./Formulario";
@@ -23,6 +25,10 @@ type Estado =
       pessoas: PessoaSaida[];
       /** A lista de pessoas não veio: compra de terceiro e repasse ficam sem opções até recarregar. */
       pessoasIndisponiveis: boolean;
+      /** Conta do VR no mês corrente (nula se nenhuma ou se a leitura falhou: o banco decide). */
+      contaVrId: number | null;
+      /** Nenhum VR marcado (parâmetro nulo): conta de benefício aceita bolso opcional. */
+      semVr: boolean;
     };
 
 /** Lançamento criado por um estorno (liga à compra estornada): não se edita nem se exclui. */
@@ -55,16 +61,18 @@ export function Lancamentos() {
     async (silencioso = false) => {
       const pedido = ++ultimoPedido.current;
       if (!silencioso) setEstado({ tipo: "carregando" });
-      const [contas, lancamentos, pessoas] = await Promise.all([
+      const [contas, lancamentos, pessoas, vale] = await Promise.all([
         listarSaldos(),
         listarLancamentos(),
         listarPessoas(),
+        obterParametroVale(),
       ]);
       if (pedido !== ultimoPedido.current) return;
       if (
         contas.tipo === "sessao_expirada" ||
         lancamentos.tipo === "sessao_expirada" ||
-        pessoas.tipo === "sessao_expirada"
+        pessoas.tipo === "sessao_expirada" ||
+        vale.tipo === "sessao_expirada"
       ) {
         aoSessaoExpirar();
       } else if (contas.tipo === "erro" || lancamentos.tipo === "erro") {
@@ -78,6 +86,8 @@ export function Lancamentos() {
           lancamentos: lancamentos.lancamentos,
           pessoas: pessoas.tipo === "ok" ? pessoas.dados : [],
           pessoasIndisponiveis: pessoas.tipo !== "ok",
+          contaVrId: vale.tipo === "ok" ? (vale.dados?.conta_id ?? null) : null,
+          semVr: vale.tipo === "ok" && vale.dados === null,
         });
       }
     },
@@ -179,6 +189,8 @@ export function Lancamentos() {
           <Formulario
             contas={estado.contas}
             pessoas={estado.pessoas}
+            contaVrId={estado.contaVrId}
+            semVr={estado.semVr}
             aoSalvar={atualizar}
             aoSessaoExpirar={aoSessaoExpirar}
           />
@@ -226,6 +238,7 @@ export function Lancamentos() {
                     ` · ${l.tipo === "repasse" ? "repasse de" : "compra de"} ${nomeDaPessoa(l.pessoa_id)}`}
                   {l.estorno_credito != null &&
                     ` · crédito na fatura ${formatarMoeda(l.estorno_credito)}`}
+                  {l.bolso != null && ` · bolso ${rotuloDoBolso(l.bolso)}`}
                   {l.descricao !== null && ` · ${l.descricao}`}
                 </span>
                 {editando?.transacao_id !== l.transacao_id &&
@@ -307,6 +320,8 @@ export function Lancamentos() {
                   <Formulario
                     contas={estado.contas}
                     pessoas={estado.pessoas}
+                    contaVrId={estado.contaVrId}
+                    semVr={estado.semVr}
                     edicao={editando}
                     aoSalvar={() => {
                       fechar(l, "editar");

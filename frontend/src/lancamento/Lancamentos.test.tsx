@@ -9,16 +9,19 @@ import * as api from "../api/lancamentos";
 import * as leitura from "../api/leitura";
 import * as saldos from "../api/saldos";
 import * as sessao from "../api/sessao";
+import * as vale from "../api/vale";
 import { CONTAS } from "./contasDeTeste";
 
 vi.mock("../api/sessao");
 vi.mock("../api/saldos");
 vi.mock("../api/lancamentos");
 vi.mock("../api/leitura");
+vi.mock("../api/vale");
 const apiSessao = vi.mocked(sessao);
 const apiSaldos = vi.mocked(saldos);
 const apiLanc = vi.mocked(api);
 const apiLeitura = vi.mocked(leitura);
+const apiVale = vi.mocked(vale);
 
 const L1: LancamentoSaida = {
   transacao_id: 10,
@@ -43,6 +46,7 @@ function renderizar() {
 
 beforeEach(() => {
   apiSessao.recuperarSessao.mockResolvedValue(true);
+  apiVale.obterParametroVale.mockResolvedValue({ tipo: "ok", dados: null });
   apiSaldos.listarSaldos.mockResolvedValue({ tipo: "ok", saldos: CONTAS });
   apiLeitura.listarPessoas.mockResolvedValue({ tipo: "ok", dados: [] });
   apiLanc.listarLancamentos.mockResolvedValue({ tipo: "ok", lancamentos: [L1] });

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
+import type { AlertaSaida } from "../api/gerado";
 import { type Leitura, obterAlertas, obterGastoReal, obterR2, obterReceita, obterReserva } from "../api/leitura";
 import { mesAtual, nomeDoMes } from "../datas";
 import { formatarDecimal, formatarMoeda } from "../dinheiro";
@@ -39,6 +40,14 @@ function CartaoDeLeitura<T>({ titulo, buscar, textoErro, children }: CartaoProps
       </Estado>
     </Cartao>
   );
+}
+
+/**
+ * O vale só aparece na sua página (ADR 023): o alerta R5 e qualquer item com dados do vale ficam
+ * de fora do resumo do Início. É só escolher o que mostrar; a lista e o texto vêm da API.
+ */
+function semVale(itens: AlertaSaida[]): AlertaSaida[] {
+  return itens.filter((a) => a.codigo !== "R5" && a.vale === null);
 }
 
 /**
@@ -114,22 +123,28 @@ export function Inicio() {
         buscar={obterAlertas}
         textoErro="Não foi possível carregar os alertas."
       >
-        {(alertas) =>
-          alertas.itens.length === 0 ? (
-            <p className="texto-suave">Nenhum alerta no momento.</p>
-          ) : (
+        {(alertas) => {
+          const visiveis = semVale(alertas.itens);
+          // Texto neutro: o filtro pode ter escondido itens, então a tela não afirma que não há alertas.
+          const filtrou = visiveis.length < alertas.itens.length;
+          return (
             <>
-              <ul className="lista-simples" aria-label="Alertas em destaque">
-                {alertas.itens.map((a, i) => (
-                  <li key={`${a.codigo}-${a.detalhe}-${i}`}>{a.mensagem}</li>
-                ))}
-              </ul>
+              {visiveis.length === 0 ? (
+                <p className="texto-suave">Nenhum alerta neste resumo.</p>
+              ) : (
+                <ul className="lista-simples" aria-label="Alertas em destaque">
+                  {visiveis.map((a, i) => (
+                    <li key={`${a.codigo}-${a.detalhe}-${i}`}>{a.mensagem}</li>
+                  ))}
+                </ul>
+              )}
+              {filtrou && <p className="texto-suave">Há outros alertas.</p>}
               <Link className="link" to="/alertas">
-                Ver os alertas
+                {filtrou ? "Ver os alertas" : "Ver todos os alertas"}
               </Link>
             </>
-          )
-        }
+          );
+        }}
       </CartaoDeLeitura>
       <p className="texto-suave">
         Saldos de cada conta e cadastro de contas ficam em{" "}

@@ -720,6 +720,170 @@ fixtures:
       receita_total: "6000.00"
       tela_principal_mostra: "5000.00"
 
+  # ---- SPEC-013 (ADR 052): valores calculados à mão. Base de trabalho 200.00 em todas. ----
+  - id: F-VALE-06
+    invariantes: [INV-21, INV-25]
+    descricao: >-
+      Crédito menor que a base, crédito igual à base e mês sem crédito. Alocação inicial:
+      trabalho = min(base, crédito); pessoal = max(crédito − base, 0). Mês sem crédito (nenhuma
+      receita no VR no mês) tem estado sem_credito e não dispara R5, mesmo com resta negativo.
+    casos:
+      - nome: credito_menor_que_a_base
+        entrada: {credito: "150.00", base_trabalho: "200.00", consumo: {trabalho: "100.00", pessoal: "0.00"}}
+        esperado:
+          estado: ok
+          alocacao_inicial: {trabalho: "150.00", pessoal: "0.00"}
+          resta: {trabalho: "50.00", pessoal: "0.00"}
+          sobra: "50.00"
+      - nome: credito_igual_a_base
+        entrada: {credito: "200.00", base_trabalho: "200.00", consumo: {trabalho: "0.00", pessoal: "0.00"}}
+        esperado:
+          estado: ok
+          alocacao_inicial: {trabalho: "200.00", pessoal: "0.00"}
+          resta: {trabalho: "200.00", pessoal: "0.00"}
+          sobra: "200.00"
+      - nome: mes_sem_credito
+        entrada: {credito: "0.00", base_trabalho: "200.00", consumo: {trabalho: "0.00", pessoal: "30.00"}}
+        esperado:
+          estado: sem_credito
+          alocacao_inicial: {trabalho: "0.00", pessoal: "0.00"}
+          resta: {trabalho: "0.00", pessoal: "-30.00"}
+          sobra: "0.00"
+          r5: false
+
+  - id: F-VALE-07
+    invariantes: [INV-21, INV-25]
+    descricao: >-
+      Encadeamento de quatro meses (2025-01 a 2025-04), crédito 1000.00 em cada um, com decisões
+      diferentes. O ajuste de um mês é só a sobra do mês anterior: nada acumula além disso.
+      Mês 1: alocação 200/800, consumo 150/700, resta 50/100, sobra 150, decisão pessoal.
+      Mês 2: ajuste pessoal +150, alocação 200/950, consumo 200/900, resta 0/50, sobra 50, decisão
+      trabalho. Mês 3: ajuste trabalho +50 (a sobra do mês 2, não a do 1), alocação 250/800,
+      consumo 260/600, resta −10/200, sobra 200 (o estouro de trabalho não é compensado), decisão
+      nenhum. Mês 4: ajuste 0, alocação 200/800, sem consumo, resta 200/800, sobra 1000.
+    entrada:
+      base_trabalho: "200.00"
+      meses:
+        "2025-01": {credito: "1000.00", consumo: {trabalho: "150.00", pessoal: "700.00"}, decisao: pessoal}
+        "2025-02": {credito: "1000.00", consumo: {trabalho: "200.00", pessoal: "900.00"}, decisao: trabalho}
+        "2025-03": {credito: "1000.00", consumo: {trabalho: "260.00", pessoal: "600.00"}, decisao: nenhum}
+        "2025-04": {credito: "1000.00", consumo: {trabalho: "0.00", pessoal: "0.00"}}
+    esperado:
+      "2025-01": {ajuste: {trabalho: "0.00", pessoal: "0.00"}, alocacao: {trabalho: "200.00", pessoal: "800.00"}, resta: {trabalho: "50.00", pessoal: "100.00"}, sobra: "150.00"}
+      "2025-02": {ajuste: {trabalho: "0.00", pessoal: "150.00"}, alocacao: {trabalho: "200.00", pessoal: "950.00"}, resta: {trabalho: "0.00", pessoal: "50.00"}, sobra: "50.00"}
+      "2025-03": {ajuste: {trabalho: "50.00", pessoal: "0.00"}, alocacao: {trabalho: "250.00", pessoal: "800.00"}, resta: {trabalho: "-10.00", pessoal: "200.00"}, sobra: "200.00"}
+      "2025-04": {ajuste: {trabalho: "0.00", pessoal: "0.00"}, alocacao: {trabalho: "200.00", pessoal: "800.00"}, resta: {trabalho: "200.00", pessoal: "800.00"}, sobra: "1000.00"}
+
+  - id: F-VALE-08
+    invariantes: [INV-25]
+    descricao: >-
+      Estouro nos dois bolsos no mês corrente (R5 duplo). Crédito 1000.00, alocação 200/800,
+      consumo 250/850: resta −50/−50; sobra 0.00 (nada a compensar). Dois alertas R5, ordenados por
+      detalhe (vale_pessoal_estourado antes de vale_trabalho_estourado), severidade alta.
+    entrada:
+      credito: "1000.00"
+      base_trabalho: "200.00"
+      consumo: {trabalho: "250.00", pessoal: "850.00"}
+    esperado:
+      resta: {trabalho: "-50.00", pessoal: "-50.00"}
+      sobra: "0.00"
+      alertas:
+        - {codigo: R5, tipo: alerta, severidade: alta, detalhe: vale_pessoal_estourado, bolso: pessoal, alocacao: "800.00", consumo: "850.00", resta: "-50.00"}
+        - {codigo: R5, tipo: alerta, severidade: alta, detalhe: vale_trabalho_estourado, bolso: trabalho, alocacao: "200.00", consumo: "250.00", resta: "-50.00"}
+
+  - id: F-VALE-09
+    invariantes: [INV-20, INV-22, INV-24]
+    descricao: >-
+      Receita total com o VA além do VR, no mês 2025-04. Caixa: receita 5000.00. VR: snapshot
+      100.00 em 2025-03-31, receita 1000.00, despesas 850.00 (bolsos 150/700; o total 850 = 150 + 700).
+      VA (sem bolsos): snapshot 50.00 em 2025-03-31, receita 400.00, despesa 120.00. Receita de
+      benefício = 1000 + 400 = 1400.00; receita total = 5000 + 1400 = 6400.00; a tela principal
+      mostra só 5000.00. Saldo VR = 100 + 1000 − 850 = 250.00; saldo VA = 50 + 400 − 120 = 330.00.
+      As duas contas ficam fora do gasto real (0.00 sem outras despesas).
+    entrada:
+      hoje: "2025-04-30"
+      receita_caixa: "5000.00"
+      vr: {snapshot: "100.00", receita: "1000.00", consumo: {trabalho: "150.00", pessoal: "700.00"}}
+      va: {snapshot: "50.00", receita: "400.00", despesa: "120.00"}
+    esperado:
+      receita_caixa: "5000.00"
+      receita_beneficio: "1400.00"
+      receita_total: "6400.00"
+      saldo_vr: "250.00"
+      saldo_va: "330.00"
+      gasto_real: "0.00"
+      tela_principal_mostra: "5000.00"
+
+  - id: F-VALE-10
+    invariantes: [INV-25]
+    descricao: >-
+      Decisão substituída. Mês 2025-01: crédito 1000.00, consumo 150/700, sobra 150.00. O mês 2025-02
+      tem crédito 1000.00. Decisões sucessivas sobre 2025-01: pessoal (versão 1), trabalho (versão 2),
+      nenhum (versão 3). A alocação efetiva de 2025-02 segue só a vigente: após a 1ª, 200/950; após
+      a 2ª, 350/800; após a 3ª, 200/800. O histórico guarda as 3 versões; a vigente é a 3 (nenhum).
+      O saldo derivado do VR é o mesmo antes e depois de cada decisão (variação 0.00).
+    entrada:
+      base_trabalho: "200.00"
+      mes_1: {credito: "1000.00", consumo: {trabalho: "150.00", pessoal: "700.00"}}
+      mes_2: {credito: "1000.00"}
+      decisoes_sobre_mes_1: [pessoal, trabalho, nenhum]
+    esperado:
+      sobra_mes_1: "150.00"
+      alocacao_mes_2: [{trabalho: "200.00", pessoal: "950.00"}, {trabalho: "350.00", pessoal: "800.00"}, {trabalho: "200.00", pessoal: "800.00"}]
+      versoes: 3
+      variacao_saldo_por_decisao: "0.00"
+
+  - id: F-VALE-11
+    invariantes: [INV-25]
+    descricao: >-
+      Mês corrente x encerrado, base 200.00. 2025-05: crédito 1000.00, consumo 250/700, resta
+      −50/100, sobra 100.00. 2025-06: crédito 1000.00, consumo 220/0, alocação 200/800, resta
+      −20/800, sobra 800.00. 2025-07: nenhuma receita (sem crédito), sem consumo. R5 olha só o mês
+      corrente de hoje. Hoje 2025-05-20: alerta de trabalho (−50.00); mês 2025-05 não encerrado. Hoje
+      2025-06-15: alerta de trabalho (−20.00) do mês 2025-06; o estouro de 2025-05 não alerta mais
+      (mês encerrado). Hoje 2025-07-05: nenhum alerta (sem crédito; o estouro de junho é passado).
+      Só se decide a sobra de mês encerrado: o mês civil atual e os futuros são recusados.
+    entrada:
+      base_trabalho: "200.00"
+      meses:
+        "2025-05": {credito: "1000.00", consumo: {trabalho: "250.00", pessoal: "700.00"}}
+        "2025-06": {credito: "1000.00", consumo: {trabalho: "220.00", pessoal: "0.00"}}
+    esperado:
+      "hoje_2025-05-20": {alertas: [{detalhe: vale_trabalho_estourado, resta: "-50.00"}], mes_encerrado: false}
+      "hoje_2025-06-15": {alertas: [{detalhe: vale_trabalho_estourado, resta: "-20.00"}], mes_encerrado_2025_05: true}
+      "hoje_2025-07-05": {alertas: []}
+
+  - id: F-VALE-12
+    invariantes: [INV-21, INV-25]
+    descricao: >-
+      Conta de benefício com histórico que vira VR (ADR 052, bolso antes de marcar). Base 200.00.
+      Caso 1: nenhum VR marcado; em 2025-05 a conta recebe 1000.00 (dia 5) e tem as despesas
+      250.00 (dia 10) e 700.00 (dia 11), lançadas sem bolso. Marcá-la como VR desde 2025-05-01 é
+      recusado (duas despesas sem bolso). Como não há VR marcado, as despesas aceitam bolso:
+      250.00 trabalho e 700.00 pessoal; agora a marcação passa. Alocação 200/800, consumo
+      250/700, resta −50/100, sobra 100.00; R5 de trabalho (−50.00) com hoje 2025-05-20.
+      Caso 2 (vigências intercaladas): a conta B é o VR desde 2025-03-01. A conta A tem uma despesa
+      em 2025-02-10 (sem VR então) e outra em 2025-06-10 (B é o VR), ambas sem bolso. Marcar A
+      como VR desde 2025-02-01 é recusado só por causa de fevereiro; depois de dar o bolso
+      trabalho à despesa de fevereiro (30.00) a marcação passa, e a de junho (mês em que B é o VR)
+      não conta. Fevereiro: conta A, consumo 30.00/0.00; março em diante: conta B.
+    caso_1:
+      base_trabalho: "200.00"
+      credito: "1000.00"
+      despesas: [{valor: "250.00", bolso: trabalho}, {valor: "700.00", bolso: pessoal}]
+      esperado:
+        consumo: {trabalho: "250.00", pessoal: "700.00"}
+        alocacao: {trabalho: "200.00", pessoal: "800.00"}
+        resta: {trabalho: "-50.00", pessoal: "100.00"}
+        sobra: "100.00"
+        r5_trabalho: "-50.00"
+    caso_2:
+      despesa_fev: {valor: "30.00", bolso: trabalho}
+      despesa_jun: {valor: "40.00"}
+      esperado:
+        fev: {conta: A, consumo: {trabalho: "30.00", pessoal: "0.00"}}
+        mar: {conta: B}
+
   - id: F-REND-01
     invariantes: [INV-36, INV-04]
     descricao: >-

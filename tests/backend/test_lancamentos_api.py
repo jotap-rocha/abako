@@ -88,6 +88,7 @@ def test_ciclo_de_vida_de_um_lancamento(client: TestClient, usuario: Usuario) ->
         "estorno_de": None,
         "estorno_credito": None,
         "pessoa_id": None,
+        "bolso": None,
     }
     tid = criado["transacao_id"]
     assert saldo(client, c, "2026-02-28") == "-80.00"

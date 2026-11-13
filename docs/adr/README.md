@@ -60,3 +60,5 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [049](049-alertas-r1-r2-r4.md) | Alertas R1, R2 e R4: convenções da SPEC-011 | Aceita | 2026-11-12 |
 | [050](050-telas-de-leitura.md) | Telas de leitura: convenções da task 18 (SPEC-012) | Aceita | 2026-11-12 |
 | [051](051-formularios-restantes.md) | Formulários restantes: convenções da task 19 (SPEC-012) | Aceita | 2026-11-12 |
+| [052](052-vale-bolsos-sobra-e-r5.md) | Vale (VR) com bolsos, sobra com decisão e alerta R5: convenções da SPEC-013 | Aceita | 2026-11-13 |
+| [053](053-tela-do-vale.md) | Tela do vale, bolso no formulário e R5 nos alertas: convenções do front da task 20 | Aceita | 2026-11-13 |

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, HTTPException, Path, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -53,6 +53,8 @@ class _Campos(BaseModel):
     parcelas: int | None = Field(default=None, ge=1, le=48)
     # Compra a crédito 100% de uma pessoa, ou a pessoa que repassa (obrigatória no repasse).
     pessoa_id: IdPessoa | None = None
+    # Despesa na conta do VR: obrigatório lá, proibido fora (o banco decide qual é o VR, ADR 052).
+    bolso: Literal["trabalho", "pessoal"] | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -89,6 +91,7 @@ class _Campos(BaseModel):
             descricao=descricao or None,
             parcelas=self.parcelas,
             pessoa_id=self.pessoa_id,
+            bolso=self.bolso,
         )
 
 
@@ -122,6 +125,8 @@ class LancamentoSaida(BaseModel):
     estorno_credito: str | None = None
     # Compra de terceiro ou repasse: a pessoa (o nome vem de /pessoas).
     pessoa_id: int | None = None
+    # Só na despesa da conta do VR: trabalho | pessoal.
+    bolso: str | None = None
 
 
 class EstornoEntrada(BaseModel):
@@ -168,6 +173,7 @@ def _saida(lanc: svc.Lancamento) -> LancamentoSaida:
             None if lanc.estorno_credito is None else texto_dinheiro(lanc.estorno_credito)
         ),
         pessoa_id=lanc.pessoa_id,
+        bolso=lanc.bolso,
     )
 
 

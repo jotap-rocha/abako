@@ -25,6 +25,7 @@ from backend.routers import (
     recorrentes,
     reserva,
     saldos,
+    vale,
 )
 from backend.seguranca import LimitadorLogin
 from backend.settings import Settings, obter_settings
@@ -105,6 +106,7 @@ def criar_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(recorrentes.router, prefix="/api")
     app.include_router(r2.router, prefix="/api")
     app.include_router(alertas.router, prefix="/api")
+    app.include_router(vale.router, prefix="/api")
     app.include_router(r2.router_vencimentos, prefix="/api")
     app.include_router(cartoes.router_linhas, prefix="/api")
     app.include_router(cartoes.router_cartoes, prefix="/api")
