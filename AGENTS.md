@@ -11,7 +11,9 @@ React + TypeScript (PWA, cliente gerado do OpenAPI) · FastAPI · PostgreSQL loc
 
 ## Comandos
 
-- `check` — validação única (lint + tipos + testes + rastreabilidade). A definir na SPEC-001.
+- `check` — validação única (lint + tipos + testes + contratos + rastreabilidade): `.venv\Scripts\python.exe -m scripts.check --com-banco` (fechamento de SPEC: `--com-banco --estrito --spec SPEC-NNN`).
+- Pipeline analítico (manual, recomputo completo): `python -m pipeline [--alvo tst|prd]`; leitura: `python -m pipeline.ler TABELA --usuario N`. `--alvo prd` exige confirmação explícita do dono.
+- Windows: entre no repositório com a letra do drive em maiúsculo (`cd "D:/projetos/abako"`), senão o Vitest falha.
 
 ## Invariantes
 

@@ -3,7 +3,7 @@
 
 # Glossário de domínio — abako
 
-> Derivado do brainstorm e dos ADRs 006–035. Refinar com /grill-with-docs.
+> Derivado do brainstorm e dos ADRs 006–054. Refinar com /grill-with-docs.
 
 ## Domínio
 
@@ -42,6 +42,14 @@ Finanças pessoais de um único usuário (modelo já preparado com `user_id` par
 | Bolso | Divisão do vale (só o de refeição): trabalho / pessoal | envelope | |
 | Base de trabalho | Parâmetro com vigência (inicial R$ 200); pessoal = crédito do mês − base | | |
 | Sobra do vale | Σ max(resta, 0) por bolso, sem compensar estouro; decisão é evento com histórico e não move saldo | | Saldo do vale |
+| Resta (do bolso) | Alocação efetiva do mês − consumo do bolso (trabalho ou pessoal); não acumula entre meses, só pela sobra decidida | saldo do bolso | Saldo da conta do vale |
+| Estouro (do bolso) | Resta negativa de um bolso no mês corrente; dispara o alerta R5 e nunca é compensado com a sobra do outro bolso | | Saldo negativo da conta |
+| Horizonte do R2 | Janela de dias (inicial 10, de 1 a 90, com vigência) em que o R2 olha receitas e compromissos; inclui hoje e hoje + horizonte | | Mês corrente |
+| Aporte mensal | Quanto guardar por mês para a reserva chegar à meta até a data-alvo (opcional); arredonda para cima em centavos | | Rendimento |
+| Vencimento do cartão | Dia de pagamento da fatura, cadastrado por cartão com vigência; maior que o dia de fechamento = mesmo mês da competência, senão o mês seguinte | data de pagamento | Dia de fechamento |
+| Pessoa | Terceiro cadastrado (nome em claro só na sessão do dono, ADR 050); a compra é 100% própria ou 100% de uma pessoa | terceiro cadastrado | Usuário do sistema |
+| Crédito da pessoa | Repasse que passou da dívida da pessoa; aparece separado, e o "a receber" nunca fica negativo | | Dinheiro do usuário |
+| Analítico (pipeline) | Arquivo DuckDB só com agregados, regerado por inteiro de forma manual, fora do repositório, sem nome nem descrição | | Cópia do ledger |
 
 ## Acrônimos e siglas
 
@@ -55,6 +63,7 @@ Finanças pessoais de um único usuário (modelo já preparado com `user_id` par
 | R3 | Alerta de limite (adiado) |
 | R4 | Lista de divergências derivado × snapshot |
 | R5 | Alerta do vale por bolso: dispara quando o `resta` de um bolso (trabalho ou pessoal) fica negativo; o outro bolso não compensa |
+| VR | Vale-refeição: a conta de benefício marcada como VR (com vigência) é a única com bolsos trabalho e pessoal, sobra e R5; o VA é outra conta de benefício, sem bolsos |
 | R6 | Alerta de valores a receber (adiado) |
 | R7 | Alerta de categoria fora do padrão (adiado) |
 | SCD2 | Dimensão de variação lenta tipo 2 (histórico por vigência) |

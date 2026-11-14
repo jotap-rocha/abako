@@ -3,17 +3,17 @@
 
 # abako
 
-Sistema financeiro pessoal, local-first: saldos por conta, gasto real, situação do orçamento (apertado/folgado), reserva e cartões. Decisões: `docs/adr/` (ADRs 006–035). Glossário: `CONTEXT.md`. PRD e plano: `.claude/projetos/abako/`.
+Sistema financeiro pessoal, local-first: saldos por conta, gasto real, situação do orçamento (apertado/folgado), reserva e cartões. Decisões: `docs/adr/` (ADRs 006–054). Glossário: `CONTEXT.md`. PRD e plano: `.claude/projetos/abako/`.
 
 > Este arquivo é **público** (ADR 022): sem dado pessoal, sem nomes de bancos/produtos reais.
 
 ## Stack
 
-- **Frontend:** React + TypeScript, SPA/PWA (Vite provável), cliente TS **gerado do OpenAPI**. Alvo v1: Chrome desktop, layout responsivo.
+- **Frontend:** React + TypeScript, SPA/PWA (Vite), cliente TS **gerado do OpenAPI**. Alvo v1: Chrome desktop, layout responsivo.
 - **Backend:** FastAPI (Python), autenticação própria (Argon2id, sessão no servidor).
 - **Migrações:** Alembic em SQL puro, em `db/migrations/` (ADR 025).
 - **Banco transacional:** PostgreSQL local em **contêiner dedicado** (Docker Desktop), dois bancos: `prd` e `tst`, mais um banco descartável só para o teste de restauração de backup. Nomes de contêiner/volume via `COMPOSE_PROJECT_NAME` (renomear o projeto = mudar a variável); porta **5433** (nunca 5432). Regras financeiras como **views/funções SQL**.
-- **Analítico:** **DuckDB** em arquivo fisicamente separado, só agregados; pipeline em Python lê o Postgres por papel somente leitura e troca o arquivo atomicamente.
+- **Analítico:** **DuckDB** em arquivo fisicamente separado, só agregados; pipeline em Python lê o Postgres por papel somente leitura e troca o arquivo atomicamente (ADR 054). O arquivo vive **fora do repositório** (`ABAKO_ANALITICO_DIR`) e nunca leva nome nem descrição.
 - **Testes:** pytest, Hypothesis (inclui `RuleBasedStateMachine`), Vitest + React Testing Library, Playwright (poucas jornadas).
 - **Infra:** tudo em `localhost` (Windows 11 + Docker Desktop). CI em GitHub-hosted runners, sem segredos.
 
@@ -24,7 +24,7 @@ backend/     FastAPI (routers finos, services)
 frontend/    React + TypeScript (PWA)
 db/          migrações e views/funções SQL
 pipeline/    transacional → analítico (DuckDB)
-tests/       contracts/, backend, db, e2e
+tests/       contracts/, backend, db, pipeline, e2e
 fixtures/
 scripts/     check, deploy-local, rastreabilidade
 ```
@@ -35,6 +35,8 @@ Versões exatas: definidas na SPEC-001.
 
 - `check` — comando único de validação (ruff + mypy + pytest + contratos + rastreabilidade): `.venv\Scripts\python.exe -m scripts.check`. Todas as etapas rodam e qualquer falha dá exit 1. Testes de banco (marcador `banco`, `tst` real, sem mock) rodam se `127.0.0.1:5433` responder; `--com-banco` exige o banco; `--sem-banco` pula; `--estrito` torna a rastreabilidade estrita. O resumo lista cada etapa (`pytest (banco): PULADO` quando o banco não respondeu) e só imprime `verde` completo se nada foi pulado; com pulo, `verde parcial (banco não rodou)`. **Fechamento de task, CI e DoD usam `--com-banco`; fechamento de SPEC usa `--com-banco --estrito --spec SPEC-NNN`** (o estrito só olha os itens daquela SPEC; quebrados de qualquer SPEC sempre falham). Waiver com `PENDENTE` (maiúsculas) não cobre o item. Revisor só recebe entrega com `check` verde.
 - Rastreabilidade: `python -m scripts.rastreabilidade [--estrito]`. Item sem teste cuja SPEC ainda não foi entregue (`tests/contracts/specs_entregues.yaml`) é **pendente** (aviso); se a SPEC já foi entregue, ou a referência de teste não existe, é **quebrado** (falha). No DoD final, `--estrito` deve retornar vazio. Referência de teste precisa ser `arquivo.py::test_nome` existente e sem skip/xfail. Critério sem teste automático usa `waiver: "humano: <motivo ou link>"` no `criterios.yaml` (sempre listado como `waiver ativo`). SPEC com todas as tasks `done` precisa estar em `specs_entregues.yaml`, senão a rastreabilidade falha (SPEC-001 = tasks 01-04; SPEC-012 = 5 tasks).
+- Pipeline analítico (manual, recomputo completo): `.venv\Scripts\python.exe -m pipeline [--alvo tst|prd]`; leitura do arquivo: `python -m pipeline.ler TABELA --usuario N`. Códigos de saída: 0 ok, 2 recusado (configuração/alvo), 3 trava ocupada, 4 falha. `--alvo prd` exige `ABAKO_CONFIRMA_PRD=sim` e `ABAKO_DB_PIPELINE_URL_PRD`. O papel `abako_pipeline` só executa as 15 leituras da migração 0014.
+- Ambiente (Windows): entre no repositório sempre pelo caminho com a **letra do drive em maiúsculo** (`cd "D:/projetos/abako"`); com `d:` minúsculo o Vitest carrega módulos duplicados e falha. Os relatórios do pytest mascaram `://usuario:senha@` (`tests/conftest.py`). Variáveis de ambiente: ver `.env.example` (só nomes, nunca valores).
 
 ## Invariantes
 
@@ -82,4 +84,4 @@ Prefixo `fin-`. Agentes: `abako-especialista` (contexto de negócio), `fin-front
 
 ## Pendências conhecidas
 
-Formatos de exportação dos bancos, bruto-vs-líquido da reserva, datas de fechamento e semântica de limite dos cartões, disponibilidade do modelo revisor (`.claude/projetos/abako/01-grill.md`).
+Formatos de exportação dos bancos, disponibilidade do modelo revisor (`.claude/projetos/abako/01-grill.md`) e os **dias reais** de fechamento e vencimento de cada cartão (o usuário os cadastra pelo app; nunca no repositório). Bruto-vs-líquido da reserva (ADR 034/047) e a semântica de fechamento e limite dos cartões (ADR 043/044) já estão resolvidos. Dívidas técnicas conhecidas: nome de terceiro em claro só na sessão do dono (exceção do ADR 050); o papel do pipeline ainda lê as tabelas inteiras do ledger e a defesa é de código e teste (ADR 054, item 7).
