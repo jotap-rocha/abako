@@ -765,3 +765,22 @@ p {
 .termo-explicacao[hidden] {
   display: none;
 }
+
+/* ---------- vale ---------- */
+.bolso-estourado {
+  border-color: var(--erro, #b3261e);
+}
+
+.valor-estouro {
+  color: var(--erro, #b3261e);
+}
+
+.etiqueta-forte {
+  color: #fff;
+  background: var(--erro, #b3261e);
+}
+
+.alerta-forte {
+  border-left: 4px solid var(--erro, #b3261e);
+  padding-left: 0.75rem;
+}

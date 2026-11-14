@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 from backend.services import gasto_real as svc_data
 from tests.backend.conftest import Usuario, apagar_usuarios, criar_usuario, logar
 from tests.backend.util_r2_api import Cenario, escrita, hoje_em
+from tests.backend.util_vale_api import marcar_vr, mes_do_vr
 from tests.db.conftest import url_app  # noqa: F401  (fixture)
 from tests.db.util_saldo import fixture
 
@@ -434,3 +435,91 @@ def test_dinheiro_sempre_em_texto(client: TestClient, usuario: Usuario) -> None:
                     achados += 1
                     assert valor is None or isinstance(valor, str), (campo, valor)
     assert achados == 7  # R1: 4 campos; R2: sobra, disponivel e compromissos
+
+
+# ------------------------------------------------------------------ R5 (F-VALE-03, 06, 08, 11)
+
+
+def r5_de(c: Cenario, vr: int, e: dict[str, Any], mes: str) -> None:
+    credito: str = e["credito"] if "credito" in e else e["credito_mes"]  # F-VALE-03
+    mes_do_vr(c, vr, mes, credito, e["consumo"]["trabalho"], e["consumo"]["pessoal"])
+
+
+def test_r5(client: TestClient, usuario: Usuario) -> None:
+    """SPEC-013-AC-5/13 (F-VALE-08): estouro nos dois bolsos dispara dois R5 (alerta, alta),
+    ordenados por detalhe, cada um com o bloco `vale` em texto; os outros blocos ficam nulos."""
+    f = fixture("F-VALE-08")
+    c = Cenario(client, usuario, saldo=None)
+    vr = marcar_vr(c, f["entrada"]["base_trabalho"])
+    r5_de(c, vr, f["entrada"], "2025-06")
+    r5 = de(alertas_em(client, "2025-06-20"), "R5")
+    assert [(i["tipo"], i["severidade"], i["detalhe"]) for i in r5] == [
+        (a["tipo"], a["severidade"], a["detalhe"]) for a in f["esperado"]["alertas"]
+    ]
+    for item, esp in zip(r5, f["esperado"]["alertas"], strict=True):
+        assert item["vale"] == {
+            "conta_id": vr,
+            "bolso": esp["bolso"],
+            "mes": "2025-06",
+            "alocacao": esp["alocacao"],
+            "consumo": esp["consumo"],
+            "resta": esp["resta"],
+        }
+        assert item["reserva"] is None and item["r2"] is None and item["r4"] is None
+        assert not any(ch.isdigit() for ch in item["mensagem"]), item["mensagem"]
+    # nos demais códigos o bloco `vale` é nulo
+    assert all(i["vale"] is None for i in alertas_em(client)["itens"] if i["codigo"] != "R5")
+
+
+def test_r5_sem_compensacao(client: TestClient, usuario: Usuario) -> None:
+    """SPEC-013-AC-5 (F-VALE-03): trabalho estourado (-50) alerta mesmo com pessoal sobrando."""
+    f = fixture("F-VALE-03")
+    c = Cenario(client, usuario, saldo=None)
+    vr = marcar_vr(c, f["entrada"]["base_trabalho"])
+    r5_de(c, vr, f["entrada"], "2025-06")
+    r5 = de(alertas_em(client, "2025-06-20"), "R5")
+    assert [i["detalhe"] for i in r5] == ["vale_trabalho_estourado"]
+    assert r5[0]["vale"]["resta"] == f["esperado"]["resta"]["trabalho"]
+
+
+def test_r5_so_no_mes_corrente(client: TestClient, usuario: Usuario) -> None:
+    """SPEC-013-AC-5 (F-VALE-11): R5 olha só o mês de hoje; o estouro de mês encerrado e o mês
+    sem crédito não alertam."""
+    f = fixture("F-VALE-11")
+    c = Cenario(client, usuario, saldo=None)
+    vr = marcar_vr(c, f["entrada"]["base_trabalho"])
+    for mes, e in f["entrada"]["meses"].items():
+        r5_de(c, vr, e, mes)
+    for hoje, esp in (
+        ("2025-05-20", f["esperado"]["hoje_2025-05-20"]),
+        ("2025-06-15", f["esperado"]["hoje_2025-06-15"]),
+        ("2025-07-05", f["esperado"]["hoje_2025-07-05"]),
+    ):
+        r5 = de(alertas_em(client, hoje), "R5")
+        assert [(i["detalhe"], i["vale"]["resta"]) for i in r5] == [
+            (a["detalhe"], a["resta"]) for a in esp["alertas"]
+        ], hoje
+        assert all(i["vale"]["mes"] == hoje[:7] for i in r5)
+
+
+def test_r5_sem_credito_nao_dispara(client: TestClient, usuario: Usuario) -> None:
+    """SPEC-013-AC-5 (F-VALE-06, mes_sem_credito): resta -30 sem crédito no mês não alerta."""
+    caso = next(c for c in fixture("F-VALE-06")["casos"] if c["nome"] == "mes_sem_credito")
+    c = Cenario(client, usuario, saldo=None)
+    vr = marcar_vr(c, caso["entrada"]["base_trabalho"])
+    r5_de(c, vr, caso["entrada"], "2025-06")
+    assert de(alertas_em(client, "2025-06-20"), "R5") == []
+
+
+def test_r5_isolamento_entre_usuarios(
+    client: TestClient, usuario: Usuario, outro_usuario: Usuario
+) -> None:
+    """SPEC-013-AC-11 (INV-13): o estouro do vale de um usuário não aparece para o outro."""
+    f = fixture("F-VALE-08")
+    c = Cenario(client, usuario, saldo=None)
+    vr = marcar_vr(c, f["entrada"]["base_trabalho"])
+    r5_de(c, vr, f["entrada"], "2025-06")
+    assert len(de(alertas_em(client, "2025-06-20"), "R5")) == 2
+    sair(client, c)
+    Cenario(client, outro_usuario, saldo=None)
+    assert de(alertas_em(client, "2025-06-20"), "R5") == []

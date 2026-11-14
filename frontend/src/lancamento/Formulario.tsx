@@ -26,6 +26,16 @@ type Props = {
   contas: SaldoSaida[];
   /** Pessoas para a compra de terceiro e o repasse (o nome só aparece na tela do dono, ADR 050). */
   pessoas?: PessoaSaida[];
+  /**
+   * Conta do VR (GET /vale/parametro), se houver. Despesa nesta conta pede o bolso. Só decide se
+   * o campo aparece: quem recusa bolso errado é o banco (422), com a mensagem dele.
+   */
+  contaVrId?: number | null;
+  /**
+   * Nenhum VR marcado (GET /vale/parametro devolveu nulo). Despesa em conta de benefício aceita
+   * então o bolso como opcional, para classificar antes de marcar o VR. O banco decide.
+   */
+  semVr?: boolean;
   /** Se vier, o formulário edita este lançamento (nova versão); senão, cria um. */
   edicao?: LancamentoSaida;
   /** Chamado depois de salvar, para a lista buscar os lançamentos de novo no servidor. */
@@ -47,7 +57,15 @@ type Valores = {
   descricao: string;
   parcelas: number;
   pessoaId: number | null;
+  /** Vazio = sem bolso (só vale no modo opcional). */
+  bolso: Bolso | "";
 };
+
+type Bolso = "trabalho" | "pessoal";
+const BOLSOS: { valor: Bolso; rotulo: string }[] = [
+  { valor: "pessoal", rotulo: "Pessoal" },
+  { valor: "trabalho", rotulo: "Trabalho" },
+];
 
 /** "1234.56" da API vira "1234,56" para editar: só troca o separador, sem conta. */
 function paraDigitar(valor: string | null): string {
@@ -67,6 +85,7 @@ function valoresIniciais(contas: SaldoSaida[], edicao?: LancamentoSaida): Valore
       descricao: edicao.descricao ?? "",
       parcelas: edicao.parcelas ?? 1,
       pessoaId: edicao.pessoa_id ?? null,
+      bolso: BOLSOS.find((b) => b.valor === edicao.bolso)?.valor ?? "",
     };
   }
   return {
@@ -80,6 +99,7 @@ function valoresIniciais(contas: SaldoSaida[], edicao?: LancamentoSaida): Valore
     descricao: "",
     parcelas: 1,
     pessoaId: null,
+    bolso: "",
   };
 }
 
@@ -114,6 +134,8 @@ export function mensagemDeErro(resposta: ResultadoGravar): string {
 export function Formulario({
   contas,
   pessoas = [],
+  contaVrId = null,
+  semVr = false,
   edicao,
   aoSalvar,
   aoSessaoExpirar,
@@ -147,6 +169,16 @@ export function Formulario({
   const info = infoDoTipo(v.tipo);
   const origens = contasDeOrigem(v.tipo, contas);
   const destinos = contasDeDestino(v.tipo, contas, v.contaId);
+  // Bolso só na despesa feita na conta do VR; fora dela o campo some e o envio vai sem bolso.
+  const ehDespesa = v.tipo === "debito" && v.contaId !== null;
+  const pedeBolso = ehDespesa && contaVrId !== null && v.contaId === contaVrId;
+  // Sem VR marcado, conta de benefício aceita o bolso (opcional): classificar antes de marcar.
+  const bolsoOpcional =
+    ehDespesa &&
+    semVr &&
+    contas.some((c) => c.conta_id === v.contaId && c.conta_beneficio);
+  // No VR o padrão é "pessoal"; no modo opcional, vazio (sem bolso).
+  const bolsoEscolhido: Bolso | "" = pedeBolso && v.bolso === "" ? "pessoal" : v.bolso;
 
   function mudar(parcial: Partial<Valores>) {
     // Mudou algo (pessoa, valor, parcelas, tipo...): é outro envio, então chave nova. Sem isso, o
@@ -175,6 +207,7 @@ export function Formulario({
       // 100% própria (sem pessoa) ou 100% de uma pessoa: o formulário não oferece divisão.
       ...(info.pessoa === null ? {} : { pessoa_id: v.pessoaId }),
       ...(info.pedeParcelas ? { parcelas: v.parcelas } : {}),
+      ...((pedeBolso || bolsoOpcional) && bolsoEscolhido !== "" ? { bolso: bolsoEscolhido } : {}),
     };
     if (info.pedeBrutoEImposto) {
       const bruto = lerValorDigitado(v.bruto);
@@ -408,6 +441,33 @@ export function Formulario({
             {info.pedeParcelas
               ? "O total, mesmo se parcelado: o abako reparte em parcelas e a última absorve os centavos."
               : "Sempre positivo: o tipo diz se entra ou sai."}
+          </span>
+        </div>
+      )}
+      {(pedeBolso || bolsoOpcional) && (
+        <div className="campo">
+          <label htmlFor={`${id}-bolso`}>Bolso</label>
+          <select
+            id={`${id}-bolso`}
+            value={bolsoEscolhido}
+            onChange={(e) =>
+              mudar({
+                bolso: BOLSOS.find((b) => b.valor === e.target.value)?.valor ?? "",
+              })
+            }
+            required={pedeBolso}
+          >
+            {bolsoOpcional && <option value="">Sem bolso</option>}
+            {BOLSOS.map((b) => (
+              <option key={b.valor} value={b.valor}>
+                {b.rotulo}
+              </option>
+            ))}
+          </select>
+          <span className="ajuda">
+            {pedeBolso
+              ? "Despesa no vale-refeição pertence a um bolso: trabalho ou pessoal. Pessoal é a sugestão."
+              : "Opcional. Classifique agora se esta conta será o seu VR (vale-refeição): trabalho ou pessoal."}
           </span>
         </div>
       )}

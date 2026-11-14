@@ -318,7 +318,8 @@ describe("início", () => {
     expect(await screen.findByText("Crítica")).toBeInTheDocument();
     const alertas = await screen.findByRole("list", { name: "Alertas em destaque" });
     expect(alertas).toHaveTextContent("O saldo informado não bate");
-    expect(screen.queryByText(/\bvale\b/i)).not.toBeInTheDocument();
+    // O item "Vale" do menu existe; o conteúdo da tela principal não fala do vale.
+    expect(within(screen.getByRole("main")).queryByText(/\bvale\b/i)).not.toBeInTheDocument();
   });
 
   it("um_cartao_com_erro_nao_derruba_os_outros", async () => {

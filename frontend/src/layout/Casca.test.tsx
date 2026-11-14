@@ -55,6 +55,7 @@ describe("casca do app", () => {
       "Gasto do mês",
       "Reserva",
       "Sobra (R2)",
+      "Vale",
       "Alertas",
       "Pessoas",
       "Recorrentes",

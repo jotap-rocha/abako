@@ -50,9 +50,9 @@ def test_downgrade_sem_dados_restaura_funcoes_antigas_e_sobe_de_novo(esquema: st
     finally:
         command.upgrade(cfg, "head")
     with psycopg.connect(esquema) as ver:
-        assert ver.execute("SELECT version_num FROM alembic_version").fetchone() == ("0012",)
+        assert ver.execute("SELECT version_num FROM alembic_version").fetchone() == ("0013",)
     assert _funcoes(esquema, "conta_gravar") == [7]
-    assert _funcoes(esquema, "lancamento_gravar") == [15]
+    assert _funcoes(esquema, "lancamento_gravar") == [16]
     assert _funcoes(esquema, "fatura_total") == [3]
     assert _funcoes(esquema, "limite_linha") == [3]
 
@@ -72,9 +72,7 @@ def test_downgrade_com_cartao_e_recusado(esquema: str) -> None:
             parcelas = ver.execute(
                 "SELECT count(*) FROM transacao_versao WHERE user_id = %s", (uid,)
             ).fetchone()
-        assert versao == (
-            "0012",
-        )  # a falha na 0006 desfaz também o downgrade da 0012, 0011, 0010, 0009, 0008 e 0007
+        assert versao == ("0013",)  # a falha na 0006 desfaz o downgrade de 0013 a 0007
         assert parcelas == (3,)  # as três parcelas continuam lá
     finally:
         apagar_usuario(esquema, uid)

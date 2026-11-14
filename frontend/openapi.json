@@ -90,6 +90,16 @@
           "tipo": {
             "title": "Tipo",
             "type": "string"
+          },
+          "vale": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/R5Alerta"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -100,7 +110,8 @@
           "mensagem",
           "reserva",
           "r2",
-          "r4"
+          "r4",
+          "vale"
         ],
         "title": "AlertaSaida",
         "type": "object"
@@ -125,6 +136,93 @@
           "itens"
         ],
         "title": "AlertasSaida",
+        "type": "object"
+      },
+      "BeneficioSaida": {
+        "properties": {
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "despesa_mes": {
+            "title": "Despesa Mes",
+            "type": "string"
+          },
+          "receita_mes": {
+            "title": "Receita Mes",
+            "type": "string"
+          },
+          "saldo_total": {
+            "title": "Saldo Total",
+            "type": "string"
+          },
+          "vale_refeicao": {
+            "title": "Vale Refeicao",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "conta_id",
+          "vale_refeicao",
+          "receita_mes",
+          "despesa_mes",
+          "saldo_total"
+        ],
+        "title": "BeneficioSaida",
+        "type": "object"
+      },
+      "BeneficiosSaida": {
+        "properties": {
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/BeneficioSaida"
+            },
+            "title": "Itens",
+            "type": "array"
+          },
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mes",
+          "itens"
+        ],
+        "title": "BeneficiosSaida",
+        "type": "object"
+      },
+      "BolsoSaida": {
+        "properties": {
+          "ajuste": {
+            "title": "Ajuste",
+            "type": "string"
+          },
+          "alocacao": {
+            "title": "Alocacao",
+            "type": "string"
+          },
+          "consumo": {
+            "title": "Consumo",
+            "type": "string"
+          },
+          "inicial": {
+            "title": "Inicial",
+            "type": "string"
+          },
+          "resta": {
+            "title": "Resta",
+            "type": "string"
+          }
+        },
+        "required": [
+          "inicial",
+          "ajuste",
+          "alocacao",
+          "consumo",
+          "resta"
+        ],
+        "title": "BolsoSaida",
         "type": "object"
       },
       "ContaEdicao": {
@@ -312,6 +410,77 @@
           "versao"
         ],
         "title": "ContaSaida",
+        "type": "object"
+      },
+      "DecisaoHistoricoSaida": {
+        "properties": {
+          "destino": {
+            "title": "Destino",
+            "type": "string"
+          },
+          "mes": {
+            "format": "date",
+            "title": "Mes",
+            "type": "string"
+          },
+          "versao": {
+            "title": "Versao",
+            "type": "integer"
+          },
+          "vigente": {
+            "title": "Vigente",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "mes",
+          "destino",
+          "versao",
+          "vigente"
+        ],
+        "title": "DecisaoHistoricoSaida",
+        "type": "object"
+      },
+      "DecisaoValeEntrada": {
+        "additionalProperties": false,
+        "properties": {
+          "destino": {
+            "title": "Destino",
+            "type": "string"
+          },
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mes",
+          "destino"
+        ],
+        "title": "DecisaoValeEntrada",
+        "type": "object"
+      },
+      "DecisaoValeSaida": {
+        "properties": {
+          "destino": {
+            "title": "Destino",
+            "type": "string"
+          },
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "versao": {
+            "title": "Versao",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "mes",
+          "destino",
+          "versao"
+        ],
+        "title": "DecisaoValeSaida",
         "type": "object"
       },
       "DivergenciaSaida": {
@@ -788,6 +957,21 @@
       "LancamentoEdicao": {
         "additionalProperties": false,
         "properties": {
+          "bolso": {
+            "anyOf": [
+              {
+                "enum": [
+                  "trabalho",
+                  "pessoal"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bolso"
+          },
           "bruto": {
             "anyOf": [
               {
@@ -917,6 +1101,21 @@
       "LancamentoEntrada": {
         "additionalProperties": false,
         "properties": {
+          "bolso": {
+            "anyOf": [
+              {
+                "enum": [
+                  "trabalho",
+                  "pessoal"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bolso"
+          },
           "bruto": {
             "anyOf": [
               {
@@ -1046,6 +1245,17 @@
       },
       "LancamentoSaida": {
         "properties": {
+          "bolso": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bolso"
+          },
           "bruto": {
             "anyOf": [
               {
@@ -1464,6 +1674,68 @@
         "title": "ParametroSaida",
         "type": "object"
       },
+      "ParametroValeEntrada": {
+        "additionalProperties": false,
+        "properties": {
+          "base_trabalho": {
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$",
+            "title": "Base Trabalho",
+            "type": "string"
+          },
+          "conta_id": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 1.0,
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "destino_padrao": {
+            "title": "Destino Padrao",
+            "type": "string"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "conta_id",
+          "base_trabalho",
+          "destino_padrao",
+          "vigente_desde"
+        ],
+        "title": "ParametroValeEntrada",
+        "type": "object"
+      },
+      "ParametroValeSaida": {
+        "properties": {
+          "base_trabalho": {
+            "title": "Base Trabalho",
+            "type": "string"
+          },
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "destino_padrao": {
+            "title": "Destino Padrao",
+            "type": "string"
+          },
+          "vigente_desde": {
+            "format": "date",
+            "title": "Vigente Desde",
+            "type": "string"
+          }
+        },
+        "required": [
+          "conta_id",
+          "base_trabalho",
+          "destino_padrao",
+          "vigente_desde"
+        ],
+        "title": "ParametroValeSaida",
+        "type": "object"
+      },
       "PessoaEdicao": {
         "properties": {
           "nome": {
@@ -1610,6 +1882,44 @@
           "quantidade"
         ],
         "title": "R4Alerta",
+        "type": "object"
+      },
+      "R5Alerta": {
+        "properties": {
+          "alocacao": {
+            "title": "Alocacao",
+            "type": "string"
+          },
+          "bolso": {
+            "title": "Bolso",
+            "type": "string"
+          },
+          "consumo": {
+            "title": "Consumo",
+            "type": "string"
+          },
+          "conta_id": {
+            "title": "Conta Id",
+            "type": "integer"
+          },
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "resta": {
+            "title": "Resta",
+            "type": "string"
+          }
+        },
+        "required": [
+          "conta_id",
+          "bolso",
+          "mes",
+          "alocacao",
+          "consumo",
+          "resta"
+        ],
+        "title": "R5Alerta",
         "type": "object"
       },
       "ReceitaSaida": {
@@ -2186,6 +2496,127 @@
           "config_pendente"
         ],
         "title": "SituacaoSaida",
+        "type": "object"
+      },
+      "SituacaoValeSaida": {
+        "properties": {
+          "base_trabalho": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Trabalho"
+          },
+          "conta_vr_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conta Vr Id"
+          },
+          "credito": {
+            "title": "Credito",
+            "type": "string"
+          },
+          "decisao_destino": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decisao Destino"
+          },
+          "decisao_versao": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decisao Versao"
+          },
+          "destino_padrao": {
+            "title": "Destino Padrao",
+            "type": "string"
+          },
+          "estado": {
+            "title": "Estado",
+            "type": "string"
+          },
+          "mes": {
+            "title": "Mes",
+            "type": "string"
+          },
+          "mes_encerrado": {
+            "title": "Mes Encerrado",
+            "type": "boolean"
+          },
+          "pessoal": {
+            "$ref": "#/components/schemas/BolsoSaida"
+          },
+          "receita_beneficio": {
+            "title": "Receita Beneficio",
+            "type": "string"
+          },
+          "receita_caixa": {
+            "title": "Receita Caixa",
+            "type": "string"
+          },
+          "receita_total": {
+            "title": "Receita Total",
+            "type": "string"
+          },
+          "saldo_total": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saldo Total"
+          },
+          "sobra": {
+            "title": "Sobra",
+            "type": "string"
+          },
+          "trabalho": {
+            "$ref": "#/components/schemas/BolsoSaida"
+          }
+        },
+        "required": [
+          "mes",
+          "mes_encerrado",
+          "estado",
+          "conta_vr_id",
+          "credito",
+          "base_trabalho",
+          "trabalho",
+          "pessoal",
+          "sobra",
+          "decisao_destino",
+          "decisao_versao",
+          "destino_padrao",
+          "saldo_total",
+          "receita_caixa",
+          "receita_beneficio",
+          "receita_total"
+        ],
+        "title": "SituacaoValeSaida",
         "type": "object"
       },
       "SnapshotEntrada": {
@@ -4872,6 +5303,342 @@
         "summary": "Listar",
         "tags": [
           "saldos"
+        ]
+      }
+    },
+    "/api/vale": {
+      "get": {
+        "description": "Situação do vale no mês, derivada a cada consulta (ADR 052).",
+        "operationId": "vale_situacao",
+        "parameters": [
+          {
+            "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+            "in": "query",
+            "name": "mes",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+              "title": "Mes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SituacaoValeSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Situacao",
+        "tags": [
+          "vale"
+        ]
+      }
+    },
+    "/api/vale/beneficios": {
+      "get": {
+        "description": "Contas de benefício vigentes (VR e VA) com receita e despesa do mês e saldo.",
+        "operationId": "vale_beneficios",
+        "parameters": [
+          {
+            "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+            "in": "query",
+            "name": "mes",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+              "title": "Mes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BeneficiosSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Beneficios",
+        "tags": [
+          "vale"
+        ]
+      }
+    },
+    "/api/vale/decisoes": {
+      "get": {
+        "description": "Histórico das decisões (todas as versões), do mês mais antigo ao mais novo.",
+        "operationId": "vale_listar_decisoes",
+        "parameters": [
+          {
+            "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+            "in": "query",
+            "name": "mes",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+              "title": "Mes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DecisaoHistoricoSaida"
+                  },
+                  "title": "Response Vale Listar Decisoes",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Decisoes",
+        "tags": [
+          "vale"
+        ]
+      },
+      "put": {
+        "description": "Decide o destino da sobra de um mês encerrado; nunca move saldo (INV-25).",
+        "operationId": "vale_gravar_decisao",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisaoValeEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisaoValeSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Gravar Decisao",
+        "tags": [
+          "vale"
+        ]
+      }
+    },
+    "/api/vale/parametro": {
+      "get": {
+        "description": "Parâmetro vigente no mês (padrão: o corrente); nulo se nenhuma conta é o VR.",
+        "operationId": "vale_obter_parametro",
+        "parameters": [
+          {
+            "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+            "in": "query",
+            "name": "mes",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo",
+              "title": "Mes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ParametroValeSaida"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Vale Obter Parametro"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter Parametro",
+        "tags": [
+          "vale"
+        ]
+      },
+      "put": {
+        "description": "Marca a conta do VR, a base e o destino padrão a partir de `vigente_desde`; idempotente.",
+        "operationId": "vale_gravar_parametro",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-csrf-token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParametroValeEntrada"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParametroValeSaida"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Gravar Parametro",
+        "tags": [
+          "vale"
         ]
       }
     }

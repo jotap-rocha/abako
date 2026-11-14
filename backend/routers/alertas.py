@@ -1,4 +1,4 @@
-"""Alertas R1, R2 e R4 (SPEC-011, ADR 049). Fino: delega, formata.
+"""Alertas R1, R2, R4 e R5 (SPEC-011 e SPEC-013, ADR 049 e 052). Fino: delega, formata.
 
 O `user_id` vem sempre da sessão (INV-13); dinheiro sempre texto (INV-14); `hoje` é a data civil de
 America/Sao_Paulo, nunca do cliente. O alerta é derivado a cada consulta pela função `alertas` do
@@ -66,8 +66,20 @@ class R4Alerta(BaseModel):
     quantidade: int
 
 
+class R5Alerta(BaseModel):
+    # A conta do VR; o nome é resolvido na tela.
+    conta_id: int
+    # trabalho | pessoal: um alerta por bolso estourado (resta < 0), sem compensação.
+    bolso: str
+    # Do mês corrente (AAAA-MM) de `data_referencia`.
+    mes: str
+    alocacao: str
+    consumo: str
+    resta: str
+
+
 class AlertaSaida(BaseModel):
-    # R1 | R2 | R4 | CONFIG
+    # R1 | R2 | R4 | R5 | CONFIG
     codigo: str
     # alerta (forte) | aviso | configuracao
     tipo: str
@@ -80,6 +92,8 @@ class AlertaSaida(BaseModel):
     reserva: ReservaAlerta | None
     r2: R2Alerta | None
     r4: R4Alerta | None
+    # Só no R5; nulo nos demais.
+    vale: R5Alerta | None
 
 
 class AlertasSaida(BaseModel):
@@ -146,6 +160,28 @@ def _r4(a: svc.Alerta) -> R4Alerta | None:
     )
 
 
+def _r5(a: svc.Alerta) -> R5Alerta | None:
+    if a.codigo != "R5":
+        return None
+    if (
+        a.conta_id is None
+        or a.bolso is None
+        or a.mes is None
+        or a.alocacao is None
+        or a.consumo is None
+        or a.resta is None
+    ):  # idem: o banco sempre preenche o R5
+        raise RuntimeError("alerta R5 incompleto")
+    return R5Alerta(
+        conta_id=a.conta_id,
+        bolso=a.bolso,
+        mes=a.mes,
+        alocacao=texto_dinheiro(a.alocacao),
+        consumo=texto_dinheiro(a.consumo),
+        resta=texto_dinheiro(a.resta),
+    )
+
+
 def _saida(a: svc.Alerta) -> AlertaSaida:
     return AlertaSaida(
         codigo=a.codigo,
@@ -156,6 +192,7 @@ def _saida(a: svc.Alerta) -> AlertaSaida:
         reserva=_reserva(a),
         r2=_r2(a),
         r4=_r4(a),
+        vale=_r5(a),
     )
 
 

@@ -216,6 +216,7 @@ export const ALERTAS: AlertaSaida[] = [
     reserva: null,
     r2: null,
     r4: null,
+    vale: null,
   },
   {
     codigo: "R4",
@@ -233,5 +234,6 @@ export const ALERTAS: AlertaSaida[] = [
       divergencia: "50.00",
       quantidade: 2,
     },
+    vale: null,
   },
 ];

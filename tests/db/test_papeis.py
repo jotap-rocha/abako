@@ -79,7 +79,7 @@ def test_app_sem_update_delete(esquema: str, url_app: str) -> None:
 FUNCOES_DE_ESCRITA = (
     "conta_gravar(bigint, bigint, integer, text, text, bigint, bigint)",
     "lancamento_gravar(bigint, bigint, integer, text, date, numeric, bigint, bigint, numeric, "
-    "numeric, text, text, text, integer, bigint)",
+    "numeric, text, text, text, integer, bigint, text)",
     "lancamento_excluir(bigint, bigint, integer)",
     "pessoa_gravar(bigint, bigint, integer, text)",
     "pessoa_excluir(bigint, bigint, integer)",
@@ -432,3 +432,113 @@ def test_alertas_papeis(esquema: str, url_app: str, url_pipeline: str) -> None:
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             pipe.execute("SELECT * FROM alertas(1, DATE '2026-05-10')")
         pipe.rollback()
+
+
+FUNCOES_DE_LEITURA_DO_VALE = (
+    "vale_conta_em(bigint, date)",
+    "vale_mes(bigint, date, numeric, numeric)",
+    "vale_calculo(bigint, date)",
+    "vale_situacao(bigint, text, date)",
+    "beneficios_contas(bigint, text, date)",
+)
+FUNCOES_DE_ESCRITA_DO_VALE = (
+    "vale_parametro_gravar(bigint, bigint, numeric, text, date)",
+    "vale_decisao_gravar(bigint, text, text)",
+)
+TABELAS_DO_VALE = (
+    "vale_parametro",
+    "vale_parametro_vigente",
+    "vale_bolso",
+    "vale_decisao",
+    "vale_decisao_vigente",
+)
+
+
+def test_vale_papeis(esquema: str, url_app: str, url_pipeline: str) -> None:
+    """SPEC-013 / ADR 052: app lê e escreve só pelas funções; pipeline não recebe nada novo."""
+    with psycopg.connect(url_app) as app, psycopg.connect(url_pipeline) as pipe:
+        for t in TABELAS_DO_VALE:
+            assert _tem_privilegio(app, t, "SELECT"), t
+            for priv in ("INSERT", "UPDATE", "DELETE", "TRUNCATE"):
+                assert not _tem_privilegio(app, t, priv), f"app tem {priv} em {t}"
+            for priv in ("SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE"):
+                assert not _tem_privilegio(pipe, t, priv), f"pipeline tem {priv} em {t}"
+        for funcao in (*FUNCOES_DE_LEITURA_DO_VALE, *FUNCOES_DE_ESCRITA_DO_VALE):
+            assert app.execute(
+                "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
+            ).fetchone() == (True,), funcao
+            assert pipe.execute(
+                "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
+            ).fetchone() == (False,), funcao
+        for funcao in FUNCOES_DE_LEITURA_DO_VALE:
+            invoker = app.execute(
+                "SELECT NOT prosecdef FROM pg_proc WHERE oid = %s::regprocedure", (funcao,)
+            ).fetchone()
+            assert invoker == (True,), funcao
+        for funcao in FUNCOES_DE_ESCRITA_DO_VALE:
+            definer = app.execute(
+                "SELECT prosecdef, proconfig FROM pg_proc WHERE oid = %s::regprocedure", (funcao,)
+            ).fetchone()
+            assert definer == (True, ["search_path=public, pg_temp"]), funcao
+
+        # o app grava pelo papel dele, só pelas funções, e lê a situação
+        novo = app.execute(
+            "INSERT INTO usuario (login) VALUES ('u_papel_vale') RETURNING user_id"
+        ).fetchone()
+        assert novo is not None
+        uid = novo[0]
+        vr = app.execute(
+            "SELECT conta_id FROM conta_gravar(%s, NULL, NULL, 'vr', 'beneficio', NULL)", (uid,)
+        ).fetchone()
+        assert vr is not None
+        app.execute(
+            "SELECT vale_parametro_gravar(%s, %s, 200.00, 'nenhum', DATE '2025-01-01')",
+            (uid, vr[0]),
+        )
+        app.execute(
+            "SELECT * FROM lancamento_gravar(%s, NULL, NULL, 'receita', DATE '2025-01-05', "
+            "1000.00, %s, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)",
+            (uid, vr[0]),
+        )
+        app.execute(
+            "SELECT * FROM lancamento_gravar(%s, NULL, NULL, 'debito', DATE '2025-01-10', "
+            "150.00, %s, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'trabalho')",
+            (uid, vr[0]),
+        )
+        assert app.execute(
+            "SELECT vale_decisao_gravar(%s, '2025-01', 'pessoal')", (uid,)
+        ).fetchone() == (1,)
+        linha = app.execute(
+            "SELECT resta_trabalho, sobra FROM vale_situacao(%s, '2025-01', DATE '2025-03-01')",
+            (uid,),
+        ).fetchone()
+        assert linha == (Decimal("50.00"), Decimal("850.00"))
+        for comando in (
+            "INSERT INTO vale_parametro (user_id, conta_id, base_trabalho, destino_padrao, "
+            "vigente_desde) VALUES (%s, 1, 1.00, 'nenhum', DATE '2025-01-01')",
+            "INSERT INTO vale_bolso (user_id, transacao_id, versao, bolso) "
+            "VALUES (%s, 1, 1, 'pessoal')",
+            "INSERT INTO vale_decisao (user_id, mes, destino, versao) "
+            "VALUES (%s, DATE '2025-01-01', 'pessoal', 9)",
+            "UPDATE vale_decisao SET destino = 'nenhum' WHERE user_id = %s",
+            "DELETE FROM vale_bolso WHERE user_id = %s",
+        ):
+            with pytest.raises(psycopg.errors.InsufficientPrivilege):
+                app.execute(comando, (uid,))
+            app.rollback()
+            # a transação foi desfeita junto: recria o usuário para a próxima tentativa
+            novo = app.execute(
+                "INSERT INTO usuario (login) VALUES ('u_papel_vale') RETURNING user_id"
+            ).fetchone()
+            assert novo is not None
+            uid = novo[0]
+        app.rollback()  # nada fica no banco
+        for chamada in (
+            "SELECT * FROM vale_situacao(1, '2025-01', DATE '2025-03-01')",
+            "SELECT * FROM beneficios_contas(1, '2025-01', DATE '2025-03-01')",
+            "SELECT vale_parametro_gravar(1, 1, 1.00, 'nenhum', DATE '2025-01-01')",
+            "SELECT vale_decisao_gravar(1, '2025-01', 'pessoal')",
+        ):
+            with pytest.raises(psycopg.errors.InsufficientPrivilege):
+                pipe.execute(chamada)
+            pipe.rollback()

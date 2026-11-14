@@ -23,7 +23,7 @@ FUNCOES_DO_APP = (
     "alocacao_pago(bigint, bigint)",
     "compra_paga(bigint, bigint)",
     "lancamento_gravar(bigint, bigint, integer, text, date, numeric, bigint, bigint, numeric, "
-    "numeric, text, text, text, integer, bigint)",
+    "numeric, text, text, text, integer, bigint, text)",
     "lancamento_excluir(bigint, bigint, integer)",
 )
 FUNCOES_FECHADAS = (
@@ -67,10 +67,10 @@ def test_downgrade_sem_estorno_restaura_a_0006_e_sobe_de_novo(esquema: str) -> N
             assert colunas == (0,)
     finally:
         command.upgrade(cfg, "head")
-    assert _revisao(esquema) == "0012"
+    assert _revisao(esquema) == "0013"
     assert _funcoes(esquema, "estorno_gravar") == [5]
     assert _funcoes(esquema, "lancamento_gravar_base") == [15]
-    assert _funcoes(esquema, "lancamento_gravar") == [15]
+    assert _funcoes(esquema, "lancamento_gravar") == [16]
 
 
 def test_downgrade_com_estorno_e_recusado(esquema: str) -> None:
@@ -82,7 +82,7 @@ def test_downgrade_com_estorno_e_recusado(esquema: str) -> None:
     try:
         with pytest.raises(Exception, match="apagaria dados"):
             command.downgrade(Config(str(RAIZ / "alembic.ini")), "0006")
-        assert _revisao(esquema) == "0012"
+        assert _revisao(esquema) == "0013"
         with psycopg.connect(esquema) as ver:
             linha = ver.execute(
                 "SELECT count(*) FROM transacao_versao WHERE user_id = %s AND tipo = 'estorno'",

@@ -16,6 +16,7 @@ import { Pessoas } from "./terceiros/Pessoas";
 import { Inicio } from "./paginas/Inicio";
 import { NaoEncontrada } from "./paginas/NaoEncontrada";
 import { limparCachesDoApp } from "./pwa/cache";
+import { Vale } from "./vale/Vale";
 import { Saldos } from "./saldos/Saldos";
 import { Carregando } from "./ui/componentes";
 
@@ -68,6 +69,7 @@ export function App() {
         <Route path="gasto-real" element={<GastoReal />} />
         <Route path="reserva" element={<Reserva />} />
         <Route path="sobra" element={<SobraR2 />} />
+        <Route path="vale" element={<Vale />} />
         <Route path="alertas" element={<Alertas />} />
         <Route path="pessoas" element={<Pessoas />} />
         <Route path="recorrentes" element={<Recorrentes />} />

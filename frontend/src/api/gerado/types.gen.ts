@@ -61,6 +61,7 @@ export type AlertaSaida = {
      * Tipo
      */
     tipo: string;
+    vale: R5Alerta | null;
 };
 
 /**
@@ -75,6 +76,72 @@ export type AlertasSaida = {
      * Itens
      */
     itens: Array<AlertaSaida>;
+};
+
+/**
+ * BeneficioSaida
+ */
+export type BeneficioSaida = {
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Despesa Mes
+     */
+    despesa_mes: string;
+    /**
+     * Receita Mes
+     */
+    receita_mes: string;
+    /**
+     * Saldo Total
+     */
+    saldo_total: string;
+    /**
+     * Vale Refeicao
+     */
+    vale_refeicao: boolean;
+};
+
+/**
+ * BeneficiosSaida
+ */
+export type BeneficiosSaida = {
+    /**
+     * Itens
+     */
+    itens: Array<BeneficioSaida>;
+    /**
+     * Mes
+     */
+    mes: string;
+};
+
+/**
+ * BolsoSaida
+ */
+export type BolsoSaida = {
+    /**
+     * Ajuste
+     */
+    ajuste: string;
+    /**
+     * Alocacao
+     */
+    alocacao: string;
+    /**
+     * Consumo
+     */
+    consumo: string;
+    /**
+     * Inicial
+     */
+    inicial: string;
+    /**
+     * Resta
+     */
+    resta: string;
 };
 
 /**
@@ -157,6 +224,60 @@ export type ContaSaida = {
      * Tipo
      */
     tipo: 'corrente' | 'reserva' | 'investimento' | 'beneficio' | 'divida';
+    /**
+     * Versao
+     */
+    versao: number;
+};
+
+/**
+ * DecisaoHistoricoSaida
+ */
+export type DecisaoHistoricoSaida = {
+    /**
+     * Destino
+     */
+    destino: string;
+    /**
+     * Mes
+     */
+    mes: string;
+    /**
+     * Versao
+     */
+    versao: number;
+    /**
+     * Vigente
+     */
+    vigente: boolean;
+};
+
+/**
+ * DecisaoValeEntrada
+ */
+export type DecisaoValeEntrada = {
+    /**
+     * Destino
+     */
+    destino: string;
+    /**
+     * Mes
+     */
+    mes: string;
+};
+
+/**
+ * DecisaoValeSaida
+ */
+export type DecisaoValeSaida = {
+    /**
+     * Destino
+     */
+    destino: string;
+    /**
+     * Mes
+     */
+    mes: string;
     /**
      * Versao
      */
@@ -458,6 +579,10 @@ export type ItemR2Saida = {
  */
 export type LancamentoEdicao = {
     /**
+     * Bolso
+     */
+    bolso?: 'trabalho' | 'pessoal' | null;
+    /**
      * Bruto
      */
     bruto?: string | null;
@@ -508,6 +633,10 @@ export type LancamentoEdicao = {
  */
 export type LancamentoEntrada = {
     /**
+     * Bolso
+     */
+    bolso?: 'trabalho' | 'pessoal' | null;
+    /**
      * Bruto
      */
     bruto?: string | null;
@@ -557,6 +686,10 @@ export type LancamentoEntrada = {
  * LancamentoSaida
  */
 export type LancamentoSaida = {
+    /**
+     * Bolso
+     */
+    bolso?: string | null;
     /**
      * Bruto
      */
@@ -806,6 +939,50 @@ export type ParametroSaida = {
 };
 
 /**
+ * ParametroValeEntrada
+ */
+export type ParametroValeEntrada = {
+    /**
+     * Base Trabalho
+     */
+    base_trabalho: string;
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Destino Padrao
+     */
+    destino_padrao: string;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
+ * ParametroValeSaida
+ */
+export type ParametroValeSaida = {
+    /**
+     * Base Trabalho
+     */
+    base_trabalho: string;
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Destino Padrao
+     */
+    destino_padrao: string;
+    /**
+     * Vigente Desde
+     */
+    vigente_desde: string;
+};
+
+/**
  * PessoaEdicao
  */
 export type PessoaEdicao = {
@@ -913,6 +1090,36 @@ export type R4Alerta = {
      * Valor Snapshot
      */
     valor_snapshot: string;
+};
+
+/**
+ * R5Alerta
+ */
+export type R5Alerta = {
+    /**
+     * Alocacao
+     */
+    alocacao: string;
+    /**
+     * Bolso
+     */
+    bolso: string;
+    /**
+     * Consumo
+     */
+    consumo: string;
+    /**
+     * Conta Id
+     */
+    conta_id: number;
+    /**
+     * Mes
+     */
+    mes: string;
+    /**
+     * Resta
+     */
+    resta: string;
 };
 
 /**
@@ -1237,6 +1444,70 @@ export type SituacaoSaida = {
      * Saldo Liquido
      */
     saldo_liquido: string;
+};
+
+/**
+ * SituacaoValeSaida
+ */
+export type SituacaoValeSaida = {
+    /**
+     * Base Trabalho
+     */
+    base_trabalho: string | null;
+    /**
+     * Conta Vr Id
+     */
+    conta_vr_id: number | null;
+    /**
+     * Credito
+     */
+    credito: string;
+    /**
+     * Decisao Destino
+     */
+    decisao_destino: string | null;
+    /**
+     * Decisao Versao
+     */
+    decisao_versao: number | null;
+    /**
+     * Destino Padrao
+     */
+    destino_padrao: string;
+    /**
+     * Estado
+     */
+    estado: string;
+    /**
+     * Mes
+     */
+    mes: string;
+    /**
+     * Mes Encerrado
+     */
+    mes_encerrado: boolean;
+    pessoal: BolsoSaida;
+    /**
+     * Receita Beneficio
+     */
+    receita_beneficio: string;
+    /**
+     * Receita Caixa
+     */
+    receita_caixa: string;
+    /**
+     * Receita Total
+     */
+    receita_total: string;
+    /**
+     * Saldo Total
+     */
+    saldo_total: string | null;
+    /**
+     * Sobra
+     */
+    sobra: string;
+    trabalho: BolsoSaida;
 };
 
 /**
@@ -2825,3 +3096,197 @@ export type SaldosListarResponses = {
 };
 
 export type SaldosListarResponse = SaldosListarResponses[keyof SaldosListarResponses];
+
+export type ValeSituacaoData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Mes
+         *
+         * Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo
+         */
+        mes?: string | null;
+    };
+    url: '/api/vale';
+};
+
+export type ValeSituacaoErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ValeSituacaoError = ValeSituacaoErrors[keyof ValeSituacaoErrors];
+
+export type ValeSituacaoResponses = {
+    /**
+     * Successful Response
+     */
+    200: SituacaoValeSaida;
+};
+
+export type ValeSituacaoResponse = ValeSituacaoResponses[keyof ValeSituacaoResponses];
+
+export type ValeBeneficiosData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Mes
+         *
+         * Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo
+         */
+        mes?: string | null;
+    };
+    url: '/api/vale/beneficios';
+};
+
+export type ValeBeneficiosErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ValeBeneficiosError = ValeBeneficiosErrors[keyof ValeBeneficiosErrors];
+
+export type ValeBeneficiosResponses = {
+    /**
+     * Successful Response
+     */
+    200: BeneficiosSaida;
+};
+
+export type ValeBeneficiosResponse = ValeBeneficiosResponses[keyof ValeBeneficiosResponses];
+
+export type ValeListarDecisoesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Mes
+         *
+         * Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo
+         */
+        mes?: string | null;
+    };
+    url: '/api/vale/decisoes';
+};
+
+export type ValeListarDecisoesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ValeListarDecisoesError = ValeListarDecisoesErrors[keyof ValeListarDecisoesErrors];
+
+export type ValeListarDecisoesResponses = {
+    /**
+     * Response Vale Listar Decisoes
+     *
+     * Successful Response
+     */
+    200: Array<DecisaoHistoricoSaida>;
+};
+
+export type ValeListarDecisoesResponse = ValeListarDecisoesResponses[keyof ValeListarDecisoesResponses];
+
+export type ValeGravarDecisaoData = {
+    body: DecisaoValeEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/vale/decisoes';
+};
+
+export type ValeGravarDecisaoErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ValeGravarDecisaoError = ValeGravarDecisaoErrors[keyof ValeGravarDecisaoErrors];
+
+export type ValeGravarDecisaoResponses = {
+    /**
+     * Successful Response
+     */
+    200: DecisaoValeSaida;
+};
+
+export type ValeGravarDecisaoResponse = ValeGravarDecisaoResponses[keyof ValeGravarDecisaoResponses];
+
+export type ValeObterParametroData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Mes
+         *
+         * Mês AAAA-MM; padrão: o mês corrente em America/Sao_Paulo
+         */
+        mes?: string | null;
+    };
+    url: '/api/vale/parametro';
+};
+
+export type ValeObterParametroErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ValeObterParametroError = ValeObterParametroErrors[keyof ValeObterParametroErrors];
+
+export type ValeObterParametroResponses = {
+    /**
+     * Response Vale Obter Parametro
+     *
+     * Successful Response
+     */
+    200: ParametroValeSaida | null;
+};
+
+export type ValeObterParametroResponse = ValeObterParametroResponses[keyof ValeObterParametroResponses];
+
+export type ValeGravarParametroData = {
+    body: ParametroValeEntrada;
+    headers?: {
+        /**
+         * X-Csrf-Token
+         */
+        'x-csrf-token'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/vale/parametro';
+};
+
+export type ValeGravarParametroErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ValeGravarParametroError = ValeGravarParametroErrors[keyof ValeGravarParametroErrors];
+
+export type ValeGravarParametroResponses = {
+    /**
+     * Successful Response
+     */
+    200: ParametroValeSaida;
+};
+
+export type ValeGravarParametroResponse = ValeGravarParametroResponses[keyof ValeGravarParametroResponses];

@@ -125,6 +125,38 @@ export const TERMOS = {
       "Diferença entre o saldo calculado pelo abako e o saldo que você informou. Nada é corrigido " +
       "sozinho: o alerta fica até você conferir os lançamentos.",
   },
+  vale: {
+    nome: "Vale (VR)",
+    texto:
+      "Conta de benefício do vale-refeição, a única que tem bolsos. O crédito que cai nela no mês " +
+      "é dividido entre o bolso de trabalho e o pessoal. Não entra no gasto real nem na sobra do " +
+      "horizonte, e só aparece na página do vale.",
+  },
+  bolso: {
+    nome: "Bolso",
+    texto:
+      "Cada gasto do vale-refeição pertence a um bolso: trabalho (refeições do dia a dia, até a " +
+      "base definida) ou pessoal (o que passa da base). O vale-alimentação não tem bolsos.",
+  },
+  resta: {
+    nome: "Resta",
+    texto:
+      "Quanto ainda sobra em um bolso no mês: alocação efetiva menos o consumo. Pode ficar " +
+      "negativo; nesse caso o bolso está estourado.",
+  },
+  sobra_vale: {
+    nome: "Sobra do vale",
+    texto:
+      "A soma do que resta só nos bolsos com resta positivo. Um bolso estourado não é compensado " +
+      "pela sobra do outro. A sobra não acumula: ela só chega ao mês seguinte se você decidir o " +
+      "destino dela, e essa decisão não move saldo.",
+  },
+  estouro: {
+    nome: "Estouro",
+    texto:
+      "O bolso consumiu mais do que tinha no mês (resta negativo). O abako avisa no alerta R5 " +
+      "enquanto o mês ainda é o corrente; nada bloqueia o gasto.",
+  },
 } as const;
 
 export type IdTermo = keyof typeof TERMOS;

@@ -126,3 +126,11 @@ export const IconeParametros = () => (
     <circle cx="8" cy="17" r="1.8" />
   </Icone>
 );
+
+export const IconeVale = () => (
+  <Icone>
+    <rect x="3.5" y="7" width="17" height="10" rx="2" />
+    <path d="M8 7v10M16 7v10" />
+    <circle cx="12" cy="12" r="1.5" />
+  </Icone>
+);

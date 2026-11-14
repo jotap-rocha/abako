@@ -1081,3 +1081,180 @@ criterios:
     entao: "versao acima de 2^31-1 é 422 (no teto, 409), nunca 500; mes com NUL, controle ou muito longo é 422/AB422 literal, sem eco do valor"
     invariantes: [INV-29]
     teste: ["tests/backend/test_limites_de_entrada.py::test_versao_de_lancamento_tem_teto_do_integer", "tests/backend/test_limites_de_entrada.py::test_versao_do_estorno_tem_teto_do_integer", "tests/backend/test_limites_de_entrada.py::test_versao_de_conta_e_de_linha_de_credito_tem_teto_do_integer", "tests/backend/test_limites_de_entrada.py::test_versao_sem_csrf_continua_403", "tests/backend/test_limites_de_entrada.py::test_mes_longo_ou_com_controle_e_ab422_literal_no_gasto_real_e_na_receita"]
+  # ---- SPEC-013: vale (VR), sobra, decisão e alerta R5 (ADR 052) ----
+  - id: SPEC-013-AC-1
+    spec: SPEC-013
+    dado: "o VR com crédito do mês, base de trabalho 200.00 e consumo por bolso (F-VALE-01, F-VALE-06, F-VALE-07)"
+    quando: "se consulta o mês"
+    entao: "trabalho = min(base, crédito) e pessoal = max(crédito − base, 0); resta = alocação efetiva − consumo; a alocação efetiva é a inicial mais o ajuste decidido; nada acumula entre meses além do ajuste (encadeamento de 4 meses)"
+    invariantes: [INV-21]
+    fixtures: [F-VALE-01, F-VALE-06, F-VALE-07]
+    teste: ["tests/db/test_vale.py::test_f_vale_01", "tests/db/test_vale.py::test_f_vale_06_credito_menor_e_sem_credito", "tests/db/test_vale.py::test_f_vale_07_encadeamento", "tests/db/test_vale_propriedades.py::test_alocacao_inicial_min_max", "tests/db/test_vale_propriedades.py::test_nao_acumula_sem_decisao", "tests/db/test_vale_historico.py::test_cadeia_longa_de_decisoes_sem_estourar_pilha"]
+  - id: SPEC-013-AC-2
+    spec: SPEC-013
+    dado: "bolsos com resta positivo e negativo (F-VALE-02, F-VALE-03, F-VALE-04)"
+    quando: "se calcula a sobra e se decide o destino"
+    entao: "sobra = Σ max(resta, 0) por bolso, sem compensar estouro; a decisão só soma a sobra inteira na alocação do mês seguinte e nunca altera saldo"
+    invariantes: [INV-25]
+    fixtures: [F-VALE-02, F-VALE-03, F-VALE-04]
+    teste: ["tests/db/test_vale.py::test_f_vale_02_sobra", "tests/db/test_vale.py::test_f_vale_03_estouro_nao_compensado", "tests/db/test_vale.py::test_f_vale_04_decisao", "tests/db/test_vale_propriedades.py::test_sobra_por_bolso_sem_compensacao", "tests/db/test_vale_propriedades.py::test_decisao_nao_move_saldo"]
+  - id: SPEC-013-AC-3
+    spec: SPEC-013
+    dado: "o VR com snapshot, crédito e despesas (F-VALE-05)"
+    quando: "se lê o saldo total"
+    entao: "é o saldo derivado normal da conta (acumula): 100.00 + 1000.00 − 850.00 = 250.00; a decisão da sobra não o altera"
+    invariantes: [INV-22]
+    fixtures: [F-VALE-05, F-VALE-10]
+    teste: ["tests/db/test_vale.py::test_f_vale_05_saldo_total", "tests/db/test_vale.py::test_f_vale_10_decisao_substituida"]
+  - id: SPEC-013-AC-4
+    spec: SPEC-013
+    dado: "receita de caixa 5000.00, crédito do VR 1000.00 e do VA 400.00 (F-VALE-05, F-VALE-09)"
+    quando: "se lê a receita do mês"
+    entao: "receita total = caixa + benefício (VR e VA) = 6400.00; a de caixa continua 5000.00 (a que a tela principal mostra); VR e VA ficam fora do gasto real"
+    invariantes: [INV-24, INV-20]
+    fixtures: [F-VALE-05, F-VALE-09]
+    teste: ["tests/db/test_vale.py::test_f_vale_09_receita_total_com_va", "tests/db/test_gasto_real.py::test_receita_total_e_caixa_mais_beneficio"]
+  - id: SPEC-013-AC-5
+    spec: SPEC-013
+    dado: "bolsos do VR no mês corrente (F-VALE-03, F-VALE-08, F-VALE-11)"
+    quando: "se consulta alertas(user, hoje)"
+    entao: "R5 (alerta, severidade alta, mensagem literal sem valores) por bolso com resta < 0 estrito, sem compensação; só o mês corrente; mês sem crédito não dispara; estouro de mês encerrado não alerta"
+    invariantes: [INV-25]
+    fixtures: [F-VALE-03, F-VALE-06, F-VALE-08, F-VALE-11]
+    teste: ["tests/db/test_vale_alertas.py::test_f_vale_08_r5_duplo", "tests/db/test_vale_alertas.py::test_r5_sem_compensacao_f_vale_03", "tests/db/test_vale_alertas.py::test_f_vale_11_r5_so_no_mes_corrente", "tests/db/test_vale_alertas.py::test_r5_sem_credito_nao_dispara"]
+  - id: SPEC-013-AC-6
+    spec: SPEC-013
+    dado: "o usuário marca qual conta de benefício é a de refeição (VR), com vigência por mês"
+    quando: "grava o parâmetro do vale"
+    entao: "só aceita conta vigente, não excluída, do próprio usuário e do tipo benefício; vigência é o dia 1 do mês; a conta de cada mês é a do parâmetro vigente nele; sem parâmetro o estado é sem_conta; recusa se a conta tem despesa sem bolso nos meses em que passa a ser o VR (vigências posteriores de outra conta não contam); marcação e lançamento do mesmo usuário se serializam (trava); repetir o mesmo parâmetro é idempotente"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_vale.py::test_marcacao_valida_a_conta", "tests/db/test_vale.py::test_marcacao_com_vigencia_por_mes", "tests/db/test_vale.py::test_marcacao_recusa_despesa_sem_bolso", "tests/db/test_vale_historico.py::test_f_vale_12_conta_com_historico_vira_vr", "tests/db/test_vale_historico.py::test_f_vale_12_vigencias_intercaladas", "tests/db/test_vale_historico.py::test_corrida_despesa_antes_da_marcacao_recusa_a_marcacao", "tests/db/test_vale_historico.py::test_corrida_marcacao_antes_da_despesa_exige_bolso"]
+  - id: SPEC-013-AC-7
+    spec: SPEC-013
+    dado: "o VA, outra conta de benefício sem bolsos"
+    quando: "se lançam receita e despesa no VA e se lê a página de benefícios"
+    entao: "despesa no VA não tem bolso (informar bolso é recusado); VA fica fora do gasto real; a receita e o saldo do VA aparecem em beneficios_contas, sem marca de refeição"
+    invariantes: [INV-20, INV-24]
+    fixtures: [F-VALE-09]
+    teste: ["tests/db/test_vale.py::test_va_sem_bolso_e_fora_do_gasto_real", "tests/db/test_vale.py::test_beneficios_contas_lista_vr_e_va"]
+  - id: SPEC-013-AC-8
+    spec: SPEC-013
+    dado: "a sobra de um mês (F-VALE-10, F-VALE-11)"
+    quando: "o usuário decide o destino (trabalho, pessoal ou nenhum), de novo e de novo"
+    entao: "só mês encerrado (mês corrente e futuro são recusados, AB422); destino inválido recusado; cada nova decisão é nova versão que substitui a anterior e o histórico fica; repetir o destino vigente não cria versão; sem decisão, sem ajuste"
+    invariantes: [INV-25]
+    fixtures: [F-VALE-10, F-VALE-11]
+    teste: ["tests/db/test_vale.py::test_f_vale_10_decisao_substituida", "tests/db/test_vale.py::test_decisao_so_em_mes_encerrado", "tests/db/test_vale.py::test_decisao_destino_invalido_e_idempotente"]
+  - id: SPEC-013-AC-9
+    spec: SPEC-013
+    dado: "a base de trabalho com vigência (inicial 200.00)"
+    quando: "se grava nova base a partir de um mês"
+    entao: "os meses anteriores continuam com a base antiga e os seguintes com a nova; base negativa ou com 3 casas é recusada; crédito menor que a base vai todo para trabalho; mês sem crédito tem estado sem_credito"
+    invariantes: [INV-21]
+    fixtures: [F-VALE-06]
+    teste: ["tests/db/test_vale.py::test_base_com_vigencia", "tests/db/test_vale.py::test_f_vale_06_credito_menor_e_sem_credito"]
+  - id: SPEC-013-AC-10
+    spec: SPEC-013
+    dado: "o VR marcado e uma despesa nele"
+    quando: "se grava, edita ou exclui a despesa (lancamento_gravar com p_bolso)"
+    entao: "despesa no VR exige bolso trabalho|pessoal (AB422 sem ele); em conta de benefício sem VR marcado na data o bolso é opcional (classificar antes de marcar); bolso em conta que não é de benefício, no VA com outro VR marcado e em receita é recusado; a edição exige o bolso de novo e vale a versão vigente; a exclusão lógica tira o consumo; chamadas com 15 argumentos continuam funcionando"
+    invariantes: [INV-21]
+    teste: ["tests/db/test_vale.py::test_bolso_obrigatorio_no_vr", "tests/db/test_vale.py::test_edicao_e_exclusao_acompanham_o_bolso", "tests/db/test_vale_historico.py::test_bolso_em_beneficio_sem_vr_e_proibicoes", "tests/db/test_vale_historico.py::test_conta_nula_nao_vira_mensagem_de_bolso", "tests/backend/test_vale_api.py::test_conta_de_beneficio_sem_vr_aceita_bolso_opcional", "tests/backend/test_vale_api.py::test_classificar_antes_e_marcar_o_vr_da_situacao_correta"]
+  - id: SPEC-013-AC-11
+    spec: SPEC-013
+    dado: "dois usuários com vale configurado"
+    quando: "se consulta com o user_id de outro usuário"
+    entao: "nada de um aparece para o outro (situação, benefícios, decisão, R5); marcar a conta de outro usuário como VR é recusado"
+    invariantes: [INV-13]
+    teste: ["tests/db/test_vale.py::test_isolamento_por_user_id", "tests/db/test_vale_alertas.py::test_r5_isolamento_por_user_id"]
+  - id: SPEC-013-AC-12
+    spec: SPEC-013
+    dado: "os papéis app e pipeline, a migração 0013 e o SQL das funções"
+    quando: "as funções são chamadas, a migração é revertida e o SQL é inspecionado"
+    entao: "o app lê as tabelas novas e escreve só pelas funções SECURITY DEFINER com search_path fixo (sem UPDATE/DELETE); o pipeline não recebe nada novo; leituras são INVOKER; mensagens literais (sem ||); o downgrade recusa se houver dado e, sem dado, volta à 0012 e sobe de novo"
+    invariantes: [INV-13, INV-15]
+    teste: ["tests/db/test_papeis.py::test_vale_papeis", "tests/db/test_vale_mensagens.py::test_mensagens_da_0013_sao_literais", "tests/db/test_vale_mensagens.py::test_leituras_do_vale_sao_invoker_e_sem_escrita", "tests/db/test_migracao_0013.py::test_downgrade_recusa_com_dados", "tests/db/test_migracao_0013.py::test_downgrade_sem_dados_volta_a_0012_e_sobe_de_novo"]
+  - id: SPEC-013-AC-13
+    spec: SPEC-013
+    dado: "as rotas da API do vale (situação do mês, decisão, parâmetro, benefícios) e GET /api/alertas com R5"
+    quando: "o front consulta ou grava"
+    entao: "user_id da sessão, dinheiro em texto, sem sessão 401, erros AB422/AB404 traduzidos, valores fora de log; o lançamento aceita bolso"
+    invariantes: [INV-13, INV-14]
+    teste: ["tests/backend/test_vale_api.py::test_situacao_sem_conta", "tests/backend/test_vale_api.py::test_f_vale_01_alocacao_inicial", "tests/backend/test_vale_api.py::test_f_vale_02_sobra", "tests/backend/test_vale_api.py::test_f_vale_03_estouro_nao_compensado", "tests/backend/test_vale_api.py::test_f_vale_06_credito_menor_igual_e_sem_credito", "tests/backend/test_vale_api.py::test_f_vale_07_encadeamento_de_quatro_meses", "tests/backend/test_vale_api.py::test_f_vale_04_decisao_soma_no_mes_seguinte", "tests/backend/test_vale_api.py::test_f_vale_10_decisao_substituida_e_nao_move_saldo", "tests/backend/test_vale_api.py::test_f_vale_05_e_09_saldo_receita_total_e_beneficios", "tests/backend/test_vale_api.py::test_decisao_so_em_mes_encerrado_e_com_vr", "tests/backend/test_vale_api.py::test_parametro_grava_le_e_e_idempotente", "tests/backend/test_vale_api.py::test_parametro_recusas", "tests/backend/test_vale_api.py::test_parametro_recusa_despesa_sem_bolso", "tests/backend/test_vale_api.py::test_bolso_obrigatorio_no_vr_e_proibido_fora", "tests/backend/test_vale_api.py::test_edicao_e_exclusao_acompanham_o_bolso", "tests/backend/test_vale_api.py::test_idempotencia_com_bolso", "tests/backend/test_vale_api.py::test_sem_sessao_e_401", "tests/backend/test_vale_api.py::test_escrita_sem_csrf_e_403", "tests/backend/test_vale_api.py::test_metodos_nao_previstos_sao_405", "tests/backend/test_vale_api.py::test_isolamento_entre_usuarios", "tests/backend/test_vale_api.py::test_valores_e_nomes_fora_do_log", "tests/backend/test_vale_api.py::test_dinheiro_sempre_em_texto", "tests/backend/test_vale_api.py::test_mes_padrao_usa_o_fuso_de_sao_paulo", "tests/backend/test_alertas.py::test_r5", "tests/backend/test_alertas.py::test_r5_sem_compensacao", "tests/backend/test_alertas.py::test_r5_so_no_mes_corrente", "tests/backend/test_alertas.py::test_r5_sem_credito_nao_dispara", "tests/backend/test_alertas.py::test_r5_isolamento_entre_usuarios"]
+  - id: SPEC-013-AC-14
+    spec: SPEC-013
+    dado: "a página do vale e a tela principal"
+    quando: "o usuário navega"
+    entao: "a página do vale mostra crédito, consumo, resta, sobra, decisão, saldo total e receita total, só exibindo o que o backend devolve (sem min/max no front); a tela principal nunca mostra o vale; lançar despesa no VR exige escolher o bolso (padrão pessoal)"
+    invariantes: [INV-24]
+    teste:
+      - "frontend/src/vale/Vale.test.tsx::mostra_o_que_a_api_devolveu_sem_recalcular"
+      - "frontend/src/vale/Bolso.test.tsx::bolso_obrigatorio_no_vr_e_ausente_fora_dele"
+      - "frontend/src/leitura/Leitura.test.tsx::resume_receita_gasto_sobra_reserva_e_alertas_sem_o_vale"
+      - "tests/e2e/test_vale.py::test_marcar_vr_lancar_com_bolso_e_ver_a_pagina_do_vale"
+  - id: SPEC-013-AC-15
+    spec: SPEC-013
+    dado: "a página do vale em cada estado do mês (sem_conta, sem_credito, ok, carregando, erro, sessão vencida)"
+    quando: "o usuário abre /vale e navega entre meses"
+    entao: "sem_conta explica e leva ao formulário que marca o VR (mensagem literal do banco em caso de recusa, com a orientação de editar as despesas e tentar de novo); sem_credito explica que não há alerta; carregando, erro com nova tentativa e 401 (volta ao login) são tratados; o mês corrente é o limite (nunca futuro); o bolso estourado é destacado sem compensar o outro"
+    invariantes: [INV-21, INV-25]
+    teste:
+      - "frontend/src/vale/Vale.test.tsx::sem_conta_leva_a_marcar_o_vr"
+      - "frontend/src/vale/Vale.test.tsx::sem_credito_explica_e_nao_alerta"
+      - "frontend/src/vale/Vale.test.tsx::marcacao_recusada_por_despesas_sem_bolso_mostra_a_mensagem_e_a_orientacao"
+      - "frontend/src/vale/Vale.test.tsx::estados_carregando_erro_e_sessao_vencida"
+      - "frontend/src/vale/Vale.test.tsx::navega_para_meses_anteriores_e_nunca_para_o_futuro"
+  - id: SPEC-013-AC-16
+    spec: SPEC-013
+    dado: "a decisão da sobra na página do vale"
+    quando: "o mês não está encerrado (flag mes_encerrado da API) ou está"
+    entao: "o seletor e o botão ficam desabilitados com mes_encerrado falso (a tela não compara datas); habilitado vem pré-selecionado pelo destino padrão; mostra a decisão vigente e o histórico de versões; explica que não move saldo; 422 e 409 são explicados"
+    invariantes: [INV-25]
+    teste:
+      - "frontend/src/vale/Vale.test.tsx::desabilitada_com_mes_encerrado_falso"
+      - "frontend/src/vale/Vale.test.tsx::habilitada_pre_selecionada_pelo_destino_padrao_e_grava"
+      - "frontend/src/vale/Vale.test.tsx::mostra_historico_de_versoes_e_trata_422"
+      - "frontend/src/vale/Vale.test.tsx::conflito_409_e_explicado"
+  - id: SPEC-013-AC-17
+    spec: SPEC-013
+    dado: "o formulário de lançamento e a lista de lançamentos"
+    quando: "o usuário lança despesa na conta do VR, em outra conta, receita no VR, edita ou erra"
+    entao: "o campo Bolso aparece para despesa na conta do VR (obrigatório, padrão pessoal) e, sem VR marcado, para despesa em conta de benefício (opcional, com Sem bolso); no VA com outro VR, em conta comum e na receita não aparece, e o envio sem campo vai sem bolso; a edição reenvia o bolso; mudar o bolso depois de um erro gera chave nova e repetir sem mudar mantém a chave; a lista mostra o bolso; a recusa do banco aparece literal"
+    invariantes: [INV-21, INV-28]
+    teste:
+      - "frontend/src/vale/Bolso.test.tsx::bolso_obrigatorio_no_vr_e_ausente_fora_dele"
+      - "frontend/src/vale/Bolso.test.tsx::sem_vr_marcado_nao_ha_campo_de_bolso"
+      - "frontend/src/vale/Bolso.test.tsx::receita_no_vr_nao_pede_bolso"
+      - "frontend/src/vale/Bolso.test.tsx::nova_chave_quando_o_bolso_muda_depois_de_um_erro_de_rede"
+      - "frontend/src/vale/Bolso.test.tsx::422_do_banco_aparece_com_a_mensagem_literal"
+      - "frontend/src/vale/Bolso.test.tsx::edicao_reenvia_o_bolso"
+      - "frontend/src/vale/Bolso.test.tsx::mostra_o_bolso_e_descobre_o_vr_pelo_parametro"
+      - "frontend/src/vale/Bolso.test.tsx::bolso_opcional_em_conta_de_beneficio_sem_vr_marcado"
+      - "frontend/src/vale/Bolso.test.tsx::sem_campo_de_bolso_no_va_quando_outra_conta_e_o_vr"
+      - "frontend/src/vale/Bolso.test.tsx::sem_vr_marcado_no_parametro_o_formulario_oferece_bolso_opcional"
+  - id: SPEC-013-AC-18
+    spec: SPEC-013
+    dado: "a conta do VR e uma conta do VA"
+    quando: "o usuário vê a lista de benefícios na página do vale"
+    entao: "VR e VA aparecem lado a lado com receita, despesa e saldo da API; o VR leva a marca vale-refeição; o VA aparece sem bolsos e só ali"
+    invariantes: [INV-20, INV-22]
+    teste:
+      - "frontend/src/vale/Vale.test.tsx::va_sem_bolsos_e_vr_com_a_marca"
+  - id: SPEC-013-AC-19
+    spec: SPEC-013
+    dado: "um alerta R5 vindo da API"
+    quando: "o usuário abre Alertas e o Início"
+    entao: "o R5 aparece na tela Alertas como alerta forte (texto da API, bolso, mês, alocação, consumo, resta), sem botão de dispensar; o Início não lista o R5 nem afirma que não há alertas (diz 'Nenhum alerta neste resumo.' ou 'Há outros alertas.' e sempre leva a Alertas), não mostra o vale nem a receita de benefício e não consulta nenhuma rota do vale"
+    invariantes: [INV-24]
+    teste:
+      - "frontend/src/vale/Vale.test.tsx::r5_aparece_forte_na_tela_de_alertas_sem_botao_de_dispensar"
+      - "frontend/src/vale/Vale.test.tsx::inicio_nao_consulta_nem_mostra_o_vale"
+      - "frontend/src/vale/Vale.test.tsx::inicio_com_r5_nao_afirma_ausencia_de_alerta"
+  - id: SPEC-013-AC-20
+    spec: SPEC-013
+    dado: "a página do vale e a tela de alertas"
+    quando: "o usuário abre o glossário"
+    entao: "vale, bolso, resta, sobra do vale e estouro são explicados em linguagem direta"
+    invariantes: []
+    teste:
+      - "frontend/src/vale/Vale.test.tsx::explica_vale_bolso_resta_sobra_e_estouro"

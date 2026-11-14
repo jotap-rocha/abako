@@ -1,0 +1,224 @@
+task_id: "20"
+criteria:
+  SPEC-013-AC-1:
+    id: SPEC-013-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_f_vale_01 tests/db/test_vale.py::test_f_vale_06_credito_menor_e_sem_credito tests/db/test_vale.py::test_f_vale_07_encadeamento tests/db/test_vale_propriedades.py::test_alocacao_inicial_min_max tests/db/test_vale_propriedades.py::test_nao_acumula_sem_decisao tests/db/test_vale_historico.py::test_cadeia_longa_de_decisoes_sem_estourar_pilha"
+    test_paths:
+      - "tests/db/test_vale.py::test_f_vale_01"
+      - "tests/db/test_vale.py::test_f_vale_06_credito_menor_e_sem_credito"
+      - "tests/db/test_vale.py::test_f_vale_07_encadeamento"
+      - "tests/db/test_vale_propriedades.py::test_alocacao_inicial_min_max"
+      - "tests/db/test_vale_propriedades.py::test_nao_acumula_sem_decisao"
+      - "tests/db/test_vale_historico.py::test_cadeia_longa_de_decisoes_sem_estourar_pilha"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-1.log"
+  SPEC-013-AC-10:
+    id: SPEC-013-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_bolso_obrigatorio_no_vr tests/db/test_vale.py::test_edicao_e_exclusao_acompanham_o_bolso tests/db/test_vale_historico.py::test_bolso_em_beneficio_sem_vr_e_proibicoes tests/db/test_vale_historico.py::test_conta_nula_nao_vira_mensagem_de_bolso tests/backend/test_vale_api.py::test_conta_de_beneficio_sem_vr_aceita_bolso_opcional tests/backend/test_vale_api.py::test_classificar_antes_e_marcar_o_vr_da_situacao_correta"
+    test_paths:
+      - "tests/db/test_vale.py::test_bolso_obrigatorio_no_vr"
+      - "tests/db/test_vale.py::test_edicao_e_exclusao_acompanham_o_bolso"
+      - "tests/db/test_vale_historico.py::test_bolso_em_beneficio_sem_vr_e_proibicoes"
+      - "tests/db/test_vale_historico.py::test_conta_nula_nao_vira_mensagem_de_bolso"
+      - "tests/backend/test_vale_api.py::test_conta_de_beneficio_sem_vr_aceita_bolso_opcional"
+      - "tests/backend/test_vale_api.py::test_classificar_antes_e_marcar_o_vr_da_situacao_correta"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-10.log"
+  SPEC-013-AC-11:
+    id: SPEC-013-AC-11
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_isolamento_por_user_id tests/db/test_vale_alertas.py::test_r5_isolamento_por_user_id"
+    test_paths:
+      - "tests/db/test_vale.py::test_isolamento_por_user_id"
+      - "tests/db/test_vale_alertas.py::test_r5_isolamento_por_user_id"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-11.log"
+  SPEC-013-AC-12:
+    id: SPEC-013-AC-12
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_papeis.py::test_vale_papeis tests/db/test_vale_mensagens.py::test_mensagens_da_0013_sao_literais tests/db/test_vale_mensagens.py::test_leituras_do_vale_sao_invoker_e_sem_escrita tests/db/test_migracao_0013.py::test_downgrade_recusa_com_dados tests/db/test_migracao_0013.py::test_downgrade_sem_dados_volta_a_0012_e_sobe_de_novo"
+    test_paths:
+      - "tests/db/test_papeis.py::test_vale_papeis"
+      - "tests/db/test_vale_mensagens.py::test_mensagens_da_0013_sao_literais"
+      - "tests/db/test_vale_mensagens.py::test_leituras_do_vale_sao_invoker_e_sem_escrita"
+      - "tests/db/test_migracao_0013.py::test_downgrade_recusa_com_dados"
+      - "tests/db/test_migracao_0013.py::test_downgrade_sem_dados_volta_a_0012_e_sobe_de_novo"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-12.log"
+  SPEC-013-AC-13:
+    id: SPEC-013-AC-13
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_vale_api.py::test_situacao_sem_conta tests/backend/test_vale_api.py::test_f_vale_01_alocacao_inicial tests/backend/test_vale_api.py::test_f_vale_02_sobra tests/backend/test_vale_api.py::test_f_vale_03_estouro_nao_compensado tests/backend/test_vale_api.py::test_f_vale_06_credito_menor_igual_e_sem_credito tests/backend/test_vale_api.py::test_f_vale_07_encadeamento_de_quatro_meses tests/backend/test_vale_api.py::test_f_vale_04_decisao_soma_no_mes_seguinte tests/backend/test_vale_api.py::test_f_vale_10_decisao_substituida_e_nao_move_saldo tests/backend/test_vale_api.py::test_f_vale_05_e_09_saldo_receita_total_e_beneficios tests/backend/test_vale_api.py::test_decisao_so_em_mes_encerrado_e_com_vr tests/backend/test_vale_api.py::test_parametro_grava_le_e_e_idempotente tests/backend/test_vale_api.py::test_parametro_recusas tests/backend/test_vale_api.py::test_parametro_recusa_despesa_sem_bolso tests/backend/test_vale_api.py::test_bolso_obrigatorio_no_vr_e_proibido_fora tests/backend/test_vale_api.py::test_edicao_e_exclusao_acompanham_o_bolso tests/backend/test_vale_api.py::test_idempotencia_com_bolso tests/backend/test_vale_api.py::test_sem_sessao_e_401 tests/backend/test_vale_api.py::test_escrita_sem_csrf_e_403 tests/backend/test_vale_api.py::test_metodos_nao_previstos_sao_405 tests/backend/test_vale_api.py::test_isolamento_entre_usuarios tests/backend/test_vale_api.py::test_valores_e_nomes_fora_do_log tests/backend/test_vale_api.py::test_dinheiro_sempre_em_texto tests/backend/test_vale_api.py::test_mes_padrao_usa_o_fuso_de_sao_paulo tests/backend/test_alertas.py::test_r5 tests/backend/test_alertas.py::test_r5_sem_compensacao tests/backend/test_alertas.py::test_r5_so_no_mes_corrente tests/backend/test_alertas.py::test_r5_sem_credito_nao_dispara tests/backend/test_alertas.py::test_r5_isolamento_entre_usuarios"
+    test_paths:
+      - "tests/backend/test_vale_api.py::test_situacao_sem_conta"
+      - "tests/backend/test_vale_api.py::test_f_vale_01_alocacao_inicial"
+      - "tests/backend/test_vale_api.py::test_f_vale_02_sobra"
+      - "tests/backend/test_vale_api.py::test_f_vale_03_estouro_nao_compensado"
+      - "tests/backend/test_vale_api.py::test_f_vale_06_credito_menor_igual_e_sem_credito"
+      - "tests/backend/test_vale_api.py::test_f_vale_07_encadeamento_de_quatro_meses"
+      - "tests/backend/test_vale_api.py::test_f_vale_04_decisao_soma_no_mes_seguinte"
+      - "tests/backend/test_vale_api.py::test_f_vale_10_decisao_substituida_e_nao_move_saldo"
+      - "tests/backend/test_vale_api.py::test_f_vale_05_e_09_saldo_receita_total_e_beneficios"
+      - "tests/backend/test_vale_api.py::test_decisao_so_em_mes_encerrado_e_com_vr"
+      - "tests/backend/test_vale_api.py::test_parametro_grava_le_e_e_idempotente"
+      - "tests/backend/test_vale_api.py::test_parametro_recusas"
+      - "tests/backend/test_vale_api.py::test_parametro_recusa_despesa_sem_bolso"
+      - "tests/backend/test_vale_api.py::test_bolso_obrigatorio_no_vr_e_proibido_fora"
+      - "tests/backend/test_vale_api.py::test_edicao_e_exclusao_acompanham_o_bolso"
+      - "tests/backend/test_vale_api.py::test_idempotencia_com_bolso"
+      - "tests/backend/test_vale_api.py::test_sem_sessao_e_401"
+      - "tests/backend/test_vale_api.py::test_escrita_sem_csrf_e_403"
+      - "tests/backend/test_vale_api.py::test_metodos_nao_previstos_sao_405"
+      - "tests/backend/test_vale_api.py::test_isolamento_entre_usuarios"
+      - "tests/backend/test_vale_api.py::test_valores_e_nomes_fora_do_log"
+      - "tests/backend/test_vale_api.py::test_dinheiro_sempre_em_texto"
+      - "tests/backend/test_vale_api.py::test_mes_padrao_usa_o_fuso_de_sao_paulo"
+      - "tests/backend/test_alertas.py::test_r5"
+      - "tests/backend/test_alertas.py::test_r5_sem_compensacao"
+      - "tests/backend/test_alertas.py::test_r5_so_no_mes_corrente"
+      - "tests/backend/test_alertas.py::test_r5_sem_credito_nao_dispara"
+      - "tests/backend/test_alertas.py::test_r5_isolamento_entre_usuarios"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-13.log"
+  SPEC-013-AC-14:
+    id: SPEC-013-AC-14
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/e2e/test_vale.py::test_marcar_vr_lancar_com_bolso_e_ver_a_pagina_do_vale && npm --prefix frontend test -- src/vale/Vale.test.tsx -t \"mostra_o_que_a_api_devolveu_sem_recalcular\" && npm --prefix frontend test -- src/vale/Bolso.test.tsx -t \"bolso_obrigatorio_no_vr_e_ausente_fora_dele\" && npm --prefix frontend test -- src/leitura/Leitura.test.tsx -t \"resume_receita_gasto_sobra_reserva_e_alertas_sem_o_vale\""
+    test_paths:
+      - "frontend/src/vale/Vale.test.tsx::mostra_o_que_a_api_devolveu_sem_recalcular"
+      - "frontend/src/vale/Bolso.test.tsx::bolso_obrigatorio_no_vr_e_ausente_fora_dele"
+      - "frontend/src/leitura/Leitura.test.tsx::resume_receita_gasto_sobra_reserva_e_alertas_sem_o_vale"
+      - "tests/e2e/test_vale.py::test_marcar_vr_lancar_com_bolso_e_ver_a_pagina_do_vale"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-14.log"
+  SPEC-013-AC-15:
+    id: SPEC-013-AC-15
+    command: "npm --prefix frontend test -- src/vale/Vale.test.tsx -t \"sem_conta_leva_a_marcar_o_vr|sem_credito_explica_e_nao_alerta|marcacao_recusada_por_despesas_sem_bolso_mostra_a_mensagem_e_a_orientacao|estados_carregando_erro_e_sessao_vencida|navega_para_meses_anteriores_e_nunca_para_o_futuro\""
+    test_paths:
+      - "frontend/src/vale/Vale.test.tsx::sem_conta_leva_a_marcar_o_vr"
+      - "frontend/src/vale/Vale.test.tsx::sem_credito_explica_e_nao_alerta"
+      - "frontend/src/vale/Vale.test.tsx::marcacao_recusada_por_despesas_sem_bolso_mostra_a_mensagem_e_a_orientacao"
+      - "frontend/src/vale/Vale.test.tsx::estados_carregando_erro_e_sessao_vencida"
+      - "frontend/src/vale/Vale.test.tsx::navega_para_meses_anteriores_e_nunca_para_o_futuro"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-15.log"
+  SPEC-013-AC-16:
+    id: SPEC-013-AC-16
+    command: "npm --prefix frontend test -- src/vale/Vale.test.tsx -t \"desabilitada_com_mes_encerrado_falso|habilitada_pre_selecionada_pelo_destino_padrao_e_grava|mostra_historico_de_versoes_e_trata_422|conflito_409_e_explicado\""
+    test_paths:
+      - "frontend/src/vale/Vale.test.tsx::desabilitada_com_mes_encerrado_falso"
+      - "frontend/src/vale/Vale.test.tsx::habilitada_pre_selecionada_pelo_destino_padrao_e_grava"
+      - "frontend/src/vale/Vale.test.tsx::mostra_historico_de_versoes_e_trata_422"
+      - "frontend/src/vale/Vale.test.tsx::conflito_409_e_explicado"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-16.log"
+  SPEC-013-AC-17:
+    id: SPEC-013-AC-17
+    command: "npm --prefix frontend test -- src/vale/Bolso.test.tsx -t \"bolso_obrigatorio_no_vr_e_ausente_fora_dele|sem_vr_marcado_nao_ha_campo_de_bolso|receita_no_vr_nao_pede_bolso|nova_chave_quando_o_bolso_muda_depois_de_um_erro_de_rede|422_do_banco_aparece_com_a_mensagem_literal|edicao_reenvia_o_bolso|mostra_o_bolso_e_descobre_o_vr_pelo_parametro|bolso_opcional_em_conta_de_beneficio_sem_vr_marcado|sem_campo_de_bolso_no_va_quando_outra_conta_e_o_vr|sem_vr_marcado_no_parametro_o_formulario_oferece_bolso_opcional\""
+    test_paths:
+      - "frontend/src/vale/Bolso.test.tsx::bolso_obrigatorio_no_vr_e_ausente_fora_dele"
+      - "frontend/src/vale/Bolso.test.tsx::sem_vr_marcado_nao_ha_campo_de_bolso"
+      - "frontend/src/vale/Bolso.test.tsx::receita_no_vr_nao_pede_bolso"
+      - "frontend/src/vale/Bolso.test.tsx::nova_chave_quando_o_bolso_muda_depois_de_um_erro_de_rede"
+      - "frontend/src/vale/Bolso.test.tsx::422_do_banco_aparece_com_a_mensagem_literal"
+      - "frontend/src/vale/Bolso.test.tsx::edicao_reenvia_o_bolso"
+      - "frontend/src/vale/Bolso.test.tsx::mostra_o_bolso_e_descobre_o_vr_pelo_parametro"
+      - "frontend/src/vale/Bolso.test.tsx::bolso_opcional_em_conta_de_beneficio_sem_vr_marcado"
+      - "frontend/src/vale/Bolso.test.tsx::sem_campo_de_bolso_no_va_quando_outra_conta_e_o_vr"
+      - "frontend/src/vale/Bolso.test.tsx::sem_vr_marcado_no_parametro_o_formulario_oferece_bolso_opcional"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-17.log"
+  SPEC-013-AC-18:
+    id: SPEC-013-AC-18
+    command: "npm --prefix frontend test -- src/vale/Vale.test.tsx -t \"va_sem_bolsos_e_vr_com_a_marca\""
+    test_paths:
+      - "frontend/src/vale/Vale.test.tsx::va_sem_bolsos_e_vr_com_a_marca"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-18.log"
+  SPEC-013-AC-19:
+    id: SPEC-013-AC-19
+    command: "npm --prefix frontend test -- src/vale/Vale.test.tsx -t \"r5_aparece_forte_na_tela_de_alertas_sem_botao_de_dispensar|inicio_nao_consulta_nem_mostra_o_vale|inicio_com_r5_nao_afirma_ausencia_de_alerta\""
+    test_paths:
+      - "frontend/src/vale/Vale.test.tsx::r5_aparece_forte_na_tela_de_alertas_sem_botao_de_dispensar"
+      - "frontend/src/vale/Vale.test.tsx::inicio_nao_consulta_nem_mostra_o_vale"
+      - "frontend/src/vale/Vale.test.tsx::inicio_com_r5_nao_afirma_ausencia_de_alerta"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-19.log"
+  SPEC-013-AC-2:
+    id: SPEC-013-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_f_vale_02_sobra tests/db/test_vale.py::test_f_vale_03_estouro_nao_compensado tests/db/test_vale.py::test_f_vale_04_decisao tests/db/test_vale_propriedades.py::test_sobra_por_bolso_sem_compensacao tests/db/test_vale_propriedades.py::test_decisao_nao_move_saldo"
+    test_paths:
+      - "tests/db/test_vale.py::test_f_vale_02_sobra"
+      - "tests/db/test_vale.py::test_f_vale_03_estouro_nao_compensado"
+      - "tests/db/test_vale.py::test_f_vale_04_decisao"
+      - "tests/db/test_vale_propriedades.py::test_sobra_por_bolso_sem_compensacao"
+      - "tests/db/test_vale_propriedades.py::test_decisao_nao_move_saldo"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-2.log"
+  SPEC-013-AC-20:
+    id: SPEC-013-AC-20
+    command: "npm --prefix frontend test -- src/vale/Vale.test.tsx -t \"explica_vale_bolso_resta_sobra_e_estouro\""
+    test_paths:
+      - "frontend/src/vale/Vale.test.tsx::explica_vale_bolso_resta_sobra_e_estouro"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-20.log"
+  SPEC-013-AC-3:
+    id: SPEC-013-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_f_vale_05_saldo_total tests/db/test_vale.py::test_f_vale_10_decisao_substituida"
+    test_paths:
+      - "tests/db/test_vale.py::test_f_vale_05_saldo_total"
+      - "tests/db/test_vale.py::test_f_vale_10_decisao_substituida"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-3.log"
+  SPEC-013-AC-4:
+    id: SPEC-013-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_f_vale_09_receita_total_com_va tests/db/test_gasto_real.py::test_receita_total_e_caixa_mais_beneficio"
+    test_paths:
+      - "tests/db/test_vale.py::test_f_vale_09_receita_total_com_va"
+      - "tests/db/test_gasto_real.py::test_receita_total_e_caixa_mais_beneficio"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-4.log"
+  SPEC-013-AC-5:
+    id: SPEC-013-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale_alertas.py::test_f_vale_08_r5_duplo tests/db/test_vale_alertas.py::test_r5_sem_compensacao_f_vale_03 tests/db/test_vale_alertas.py::test_f_vale_11_r5_so_no_mes_corrente tests/db/test_vale_alertas.py::test_r5_sem_credito_nao_dispara"
+    test_paths:
+      - "tests/db/test_vale_alertas.py::test_f_vale_08_r5_duplo"
+      - "tests/db/test_vale_alertas.py::test_r5_sem_compensacao_f_vale_03"
+      - "tests/db/test_vale_alertas.py::test_f_vale_11_r5_so_no_mes_corrente"
+      - "tests/db/test_vale_alertas.py::test_r5_sem_credito_nao_dispara"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-5.log"
+  SPEC-013-AC-6:
+    id: SPEC-013-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_marcacao_valida_a_conta tests/db/test_vale.py::test_marcacao_com_vigencia_por_mes tests/db/test_vale.py::test_marcacao_recusa_despesa_sem_bolso tests/db/test_vale_historico.py::test_f_vale_12_conta_com_historico_vira_vr tests/db/test_vale_historico.py::test_f_vale_12_vigencias_intercaladas tests/db/test_vale_historico.py::test_corrida_despesa_antes_da_marcacao_recusa_a_marcacao tests/db/test_vale_historico.py::test_corrida_marcacao_antes_da_despesa_exige_bolso"
+    test_paths:
+      - "tests/db/test_vale.py::test_marcacao_valida_a_conta"
+      - "tests/db/test_vale.py::test_marcacao_com_vigencia_por_mes"
+      - "tests/db/test_vale.py::test_marcacao_recusa_despesa_sem_bolso"
+      - "tests/db/test_vale_historico.py::test_f_vale_12_conta_com_historico_vira_vr"
+      - "tests/db/test_vale_historico.py::test_f_vale_12_vigencias_intercaladas"
+      - "tests/db/test_vale_historico.py::test_corrida_despesa_antes_da_marcacao_recusa_a_marcacao"
+      - "tests/db/test_vale_historico.py::test_corrida_marcacao_antes_da_despesa_exige_bolso"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-6.log"
+  SPEC-013-AC-7:
+    id: SPEC-013-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_va_sem_bolso_e_fora_do_gasto_real tests/db/test_vale.py::test_beneficios_contas_lista_vr_e_va"
+    test_paths:
+      - "tests/db/test_vale.py::test_va_sem_bolso_e_fora_do_gasto_real"
+      - "tests/db/test_vale.py::test_beneficios_contas_lista_vr_e_va"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-7.log"
+  SPEC-013-AC-8:
+    id: SPEC-013-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_f_vale_10_decisao_substituida tests/db/test_vale.py::test_decisao_so_em_mes_encerrado tests/db/test_vale.py::test_decisao_destino_invalido_e_idempotente"
+    test_paths:
+      - "tests/db/test_vale.py::test_f_vale_10_decisao_substituida"
+      - "tests/db/test_vale.py::test_decisao_so_em_mes_encerrado"
+      - "tests/db/test_vale.py::test_decisao_destino_invalido_e_idempotente"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-8.log"
+  SPEC-013-AC-9:
+    id: SPEC-013-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/db/test_vale.py::test_base_com_vigencia tests/db/test_vale.py::test_f_vale_06_credito_menor_e_sem_credito"
+    test_paths:
+      - "tests/db/test_vale.py::test_base_com_vigencia"
+      - "tests/db/test_vale.py::test_f_vale_06_credito_menor_e_sem_credito"
+    exit_code: 0
+    log_path: "logs/20/SPEC-013-AC-9.log"

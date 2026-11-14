@@ -46,11 +46,12 @@ def lancar(
     hash_corpo: str | None = None,
     parcelas: int | None = None,
     pessoa: int | None = None,
+    bolso: str | None = None,
 ) -> tuple[int, int, bool]:
     """Cria ou edita; devolve (transacao_id, versao, criou_agora)."""
     linha = conn.execute(
         "SELECT transacao_id, versao, criado FROM lancamento_gravar("
-        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             user_id,
             transacao_id,
@@ -67,6 +68,7 @@ def lancar(
             hash_corpo,
             parcelas,
             pessoa,
+            bolso,
         ),
     ).fetchone()
     assert linha is not None
@@ -217,6 +219,9 @@ def apagar_usuario(url_dono: str, user_id: int) -> None:
             "transacao_versao",
             "cartao_fechamento",
             "reserva_parametro",
+            "vale_bolso",
+            "vale_decisao",
+            "vale_parametro",
             "recorrente_vinculo",
             "recorrente",
             "r2_parametro",

@@ -1,8 +1,9 @@
-"""Alertas R1, R2 e R4 (SPEC-011, ADR 049).
+"""Alertas R1, R2, R4 e R5 (SPEC-011 e SPEC-013, ADR 049 e 052).
 
-Quem decide o que é alerta, a severidade e a ordem é a função `alertas` (migração 0012), que
-compõe `reserva_situacao`, `r2_situacao` e `r4_divergencias`; aqui só se monta a chamada, sempre com
-o `user_id` da sessão (INV-13) e `hoje` = data civil de America/Sao_Paulo. Nenhuma regra em Python.
+Quem decide o que é alerta, a severidade e a ordem é a função `alertas` (migrações 0012 e 0013),
+que compõe `reserva_situacao`, `r2_situacao`, `r4_divergencias` e `vale_calculo`; aqui só se monta
+a chamada, sempre com o `user_id` da sessão (INV-13) e `hoje` = data civil de America/Sao_Paulo.
+Nenhuma regra em Python.
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ COLUNAS = (
     "codigo, tipo, severidade, detalhe, mensagem, nivel, saldo_liquido, meta, falta, "
     "cobertura_meses, horizonte_dias, data_fim, sobra, disponivel, compromissos, "
     "sobra_nao_confiavel, vencidas, pendencias_vencimento, conta_id, data_snapshot, "
-    "valor_snapshot, saldo_derivado, divergencia, quantidade"
+    "valor_snapshot, saldo_derivado, divergencia, quantidade, bolso, alocacao, consumo, resta, mes"
 )
 
 
@@ -51,6 +52,12 @@ class Alerta:
     saldo_derivado: Decimal | None
     divergencia: Decimal | None
     quantidade: int | None
+    # R5 (vale): o bolso estourado e os números do mês corrente (conta_id é o VR)
+    bolso: str | None
+    alocacao: Decimal | None
+    consumo: Decimal | None
+    resta: Decimal | None
+    mes: str | None
 
 
 async def listar(conn: psycopg.AsyncConnection, user_id: int, hoje: date) -> list[Alerta]:
