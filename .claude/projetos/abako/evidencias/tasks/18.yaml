@@ -1,0 +1,44 @@
+task_id: "18"
+criteria:
+  SPEC-005-AC-11:
+    id: SPEC-005-AC-11
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/backend/test_fatura_situacao_api.py::test_fatura_aberta_ou_fechada_pela_data tests/backend/test_fatura_situacao_api.py::test_fatura_sem_fechamento_nao_tem_situacao tests/backend/test_fatura_situacao_api.py::test_fatura_de_cartao_de_outro_usuario_da_404"
+    test_paths:
+      - "tests/backend/test_fatura_situacao_api.py::test_fatura_aberta_ou_fechada_pela_data"
+      - "tests/backend/test_fatura_situacao_api.py::test_fatura_sem_fechamento_nao_tem_situacao"
+      - "tests/backend/test_fatura_situacao_api.py::test_fatura_de_cartao_de_outro_usuario_da_404"
+    exit_code: 0
+    log_path: "logs/18/SPEC-005-AC-11.log"
+  SPEC-012-AC-12:
+    id: SPEC-012-AC-12
+    command: "npm --prefix frontend test -- src/leitura/Leitura.test.tsx -t \"sem_regra_no_front|mostra_fatura_itens_pessoa_e_limite|fatura_aberta_e_fechada_vem_da_api|config_pendente_e_pedido_de_configuracao_nao_alerta|sobra_nao_confiavel_avisa_com_clareza|erro_tenta_de_novo_e_sessao_expirada_volta_ao_login|mostra_carregando_ate_a_api_responder|resposta_antiga_nao_sobrescreve_a_nova|nunca_mostra_valor_do_mes_antigo_sob_o_titulo_do_novo|fatura_antiga_some_ao_trocar_de_competencia|gasto_real_com_401_e_500_volta_ao_login|sobra_com_500_antes_e_401_depois_volta_ao_login|cartoes_com_500_e_401_volta_ao_login\""
+    test_paths:
+      - "frontend/src/leitura/Leitura.test.tsx::sem_regra_no_front"
+      - "frontend/src/leitura/Leitura.test.tsx::mostra_fatura_itens_pessoa_e_limite"
+      - "frontend/src/leitura/Leitura.test.tsx::fatura_aberta_e_fechada_vem_da_api"
+      - "frontend/src/leitura/Leitura.test.tsx::config_pendente_e_pedido_de_configuracao_nao_alerta"
+      - "frontend/src/leitura/Leitura.test.tsx::sobra_nao_confiavel_avisa_com_clareza"
+      - "frontend/src/leitura/Leitura.test.tsx::erro_tenta_de_novo_e_sessao_expirada_volta_ao_login"
+      - "frontend/src/leitura/Leitura.test.tsx::mostra_carregando_ate_a_api_responder"
+      - "frontend/src/leitura/Leitura.test.tsx::resposta_antiga_nao_sobrescreve_a_nova"
+      - "frontend/src/leitura/Leitura.test.tsx::nunca_mostra_valor_do_mes_antigo_sob_o_titulo_do_novo"
+      - "frontend/src/leitura/Leitura.test.tsx::fatura_antiga_some_ao_trocar_de_competencia"
+      - "frontend/src/leitura/Leitura.test.tsx::gasto_real_com_401_e_500_volta_ao_login"
+      - "frontend/src/leitura/Leitura.test.tsx::sobra_com_500_antes_e_401_depois_volta_ao_login"
+      - "frontend/src/leitura/Leitura.test.tsx::cartoes_com_500_e_401_volta_ao_login"
+    exit_code: 0
+    log_path: "logs/18/SPEC-012-AC-12.log"
+  SPEC-012-AC-13:
+    id: SPEC-012-AC-13
+    command: "npm --prefix frontend test -- src/leitura/Glossario.test.tsx -t \"termos_explicados\""
+    test_paths:
+      - "frontend/src/leitura/Glossario.test.tsx::termos_explicados"
+    exit_code: 0
+    log_path: "logs/18/SPEC-012-AC-13.log"
+  SPEC-012-AC-14:
+    id: SPEC-012-AC-14
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/e2e/test_leitura.py::test_jornada_leitura"
+    test_paths:
+      - "tests/e2e/test_leitura.py::test_jornada_leitura"
+    exit_code: 0
+    log_path: "logs/18/SPEC-012-AC-14.log"

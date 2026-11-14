@@ -149,10 +149,10 @@ describe("tela de saldos", () => {
 
     apiSaldos.listarSaldos.mockResolvedValueOnce({
       tipo: "ok",
-      saldos: [conta({ conta_id: 1, nome: "Reserva", saldo: "10.00" })],
+      saldos: [conta({ conta_id: 1, nome: "Poupança", saldo: "10.00" })],
     });
     await userEvent.setup().click(screen.getByRole("button", { name: "Tentar de novo" }));
-    expect(await screen.findByText("Reserva")).toBeInTheDocument();
+    expect(await screen.findByText("Poupança")).toBeInTheDocument();
     expect(apiSaldos.listarSaldos).toHaveBeenCalledTimes(2);
   });
 

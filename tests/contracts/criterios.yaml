@@ -229,6 +229,16 @@ criterios:
     entao: "a edição cria nova versão da compra inteira (todas as parcelas), a anterior sai da fatura e do limite, e a exclusão lógica tira a compra de ambos"
     invariantes: [INV-09]
     teste: ["tests/db/test_parcelas.py::test_editar_e_excluir_compra_parcelada"]
+  - id: SPEC-005-AC-11
+    spec: SPEC-005
+    dado: "um cartão com fechamento no dia 10 e a fatura da competência 2026-05 (fecha em 2026-05-10), ou um cartão sem dia de fechamento"
+    quando: "a fatura é consultada na véspera do fechamento, no dia do fechamento e depois dele"
+    entao: "a API devolve a data de fechamento efetivo e a situação aberta (hoje antes do fechamento) ou fechada (no dia ou depois), nula sem fechamento; não existe estado paga"
+    invariantes: []
+    teste:
+      - "tests/backend/test_fatura_situacao_api.py::test_fatura_aberta_ou_fechada_pela_data"
+      - "tests/backend/test_fatura_situacao_api.py::test_fatura_sem_fechamento_nao_tem_situacao"
+      - "tests/backend/test_fatura_situacao_api.py::test_fatura_de_cartao_de_outro_usuario_da_404"
   - id: SPEC-006-AC-1
     spec: SPEC-006
     dado: "uma compra parcelada sem nenhuma parcela paga (F-EST-01)"
@@ -396,6 +406,40 @@ criterios:
     teste:
       - "frontend/src/lancamento/Lancamentos.test.tsx::edita_e_exclui_com_versao"
       - "frontend/src/lancamento/Lancamentos.test.tsx::edicao_usa_a_versao_que_o_usuario_viu"
+  - id: SPEC-012-AC-12
+    spec: SPEC-012
+    dado: "a API devolve fatura, limite, gasto real, receita, reserva, sobra do R2 e alertas com valores que não batem entre si (total diferente da soma dos itens, nível incoerente com a falta, alertas fora de ordem)"
+    quando: "cada tela de leitura (cartões, gasto do mês, reserva, sobra, alertas e início) é aberta"
+    entao: "a tela mostra exatamente o que a API devolveu, só formatado (nível, cobertura, totais, sobra e a ordem dos alertas), sem recalcular regra; estados carregando, erro com nova tentativa, sessão vencida, vazio, valor negativo, configuração pendente e sobra não confiável são tratados"
+    invariantes: [INV-14]
+    teste:
+      - "frontend/src/leitura/Leitura.test.tsx::sem_regra_no_front"
+      - "frontend/src/leitura/Leitura.test.tsx::mostra_fatura_itens_pessoa_e_limite"
+      - "frontend/src/leitura/Leitura.test.tsx::fatura_aberta_e_fechada_vem_da_api"
+      - "frontend/src/leitura/Leitura.test.tsx::config_pendente_e_pedido_de_configuracao_nao_alerta"
+      - "frontend/src/leitura/Leitura.test.tsx::sobra_nao_confiavel_avisa_com_clareza"
+      - "frontend/src/leitura/Leitura.test.tsx::erro_tenta_de_novo_e_sessao_expirada_volta_ao_login"
+      - "frontend/src/leitura/Leitura.test.tsx::mostra_carregando_ate_a_api_responder"
+      - "frontend/src/leitura/Leitura.test.tsx::resposta_antiga_nao_sobrescreve_a_nova"
+      - "frontend/src/leitura/Leitura.test.tsx::nunca_mostra_valor_do_mes_antigo_sob_o_titulo_do_novo"
+      - "frontend/src/leitura/Leitura.test.tsx::fatura_antiga_some_ao_trocar_de_competencia"
+      - "frontend/src/leitura/Leitura.test.tsx::gasto_real_com_401_e_500_volta_ao_login"
+      - "frontend/src/leitura/Leitura.test.tsx::sobra_com_500_antes_e_401_depois_volta_ao_login"
+      - "frontend/src/leitura/Leitura.test.tsx::cartoes_com_500_e_401_volta_ao_login"
+  - id: SPEC-012-AC-13
+    spec: SPEC-012
+    dado: "termos técnicos nas telas (competência, fatura própria e de terceiros, limite usado, cobertura, sobra, horizonte, snapshot, divergência)"
+    quando: "o usuário ativa o termo, por mouse ou teclado, ou abre a lista de termos da página"
+    entao: "uma explicação em linguagem direta aparece, com o estado expandido anunciado ao leitor de tela"
+    invariantes: []
+    teste: ["frontend/src/leitura/Glossario.test.tsx::termos_explicados"]
+  - id: SPEC-012-AC-14
+    spec: SPEC-012
+    dado: "o servidor de verdade no tst, um usuário de teste com cartão, compras (própria e de terceiro, parceladas), receita, despesa e um saldo informado divergente"
+    quando: "no navegador, o usuário vê o início, a fatura do mês anterior, o gasto do mês e os alertas"
+    entao: "a fatura mostra total, própria, terceiros, itens com a pessoa, situação fechada e limite usado; o gasto do mês e os alertas (divergência com o nome da conta e pedido de configuração) mostram o que a API calculou"
+    invariantes: []
+    teste: ["tests/e2e/test_leitura.py::test_jornada_leitura"]
   - id: SPEC-003-AC-1
     spec: SPEC-003
     dado: "uma conta com snapshot e transações vigentes posteriores (F-SALDO-01), versões editadas e excluídas (F-SALDO-02)"

@@ -1,23 +1,16 @@
-// Saldos, snapshots e R4 pelo cliente gerado. Como em `contas.ts`, devolve um resultado tipado em
+// Saldos e snapshots pelo cliente gerado. Como em `contas.ts`, devolve um resultado tipado em
 // vez de lançar, para a tela tratar sempre carregando, sucesso, vazio e erro. Os valores chegam
 // como texto e seguem texto: o front não soma, não compara e não arredonda nada (ADR 015).
 
 import {
-  type DivergenciaSaida,
   type SaldoSaida,
   type SnapshotSaida,
   saldosListar,
-  saldosR4,
   saldosRegistrarSnapshot,
 } from "./gerado";
 
 export type ResultadoSaldos =
   | { tipo: "ok"; saldos: SaldoSaida[] }
-  | { tipo: "sessao_expirada" }
-  | { tipo: "erro" };
-
-export type ResultadoR4 =
-  | { tipo: "ok"; divergencias: DivergenciaSaida[] }
   | { tipo: "sessao_expirada" }
   | { tipo: "erro" };
 
@@ -34,19 +27,6 @@ export async function listarSaldos(): Promise<ResultadoSaldos> {
     const status = resposta.response?.status;
     if (status === 200 && resposta.data !== undefined) {
       return { tipo: "ok", saldos: resposta.data };
-    }
-    return status === 401 ? { tipo: "sessao_expirada" } : { tipo: "erro" };
-  } catch {
-    return { tipo: "erro" };
-  }
-}
-
-export async function listarDivergencias(): Promise<ResultadoR4> {
-  try {
-    const resposta = await saldosR4();
-    const status = resposta.response?.status;
-    if (status === 200 && resposta.data !== undefined) {
-      return { tipo: "ok", divergencias: resposta.data };
     }
     return status === 401 ? { tipo: "sessao_expirada" } : { tipo: "erro" };
   } catch {

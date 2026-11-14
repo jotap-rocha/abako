@@ -140,6 +140,21 @@ async def itens_da_fatura(
     return [ItemFatura(*linha) for linha in await cur.fetchall()]
 
 
+async def fechamento_da_fatura(
+    conn: psycopg.AsyncConnection, user_id: int, conta_id: int, competencia: str, hoje: date
+) -> tuple[date | None, bool | None]:
+    """(data do fechamento efetivo, aberta?). Aberta = `hoje` anterior ao fechamento (ADR 048
+    item 9). Sem dia de fechamento cadastrado a função devolve nulo e a situação é desconhecida."""
+    cur = await conn.execute(
+        "SELECT f, f > %s FROM (SELECT fatura_fechamento(%s, %s, %s) AS f) t",
+        (hoje, user_id, conta_id, competencia),
+    )
+    linha = await cur.fetchone()
+    if linha is None or linha[0] is None:
+        return None, None
+    return linha[0], bool(linha[1])
+
+
 async def resumo_da_fatura(
     conn: psycopg.AsyncConnection, user_id: int, conta_id: int, competencia: str
 ) -> ResumoFatura:

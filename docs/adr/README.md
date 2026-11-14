@@ -58,3 +58,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [047](047-reserva-cobertura-e-aporte.md) | Reserva, cobertura e aporte: convenções da SPEC-009 | Aceita | 2026-11-12 |
 | [048](048-recorrentes-e-r2.md) | Recorrentes, vínculo, vencimento do cartão e sobra do R2: convenções da SPEC-010 | Aceita | 2026-11-12 |
 | [049](049-alertas-r1-r2-r4.md) | Alertas R1, R2 e R4: convenções da SPEC-011 | Aceita | 2026-11-12 |
+| [050](050-telas-de-leitura.md) | Telas de leitura: convenções da task 18 (SPEC-012) | Aceita | 2026-11-12 |

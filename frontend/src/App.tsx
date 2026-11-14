@@ -5,10 +5,14 @@ import { recuperarSessao, sair } from "./api/sessao";
 import { Casca } from "./layout/Casca";
 import { Login } from "./login/Login";
 import { Lancamentos } from "./lancamento/Lancamentos";
+import { Alertas } from "./leitura/Alertas";
+import { Cartoes } from "./leitura/Cartoes";
+import { GastoReal } from "./leitura/GastoReal";
+import { Reserva } from "./leitura/Reserva";
+import { SobraR2 } from "./leitura/SobraR2";
 import { Inicio } from "./paginas/Inicio";
 import { NaoEncontrada } from "./paginas/NaoEncontrada";
 import { limparCachesDoApp } from "./pwa/cache";
-import { Alertas } from "./saldos/Alertas";
 import { Saldos } from "./saldos/Saldos";
 import { Carregando } from "./ui/componentes";
 
@@ -57,6 +61,10 @@ export function App() {
         <Route index element={<Inicio />} />
         <Route path="contas" element={<Saldos />} />
         <Route path="lancamentos" element={<Lancamentos />} />
+        <Route path="cartoes" element={<Cartoes />} />
+        <Route path="gasto-real" element={<GastoReal />} />
+        <Route path="reserva" element={<Reserva />} />
+        <Route path="sobra" element={<SobraR2 />} />
         <Route path="alertas" element={<Alertas />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Route>

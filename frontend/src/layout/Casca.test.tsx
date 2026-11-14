@@ -4,13 +4,16 @@ import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, vi } from "vitest";
 
 import { App } from "../App";
+import * as leitura from "../api/leitura";
 import * as saldos from "../api/saldos";
 import * as sessao from "../api/sessao";
 
 vi.mock("../api/sessao");
 vi.mock("../api/saldos");
+vi.mock("../api/leitura");
 const apiSessao = vi.mocked(sessao);
 const apiSaldos = vi.mocked(saldos);
+const apiLeitura = vi.mocked(leitura);
 
 function renderizar(rota = "/") {
   return render(
@@ -23,7 +26,13 @@ function renderizar(rota = "/") {
 beforeEach(() => {
   apiSessao.recuperarSessao.mockResolvedValue(true);
   apiSaldos.listarSaldos.mockResolvedValue({ tipo: "ok", saldos: [] });
-  apiSaldos.listarDivergencias.mockResolvedValue({ tipo: "ok", divergencias: [] });
+  // As telas de leitura buscam dados ao abrir; aqui basta que fiquem carregando.
+  const pendente = () => new Promise<never>(() => undefined);
+  apiLeitura.obterReceita.mockImplementation(pendente);
+  apiLeitura.obterGastoReal.mockImplementation(pendente);
+  apiLeitura.obterR2.mockImplementation(pendente);
+  apiLeitura.obterReserva.mockImplementation(pendente);
+  apiLeitura.obterAlertas.mockImplementation(pendente);
 });
 
 afterEach(() => {
@@ -31,13 +40,22 @@ afterEach(() => {
 });
 
 describe("casca do app", () => {
-  it("menu_leva_as_quatro_paginas", async () => {
+  it("menu_leva_as_paginas", async () => {
     renderizar();
     const menu = await screen.findByRole("navigation", { name: "Principal" });
     const itens = within(menu)
       .getAllByRole("link")
       .map((l) => l.textContent);
-    expect(itens).toEqual(["Início", "Contas", "Lançamentos", "Alertas"]);
+    expect(itens).toEqual([
+      "Início",
+      "Contas",
+      "Lançamentos",
+      "Cartões",
+      "Gasto do mês",
+      "Reserva",
+      "Sobra (R2)",
+      "Alertas",
+    ]);
 
     const usuario = userEvent.setup();
     await usuario.click(within(menu).getByRole("link", { name: "Lançamentos" }));
@@ -53,9 +71,10 @@ describe("casca do app", () => {
     expect(await screen.findByRole("heading", { name: "Página não encontrada" })).toBeInTheDocument();
   });
 
-  it("inicio_mostra_cartoes_em_breve_sem_numeros", async () => {
+  it("inicio_busca_os_numeros_na_api", async () => {
     renderizar();
     expect(await screen.findByRole("heading", { name: "Início" })).toBeInTheDocument();
-    expect(screen.getAllByText("Em breve").length).toBeGreaterThan(0);
+    expect(apiLeitura.obterR2).toHaveBeenCalled();
+    expect(apiLeitura.obterAlertas).toHaveBeenCalled();
   });
 });

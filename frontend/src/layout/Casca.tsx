@@ -3,10 +3,14 @@ import { NavLink, Outlet } from "react-router";
 
 import {
   IconeAlertas,
+  IconeCartoes,
   IconeContas,
+  IconeGasto,
   IconeInicio,
   IconeLancamentos,
+  IconeReserva,
   IconeSair,
+  IconeSobra,
 } from "../ui/icones";
 
 type ItemMenu = { para: string; texto: string; icone: ReactNode };
@@ -15,6 +19,10 @@ const MENU: ItemMenu[] = [
   { para: "/", texto: "Início", icone: <IconeInicio /> },
   { para: "/contas", texto: "Contas", icone: <IconeContas /> },
   { para: "/lancamentos", texto: "Lançamentos", icone: <IconeLancamentos /> },
+  { para: "/cartoes", texto: "Cartões", icone: <IconeCartoes /> },
+  { para: "/gasto-real", texto: "Gasto do mês", icone: <IconeGasto /> },
+  { para: "/reserva", texto: "Reserva", icone: <IconeReserva /> },
+  { para: "/sobra", texto: "Sobra (R2)", icone: <IconeSobra /> },
   { para: "/alertas", texto: "Alertas", icone: <IconeAlertas /> },
 ];
 

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, vi } from "vitest";
 
 import { criarConta, editarConta, obterConta } from "./contas";
 import { client } from "./gerado/client.gen";
-import { listarDivergencias, listarSaldos, registrarSnapshot } from "./saldos";
+import { listarSaldos, registrarSnapshot } from "./saldos";
 
 // Só o `fetch` do navegador é simulado; os módulos e o cliente gerado rodam de verdade.
 const fetchSimulado = vi.fn<typeof fetch>();
@@ -64,17 +64,6 @@ describe("api de saldos", () => {
     expect(await listarSaldos()).toEqual({ tipo: "erro" });
     fetchSimulado.mockRejectedValueOnce(new TypeError("rede"));
     expect(await listarSaldos()).toEqual({ tipo: "erro" });
-  });
-
-  it("listar_divergencias_mapeia_os_status", async () => {
-    fetchSimulado.mockResolvedValueOnce(resposta(200, []));
-    expect(await listarDivergencias()).toEqual({ tipo: "ok", divergencias: [] });
-    expect(ultimaRequisicao().url).toContain("/api/r4");
-
-    fetchSimulado.mockResolvedValueOnce(resposta(401, { detail: "x" }));
-    expect(await listarDivergencias()).toEqual({ tipo: "sessao_expirada" });
-    fetchSimulado.mockRejectedValueOnce(new TypeError("rede"));
-    expect(await listarDivergencias()).toEqual({ tipo: "erro" });
   });
 
   it("registrar_snapshot_envia_texto_e_mapeia_os_status", async () => {

@@ -424,6 +424,18 @@
             "title": "Competencia",
             "type": "string"
           },
+          "fechamento": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fechamento"
+          },
           "itens": {
             "items": {
               "$ref": "#/components/schemas/ItemFaturaSaida"
@@ -434,6 +446,21 @@
           "propria": {
             "title": "Propria",
             "type": "string"
+          },
+          "situacao": {
+            "anyOf": [
+              {
+                "enum": [
+                  "aberta",
+                  "fechada"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Situacao"
           },
           "terceiros": {
             "title": "Terceiros",
@@ -449,7 +476,9 @@
           "total",
           "propria",
           "terceiros",
-          "itens"
+          "itens",
+          "fechamento",
+          "situacao"
         ],
         "title": "FaturaSaida",
         "type": "object"
@@ -2471,7 +2500,7 @@
     },
     "/api/cartoes/{conta_id}/faturas/{competencia}": {
       "get": {
-        "description": "Parcelas da competência (mês do fechamento, \"YYYY-MM\"), total, própria e terceiros.",
+        "description": "Parcelas da competência (mês do fechamento, \"YYYY-MM\"), total, própria e terceiros,\nmais a data de fechamento e se a fatura está aberta ou fechada em `hoje`.",
         "operationId": "cartoes_fatura",
         "parameters": [
           {

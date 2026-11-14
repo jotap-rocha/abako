@@ -57,9 +57,12 @@ def test_login_e_saldos(servidor: str, usuario_e2e: Usuario, pagina: Page) -> No
     expect(saldo_da_conta(pagina)).to_have_text("Saldo de Conta e2e: R$ 1.234,56")
     expect(pagina.get_by_text(re.compile(r"Último saldo informado: R\$ 1\.234,56"))).to_be_visible()
 
-    # Alertas: saldo inicial nunca diverge
+    # Alertas: saldo inicial nunca diverge (nenhum item R4; sem reserva configurada só sobra o
+    # pedido de configuração)
     menu.get_by_role("link", name="Alertas").click()
-    expect(pagina.get_by_text("Nenhuma divergência")).to_be_visible()
+    expect(pagina.get_by_role("heading", name="Alertas")).to_be_visible()
+    expect(pagina.get_by_text("pedido de configuração")).to_be_visible()
+    expect(pagina.locator(".etiqueta", has_text="R4")).to_have_count(0)
 
     # Sair volta ao login
     pagina.get_by_role("button", name="Sair").click()
