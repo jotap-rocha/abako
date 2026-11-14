@@ -89,7 +89,7 @@ def test_downgrade_com_dados_e_recusado(esquema: str) -> None:
         try:
             with pytest.raises(Exception, match="0011"):
                 command.downgrade(cfg, "0010")
-            assert _revisao(esquema) == "0013"
+            assert _revisao(esquema) == "0014"
             assert _existentes(esquema) == (sorted(FUNCOES), sorted(TABELAS))
             with psycopg.connect(esquema) as ver:  # o dado continua lá
                 linha = ver.execute(
@@ -113,7 +113,7 @@ def test_downgrade_sem_dados_remove_tudo_e_sobe_de_novo(esquema: str) -> None:
         assert _existentes(esquema) == ([], [])
     finally:
         command.upgrade(cfg, "head")
-    assert _revisao(esquema) == "0013"
+    assert _revisao(esquema) == "0014"
     assert _existentes(esquema) == (sorted(FUNCOES), sorted(TABELAS))
 
 

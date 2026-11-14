@@ -629,15 +629,23 @@ FUNCOES_DO_APP = (
 )
 
 
+LEITURAS_DO_PIPELINE = (
+    "a_receber_pessoas(bigint, bigint)",
+    "fatura_resumo(bigint, bigint, text)",
+    "fatura_itens(bigint, bigint, text)",
+)
+
+
 def test_papeis_da_pessoa(esquema: str, url_app: str, url_pipeline: str) -> None:
     with psycopg.connect(url_app) as app, psycopg.connect(url_pipeline) as pipe:
         for funcao in FUNCOES_DO_APP:
             assert app.execute(
                 "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
             ).fetchone() == (True,), funcao
+            # 0014 / ADR 054: o pipeline lê a receber, fatura e resumo (INVOKER); nunca escreve
             assert pipe.execute(
                 "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
-            ).fetchone() == (False,), funcao
+            ).fetchone() == (funcao in LEITURAS_DO_PIPELINE,), funcao
         assert app.execute(
             "SELECT has_function_privilege("
             "'lancamento_gravar_base(bigint, bigint, integer, text, date, numeric, bigint, bigint, "
@@ -675,9 +683,6 @@ def test_papeis_da_pessoa(esquema: str, url_app: str, url_pipeline: str) -> None
         app.rollback()
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             pipe.execute("SELECT pessoa_gravar(1, NULL, NULL, 'x')")
-        pipe.rollback()
-        with pytest.raises(psycopg.errors.InsufficientPrivilege):
-            pipe.execute("SELECT * FROM a_receber_pessoas(1, NULL)")
         pipe.rollback()
 
 

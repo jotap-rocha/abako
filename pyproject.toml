@@ -22,11 +22,14 @@ select = ["E", "F", "I", "B", "UP"]
 python_version = "3.12"
 files = [
   "db",
+  "pipeline",
+  "tests/pipeline",
   "backend",
   "tests/backend",
   "tests/db",
   "tests/e2e",
   "tests/conftest.py",
+  "tests/test_mascara_urls.py",
   "tests/test_check.py",
   "tests/test_rastreabilidade.py",
   "tests/test_retencao_backup.py",

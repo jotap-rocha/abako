@@ -1291,3 +1291,90 @@ fixtures:
       parametro: {desde: "2026-01-01", meses: 3, gasto_essencial: "4000.00"}
     esperado:
       alerta: {codigo: R1, tipo: alerta, severidade: alta, detalhe: reserva_critica, nivel: critica, saldo_liquido: "0.00", meta: "12000.00", falta: "12000.00", cobertura_meses: "0.00"}
+
+  # ---- SPEC-014: pipeline analítico (ADR 054). Hoje = 2026-02-20. Esperados à mão. ----
+  - id: F-PIPE-01
+    invariantes: [INV-15, INV-13, INV-02, INV-06]
+    descricao: >-
+      Usuário A. Corrente: snapshot 1000.00 em 2026-01-01, receita 500.00 (01-05), débito 200.00
+      (01-12), snapshot 1250.00 em 2026-02-01 (divergência R4: derivado 1300.00), débito 100.00
+      (02-03), repasse recebido 30.00 (02-12), pagamento de fatura 50.00 para o cartão (02-15).
+      Reserva (mãe: a corrente): snapshot 2000.00 em 2026-01-15 e rendimento bruto 12.00 / imposto
+      2.00 em 02-01 (líquido 10.00); parâmetro 3 meses x 1000.00 desde 2026-01-01. Cartão
+      (fechamento dia 10, linha de limite 1000.00): compra própria 300.00 em 3 parcelas em 01-20
+      (competências 2026-02, 2026-03, 2026-04) e compra de uma pessoa de 90.00 em 02-05 (competência
+      2026-02). Nomes e descrições de teste levam o marcador MARC_ (nunca podem chegar ao arquivo).
+    entrada:
+      hoje: "2026-02-20"
+    esperado:
+      saldo_diario:
+        corrente:
+          dias: 51
+          trechos:
+            - {de: "2026-01-01", ate: "2026-01-04", saldo: "1000.00"}
+            - {de: "2026-01-05", ate: "2026-01-11", saldo: "1500.00"}
+            - {de: "2026-01-12", ate: "2026-01-31", saldo: "1300.00"}
+            - {de: "2026-02-01", ate: "2026-02-02", saldo: "1250.00"}
+            - {de: "2026-02-03", ate: "2026-02-11", saldo: "1150.00"}
+            - {de: "2026-02-12", ate: "2026-02-14", saldo: "1180.00"}
+            - {de: "2026-02-15", ate: "2026-02-20", saldo: "1130.00"}
+        reserva:
+          dias: 37
+          trechos:
+            - {de: "2026-01-15", ate: "2026-01-31", saldo: "2000.00"}
+            - {de: "2026-02-01", ate: "2026-02-20", saldo: "2010.00"}
+        cartao:
+          dias: 32
+          trechos:
+            - {de: "2026-01-20", ate: "2026-02-04", saldo: "-300.00"}
+            - {de: "2026-02-05", ate: "2026-02-14", saldo: "-390.00"}
+            - {de: "2026-02-15", ate: "2026-02-20", saldo: "-340.00"}
+      gasto_mensal:
+        - {mes: "2026-01", conta: corrente, gasto: "200.00"}
+        - {mes: "2026-02", conta: corrente, gasto: "100.00"}
+        - {mes: "2026-02", conta: cartao, gasto: "100.00"}
+        - {mes: "2026-03", conta: cartao, gasto: "100.00"}
+        - {mes: "2026-04", conta: cartao, gasto: "100.00"}
+      fatura_resumo:
+        - {competencia: "2026-02", total: "190.00", propria: "100.00", terceiros: "90.00"}
+        - {competencia: "2026-03", total: "100.00", propria: "100.00", terceiros: "0.00"}
+        - {competencia: "2026-04", total: "100.00", propria: "100.00", terceiros: "0.00"}
+      limite_linha: {limite: "1000.00", usado: "340.00", disponivel: "660.00"}
+      cobertura_reserva:
+        contas_reserva: 1
+        saldo_liquido: "2010.00"
+        imposto_acumulado: "2.00"
+        saldo_bruto: "2012.00"
+        meses_meta: 3
+        gasto_essencial: "1000.00"
+        meta: "3000.00"
+        nivel: atencao
+        falta: "990.00"
+        cobertura_meses: "2.01"
+        config_pendente: false
+      a_receber: {total_a_receber: "60.00"}
+      r4_divergencias: 1
+
+  - id: F-PIPE-02
+    invariantes: [INV-13, INV-15]
+    descricao: >-
+      Usuário B (isolamento). Uma corrente com snapshot 777.00 em 2026-01-01 e débito 77.00 em
+      2026-01-20; sem cartão, reserva configurada nem terceiros. Hoje 2026-02-20: 51 dias de saldo
+      (777.00 até 01-19; 700.00 de 01-20 a 02-20), gasto de janeiro 77.00, sem fatura nem linha,
+      a receber 0.00 e reserva sem configuração (config_pendente, sem contas de reserva).
+    entrada:
+      hoje: "2026-02-20"
+    esperado:
+      saldo_diario:
+        corrente:
+          dias: 51
+          trechos:
+            - {de: "2026-01-01", ate: "2026-01-19", saldo: "777.00"}
+            - {de: "2026-01-20", ate: "2026-02-20", saldo: "700.00"}
+      gasto_mensal:
+        - {mes: "2026-01", conta: corrente, gasto: "77.00"}
+      fatura_resumo: []
+      limite_linha: null
+      cobertura_reserva: {contas_reserva: 0, saldo_liquido: "0.00", config_pendente: true}
+      a_receber: {total_a_receber: "0.00"}
+      r4_divergencias: 0
