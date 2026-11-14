@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 
-import type { LancamentoSaida, SaldoSaida } from "../api/gerado";
+import type { LancamentoSaida, PessoaSaida, SaldoSaida } from "../api/gerado";
 import {
   type DadosLancamento,
   type ResultadoGravar,
@@ -19,8 +19,13 @@ import {
   rotuloDoTipo,
 } from "./tipos";
 
+/** 1 a 48 parcelas: o número volta da própria lista, sem converter texto em número. */
+const OPCOES_PARCELAS: number[] = Array.from({ length: 48 }, (_, i) => i + 1);
+
 type Props = {
   contas: SaldoSaida[];
+  /** Pessoas para a compra de terceiro e o repasse (o nome só aparece na tela do dono, ADR 050). */
+  pessoas?: PessoaSaida[];
   /** Se vier, o formulário edita este lançamento (nova versão); senão, cria um. */
   edicao?: LancamentoSaida;
   /** Chamado depois de salvar, para a lista buscar os lançamentos de novo no servidor. */
@@ -40,6 +45,8 @@ type Valores = {
   contaId: number | null;
   destinoId: number | null;
   descricao: string;
+  parcelas: number;
+  pessoaId: number | null;
 };
 
 /** "1234.56" da API vira "1234,56" para editar: só troca o separador, sem conta. */
@@ -58,6 +65,8 @@ function valoresIniciais(contas: SaldoSaida[], edicao?: LancamentoSaida): Valore
       contaId: edicao.conta_id,
       destinoId: edicao.conta_destino_id,
       descricao: edicao.descricao ?? "",
+      parcelas: edicao.parcelas ?? 1,
+      pessoaId: edicao.pessoa_id ?? null,
     };
   }
   return {
@@ -69,10 +78,12 @@ function valoresIniciais(contas: SaldoSaida[], edicao?: LancamentoSaida): Valore
     contaId: contas[0]?.conta_id ?? null,
     destinoId: null,
     descricao: "",
+    parcelas: 1,
+    pessoaId: null,
   };
 }
 
-type Campo = "conta" | "destino" | "valor" | "bruto" | "imposto";
+type Campo = "conta" | "destino" | "valor" | "bruto" | "imposto" | "pessoa";
 type Problema = { campo: Campo; mensagem: string };
 
 /** Mensagem em linguagem direta para cada resposta que não é sucesso. */
@@ -102,6 +113,7 @@ export function mensagemDeErro(resposta: ResultadoGravar): string {
  */
 export function Formulario({
   contas,
+  pessoas = [],
   edicao,
   aoSalvar,
   aoSessaoExpirar,
@@ -137,6 +149,10 @@ export function Formulario({
   const destinos = contasDeDestino(v.tipo, contas, v.contaId);
 
   function mudar(parcial: Partial<Valores>) {
+    // Mudou algo (pessoa, valor, parcelas, tipo...): é outro envio, então chave nova. Sem isso, o
+    // servidor devolveria o lançamento antigo como "repetido" se o envio anterior tivesse gravado
+    // e só a resposta se perdesse. Sem mudança nenhuma, o retry mantém a mesma chave.
+    chave.current = novaChave();
     setSalvo(null);
     setCampoComErro(null);
     setV((atual) => ({ ...atual, ...parcial }));
@@ -148,11 +164,17 @@ export function Formulario({
     if (info.pedeDestino && v.destinoId === null) {
       return { campo: "destino", mensagem: "Escolha a conta de destino." };
     }
+    if (info.pessoa === "obrigatoria" && v.pessoaId === null) {
+      return { campo: "pessoa", mensagem: "Escolha quem fez o repasse." };
+    }
     const base = {
       tipo: v.tipo,
       data: v.data,
       conta_id: v.contaId,
       descricao: v.descricao.trim() === "" ? null : v.descricao,
+      // 100% própria (sem pessoa) ou 100% de uma pessoa: o formulário não oferece divisão.
+      ...(info.pessoa === null ? {} : { pessoa_id: v.pessoaId }),
+      ...(info.pedeParcelas ? { parcelas: v.parcelas } : {}),
     };
     if (info.pedeBrutoEImposto) {
       const bruto = lerValorDigitado(v.bruto);
@@ -249,11 +271,17 @@ export function Formulario({
               // Benefício não entra em transferência nem rendimento: se a conta escolhida não
               // serve ao novo tipo, a escolha volta a "Escolha…" em vez de ficar escondida.
               const serve = contasDeOrigem(tipo, contas).some((c) => c.conta_id === v.contaId);
-              mudar({ tipo, destinoId: null, contaId: serve ? v.contaId : null });
+              mudar({
+                tipo,
+                destinoId: null,
+                pessoaId: null,
+                parcelas: 1,
+                contaId: serve ? v.contaId : null,
+              });
             }}
           >
             {TIPOS_LANCAMENTO.map((t) => (
-              <option key={t.valor} value={t.valor} disabled={t.emBreve}>
+              <option key={t.valor} value={t.valor}>
                 {t.rotulo}
               </option>
             ))}
@@ -363,7 +391,9 @@ export function Formulario({
         </div>
       ) : (
         <div className="campo">
-          <label htmlFor={`${id}-valor`}>Valor (R$)</label>
+          <label htmlFor={`${id}-valor`}>
+            {info.pedeParcelas ? "Valor total da compra (R$)" : "Valor (R$)"}
+          </label>
           <input
             id={`${id}-valor`}
             {...marcar("valor")}
@@ -374,7 +404,71 @@ export function Formulario({
             onChange={(e) => mudar({ valor: e.target.value })}
             required
           />
-          <span className="ajuda">Sempre positivo: o tipo diz se entra ou sai.</span>
+          <span className="ajuda">
+            {info.pedeParcelas
+              ? "O total, mesmo se parcelado: o abako reparte em parcelas e a última absorve os centavos."
+              : "Sempre positivo: o tipo diz se entra ou sai."}
+          </span>
+        </div>
+      )}
+      {(info.pedeParcelas || info.pessoa !== null) && (
+        <div className="linha-campos">
+          {info.pedeParcelas && (
+            <div className="campo">
+              <label htmlFor={`${id}-parcelas`}>Parcelas</label>
+              <select
+                id={`${id}-parcelas`}
+                value={String(v.parcelas)}
+                onChange={(e) =>
+                  mudar({
+                    parcelas: OPCOES_PARCELAS.find((n) => String(n) === e.target.value) ?? 1,
+                  })
+                }
+              >
+                {OPCOES_PARCELAS.map((n) => (
+                  <option key={n} value={n}>
+                    {n === 1 ? "À vista (1x)" : `${n}x`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {info.pessoa !== null && (
+            <div className="campo">
+              <label htmlFor={`${id}-pessoa`}>
+                {info.pessoa === "obrigatoria" ? "Quem repassou" : "De quem é a compra"}
+              </label>
+              <select
+                id={`${id}-pessoa`}
+                {...marcar("pessoa")}
+                value={v.pessoaId === null ? "" : String(v.pessoaId)}
+                onChange={(e) =>
+                  mudar({
+                    pessoaId: pessoas.find((p) => String(p.pessoa_id) === e.target.value)?.pessoa_id ?? null,
+                  })
+                }
+              >
+                {info.pessoa === "obrigatoria" ? (
+                  <option value="" disabled>
+                    Escolha…
+                  </option>
+                ) : (
+                  <option value="">Minha (compra própria)</option>
+                )}
+                {pessoas.map((p) => (
+                  <option key={p.pessoa_id} value={p.pessoa_id}>
+                    {p.nome}
+                  </option>
+                ))}
+              </select>
+              <span className="ajuda">
+                {info.pessoa === "obrigatoria"
+                  ? "Entra na sua conta corrente e abate o que a pessoa deve."
+                  : "A compra é toda sua ou toda da pessoa escolhida; não há divisão."}
+                {pessoas.length === 0 && " Nenhuma pessoa cadastrada: cadastre em Pessoas."}
+              </span>
+            </div>
+          )}
         </div>
       )}
       <div className="campo">

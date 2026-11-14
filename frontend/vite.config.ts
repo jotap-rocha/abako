@@ -9,5 +9,7 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/setupTests.ts"],
+    // Telas inteiras com vários arquivos em paralelo passam de 5 s no PC do dev; sozinhas levam ~2 s.
+    testTimeout: 20_000,
   },
 });

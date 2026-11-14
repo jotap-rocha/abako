@@ -6,6 +6,7 @@ import { afterEach, beforeEach, vi } from "vitest";
 import { App } from "../App";
 import type { LancamentoSaida } from "../api/gerado";
 import * as api from "../api/lancamentos";
+import * as leitura from "../api/leitura";
 import * as saldos from "../api/saldos";
 import * as sessao from "../api/sessao";
 import { CONTAS } from "./contasDeTeste";
@@ -13,9 +14,11 @@ import { CONTAS } from "./contasDeTeste";
 vi.mock("../api/sessao");
 vi.mock("../api/saldos");
 vi.mock("../api/lancamentos");
+vi.mock("../api/leitura");
 const apiSessao = vi.mocked(sessao);
 const apiSaldos = vi.mocked(saldos);
 const apiLanc = vi.mocked(api);
+const apiLeitura = vi.mocked(leitura);
 
 const L1: LancamentoSaida = {
   transacao_id: 10,
@@ -41,6 +44,7 @@ function renderizar() {
 beforeEach(() => {
   apiSessao.recuperarSessao.mockResolvedValue(true);
   apiSaldos.listarSaldos.mockResolvedValue({ tipo: "ok", saldos: CONTAS });
+  apiLeitura.listarPessoas.mockResolvedValue({ tipo: "ok", dados: [] });
   apiLanc.listarLancamentos.mockResolvedValue({ tipo: "ok", lancamentos: [L1] });
 });
 
@@ -49,6 +53,25 @@ afterEach(() => {
 });
 
 describe("página de lançamentos", () => {
+  it("nome_da_pessoa_neutro_se_a_lista_de_pessoas_nao_veio", async () => {
+    const compra = { ...L1, tipo: "credito", pessoa_id: 9, descricao: null };
+    apiLanc.listarLancamentos.mockResolvedValue({ tipo: "ok", lancamentos: [compra] });
+    // Pessoas não carregaram: não dá para afirmar que a pessoa foi removida.
+    apiLeitura.listarPessoas.mockResolvedValue({ tipo: "erro" });
+    const { unmount } = renderizar();
+    const lista = await screen.findByRole("list", { name: "Lançamentos" });
+    expect(lista).toHaveTextContent("compra de pessoa");
+    expect(lista).not.toHaveTextContent("pessoa removida");
+    unmount();
+
+    // Com a lista de pessoas carregada e sem aquela pessoa, aí sim ela foi removida.
+    apiLeitura.listarPessoas.mockResolvedValue({ tipo: "ok", dados: [] });
+    renderizar();
+    expect(await screen.findByRole("list", { name: "Lançamentos" })).toHaveTextContent(
+      "compra de pessoa removida",
+    );
+  });
+
   it("mostra_estado_vazio_e_erro", async () => {
     apiLanc.listarLancamentos.mockResolvedValueOnce({ tipo: "ok", lancamentos: [] });
     renderizar();

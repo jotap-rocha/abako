@@ -10,6 +10,9 @@ import { Cartoes } from "./leitura/Cartoes";
 import { GastoReal } from "./leitura/GastoReal";
 import { Reserva } from "./leitura/Reserva";
 import { SobraR2 } from "./leitura/SobraR2";
+import { Parametros } from "./parametros/Parametros";
+import { Recorrentes } from "./recorrentes/Recorrentes";
+import { Pessoas } from "./terceiros/Pessoas";
 import { Inicio } from "./paginas/Inicio";
 import { NaoEncontrada } from "./paginas/NaoEncontrada";
 import { limparCachesDoApp } from "./pwa/cache";
@@ -66,6 +69,9 @@ export function App() {
         <Route path="reserva" element={<Reserva />} />
         <Route path="sobra" element={<SobraR2 />} />
         <Route path="alertas" element={<Alertas />} />
+        <Route path="pessoas" element={<Pessoas />} />
+        <Route path="recorrentes" element={<Recorrentes />} />
+        <Route path="parametros" element={<Parametros />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Route>
     </Routes>
