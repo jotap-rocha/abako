@@ -1,0 +1,103 @@
+task_id: "21"
+criteria:
+  SPEC-014-AC-1:
+    id: SPEC-014-AC-1
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_fluxo.py::test_nao_escreve_no_transacional tests/pipeline/test_fluxo.py::test_analitico_so_tem_agregados"
+    test_paths:
+      - "tests/pipeline/test_fluxo.py::test_nao_escreve_no_transacional"
+      - "tests/pipeline/test_fluxo.py::test_analitico_so_tem_agregados"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-1.log"
+  SPEC-014-AC-10:
+    id: SPEC-014-AC-10
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_config.py::test_alvo_tst_valido_e_pasta_externa tests/pipeline/test_config.py::test_url_fora_do_guarda_e_recusada tests/pipeline/test_config.py::test_prd_exige_confirmacao_humana tests/pipeline/test_config.py::test_pasta_dentro_do_repositorio_e_recusada tests/pipeline/test_config.py::test_pasta_padrao_fica_fora_do_repositorio tests/pipeline/test_config.py::test_url_malformada_vira_config_invalida_sem_vazar_a_url"
+    test_paths:
+      - "tests/pipeline/test_config.py::test_alvo_tst_valido_e_pasta_externa"
+      - "tests/pipeline/test_config.py::test_url_fora_do_guarda_e_recusada"
+      - "tests/pipeline/test_config.py::test_prd_exige_confirmacao_humana"
+      - "tests/pipeline/test_config.py::test_pasta_dentro_do_repositorio_e_recusada"
+      - "tests/pipeline/test_config.py::test_pasta_padrao_fica_fora_do_repositorio"
+      - "tests/pipeline/test_config.py::test_url_malformada_vira_config_invalida_sem_vazar_a_url"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-10.log"
+  SPEC-014-AC-11:
+    id: SPEC-014-AC-11
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_fluxo.py::test_sem_nome_nem_descricao_no_arquivo tests/pipeline/test_fluxo.py::test_consultas_do_pipeline_nao_selecionam_texto_livre"
+    test_paths:
+      - "tests/pipeline/test_fluxo.py::test_sem_nome_nem_descricao_no_arquivo"
+      - "tests/pipeline/test_fluxo.py::test_consultas_do_pipeline_nao_selecionam_texto_livre"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-11.log"
+  SPEC-014-AC-12:
+    id: SPEC-014-AC-12
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/test_mascara_urls.py::test_mascara_so_a_senha tests/test_mascara_urls.py::test_relatorio_de_falha_e_secoes_sao_mascarados tests/test_mascara_urls.py::test_saida_do_pytest_com_locais_nao_vaza_a_senha"
+    test_paths:
+      - "tests/test_mascara_urls.py::test_mascara_so_a_senha"
+      - "tests/test_mascara_urls.py::test_relatorio_de_falha_e_secoes_sao_mascarados"
+      - "tests/test_mascara_urls.py::test_saida_do_pytest_com_locais_nao_vaza_a_senha"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-12.log"
+  SPEC-014-AC-2:
+    id: SPEC-014-AC-2
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_idempotencia.py::test_reexecucao_identica"
+    test_paths:
+      - "tests/pipeline/test_idempotencia.py::test_reexecucao_identica"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-2.log"
+  SPEC-014-AC-3:
+    id: SPEC-014-AC-3
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_trava.py::test_execucao_simultanea tests/pipeline/test_trava.py::test_trava_externa_impede_sem_criar_nada"
+    test_paths:
+      - "tests/pipeline/test_trava.py::test_execucao_simultanea"
+      - "tests/pipeline/test_trava.py::test_trava_externa_impede_sem_criar_nada"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-3.log"
+  SPEC-014-AC-4:
+    id: SPEC-014-AC-4
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_troca_atomica.py::test_falha_mantem_anterior tests/pipeline/test_troca_atomica.py::test_falha_na_primeira_execucao_nao_cria_arquivo tests/pipeline/test_troca_atomica.py::test_restos_de_execucao_morta_sao_limpos tests/pipeline/test_troca_atomica.py::test_troca_recusada_pelo_sistema_mantem_anterior"
+    test_paths:
+      - "tests/pipeline/test_troca_atomica.py::test_falha_mantem_anterior"
+      - "tests/pipeline/test_troca_atomica.py::test_falha_na_primeira_execucao_nao_cria_arquivo"
+      - "tests/pipeline/test_troca_atomica.py::test_restos_de_execucao_morta_sao_limpos"
+      - "tests/pipeline/test_troca_atomica.py::test_troca_recusada_pelo_sistema_mantem_anterior"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-4.log"
+  SPEC-014-AC-5:
+    id: SPEC-014-AC-5
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_agregados.py::test_f_pipe_01_valores_da_fixture"
+    test_paths:
+      - "tests/pipeline/test_agregados.py::test_f_pipe_01_valores_da_fixture"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-5.log"
+  SPEC-014-AC-6:
+    id: SPEC-014-AC-6
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_agregados.py::test_f_pipe_02_isolamento_por_user_id tests/pipeline/test_agregados.py::test_so_os_usuarios_pedidos_entram_no_arquivo"
+    test_paths:
+      - "tests/pipeline/test_agregados.py::test_f_pipe_02_isolamento_por_user_id"
+      - "tests/pipeline/test_agregados.py::test_so_os_usuarios_pedidos_entram_no_arquivo"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-6.log"
+  SPEC-014-AC-7:
+    id: SPEC-014-AC-7
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_log.py::test_log_sem_dado_financeiro_nem_nome tests/pipeline/test_log.py::test_log_de_falha_nao_repete_a_mensagem_do_erro"
+    test_paths:
+      - "tests/pipeline/test_log.py::test_log_sem_dado_financeiro_nem_nome"
+      - "tests/pipeline/test_log.py::test_log_de_falha_nao_repete_a_mensagem_do_erro"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-7.log"
+  SPEC-014-AC-8:
+    id: SPEC-014-AC-8
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_papel.py::test_papel_sem_escrita_e_execute_minimo tests/db/test_migracao_0014.py::test_downgrade_revoga_e_upgrade_concede"
+    test_paths:
+      - "tests/pipeline/test_papel.py::test_papel_sem_escrita_e_execute_minimo"
+      - "tests/db/test_migracao_0014.py::test_downgrade_revoga_e_upgrade_concede"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-8.log"
+  SPEC-014-AC-9:
+    id: SPEC-014-AC-9
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/pipeline/test_ler.py::test_leitura_somente_leitura tests/pipeline/test_ler.py::test_leitura_sem_arquivo_falha_sem_criar"
+    test_paths:
+      - "tests/pipeline/test_ler.py::test_leitura_somente_leitura"
+      - "tests/pipeline/test_ler.py::test_leitura_sem_arquivo_falha_sem_criar"
+    exit_code: 0
+    log_path: "logs/21/SPEC-014-AC-9.log"

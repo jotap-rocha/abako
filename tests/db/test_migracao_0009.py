@@ -62,7 +62,7 @@ def test_downgrade_com_dados_remove_so_as_funcoes_e_sobe_de_novo(esquema: str) -
     finally:
         command.upgrade(cfg, "head")
         apagar_usuario(esquema, uid)
-    assert _revisao(esquema) == "0013"
+    assert _revisao(esquema) == "0014"
     assert _existentes(esquema) == sorted(FUNCOES)
 
 

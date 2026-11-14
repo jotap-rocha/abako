@@ -163,14 +163,24 @@ FUNCOES_DE_LEITURA_DO_GASTO_REAL = (
 )
 
 
+# ADR 054 / 0014: o pipeline executa só estas leituras do gasto real (as `receita_*` não).
+GASTO_REAL_DO_PIPELINE = (
+    "mes_inicio(text)",
+    "gasto_real_itens(bigint, text)",
+    "gasto_real(bigint, text)",
+    "gasto_real_por_conta(bigint, text)",
+)
+
+
 def test_leituras_do_gasto_real_so_o_app(esquema: str, url_app: str, url_pipeline: str) -> None:
-    """SPEC-008 / ADR 046: o app executa as leituras (INVOKER, sem escrita); o pipeline não."""
+    """SPEC-008 / ADR 046: o app executa as leituras (INVOKER, sem escrita); o pipeline só as
+    do gasto real da 0014 (ADR 054), nunca as de receita."""
     with psycopg.connect(url_app) as app, psycopg.connect(url_pipeline) as pipe:
         for funcao in FUNCOES_DE_LEITURA_DO_GASTO_REAL:
             linha = app.execute("SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,))
             assert linha.fetchone() == (True,), funcao
             linha = pipe.execute("SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,))
-            assert linha.fetchone() == (False,), funcao
+            assert linha.fetchone() == (funcao in GASTO_REAL_DO_PIPELINE,), funcao
             invoker = app.execute(
                 "SELECT NOT prosecdef FROM pg_proc WHERE oid = %s::regprocedure", (funcao,)
             ).fetchone()
@@ -198,7 +208,7 @@ def test_leituras_do_gasto_real_so_o_app(esquema: str, url_app: str, url_pipelin
             for priv in ("UPDATE", "DELETE"):
                 assert not _tem_privilegio(papel, "transacao_versao", priv), priv
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
-            pipe.execute("SELECT gasto_real(1, '2025-04')")
+            pipe.execute("SELECT receita_total(1, '2025-04')")
         pipe.rollback()
 
 
@@ -224,9 +234,10 @@ def test_reserva_papeis(esquema: str, url_app: str, url_pipeline: str) -> None:
             assert app.execute(
                 "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
             ).fetchone() == (True,)
+            # 0014 / ADR 054: o pipeline executa as leituras da reserva (INVOKER, sem escrita)
             assert pipe.execute(
                 "SELECT has_function_privilege(%s, 'EXECUTE')", (funcao,)
-            ).fetchone() == (False,)
+            ).fetchone() == (True,)
             invoker = app.execute(
                 "SELECT NOT prosecdef FROM pg_proc WHERE oid = %s::regprocedure", (funcao,)
             ).fetchone()
@@ -257,9 +268,6 @@ def test_reserva_papeis(esquema: str, url_app: str, url_pipeline: str) -> None:
                 (uid,),
             )
         app.rollback()  # nada fica no banco
-        with pytest.raises(psycopg.errors.InsufficientPrivilege):
-            pipe.execute("SELECT * FROM reserva_situacao(1, DATE '2026-04-01')")
-        pipe.rollback()
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
             pipe.execute("SELECT reserva_parametro_gravar(1, 3, 1.00, NULL, DATE '2026-01-01')")
         pipe.rollback()

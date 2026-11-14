@@ -54,7 +54,7 @@ def test_downgrade_com_parametros_e_recusado(esquema: str) -> None:
     try:
         with pytest.raises(Exception, match="0010"):
             command.downgrade(cfg, "0009")
-        assert _revisao(esquema) == "0013"  # a recusa desfaz tudo: nada foi removido
+        assert _revisao(esquema) == "0014"  # a recusa desfaz tudo: nada foi removido
         funcoes, tabelas = _existentes(esquema)
         assert funcoes == sorted(FUNCOES)
         assert tabelas == ["reserva_parametro", "reserva_parametro_vigente"]
@@ -80,7 +80,7 @@ def test_downgrade_sem_dados_remove_tudo_e_sobe_de_novo(esquema: str) -> None:
         assert _existentes(esquema) == ([], [])
     finally:
         command.upgrade(cfg, "head")
-    assert _revisao(esquema) == "0013"
+    assert _revisao(esquema) == "0014"
     assert _existentes(esquema) == (
         sorted(FUNCOES),
         ["reserva_parametro", "reserva_parametro_vigente"],

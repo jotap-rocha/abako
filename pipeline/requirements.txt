@@ -1,0 +1,3 @@
+# Dependências do pipeline Postgres -> DuckDB (SPEC-014), versões exatas. Atualizar só com revisão.
+# O driver do Postgres (psycopg) vem de backend/requirements.txt.
+duckdb==1.5.6

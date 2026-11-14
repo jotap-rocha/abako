@@ -1258,3 +1258,123 @@ criterios:
     invariantes: []
     teste:
       - "frontend/src/vale/Vale.test.tsx::explica_vale_bolso_resta_sobra_e_estouro"
+  # ---- SPEC-014: pipeline Postgres -> DuckDB e analítico (ADR 054) ----
+  - id: SPEC-014-AC-1
+    spec: SPEC-014
+    dado: "o ledger sintético com marcadores de nome e descrição (F-PIPE-01) no tst"
+    quando: "o pipeline roda pelo papel abako_pipeline"
+    entao: "o papel não consegue escrever (INSERT, UPDATE, DELETE, TRUNCATE, DDL e funções de escrita negados), o transacional fica idêntico (linhas e hash de cada tabela) e o analítico só tem as tabelas agregadas, sem linhas de transação, sem coluna de texto livre e com dinheiro DECIMAL"
+    invariantes: [INV-15, INV-14]
+    fixtures: [F-PIPE-01]
+    teste:
+      - "tests/pipeline/test_fluxo.py::test_nao_escreve_no_transacional"
+      - "tests/pipeline/test_fluxo.py::test_analitico_so_tem_agregados"
+  - id: SPEC-014-AC-2
+    spec: SPEC-014
+    dado: "os mesmos dados do transacional"
+    quando: "o pipeline roda duas vezes"
+    entao: "os agregados são idênticos e a soma bate com o transacional (saldo de cada conta em hoje conferido direto nas tabelas-base; gasto = débitos e parcelas próprias)"
+    invariantes: [INV-15]
+    fixtures: [F-PIPE-01]
+    teste:
+      - "tests/pipeline/test_idempotencia.py::test_reexecucao_identica"
+  - id: SPEC-014-AC-3
+    spec: SPEC-014
+    dado: "uma execução em andamento (ou a trava tomada por outra sessão)"
+    quando: "uma segunda execução começa"
+    entao: "ela sai com código 3 sem tocar o arquivo analítico, sem criar a pasta (mesmo inexistente) nem temporário; terminada a primeira, a trava é solta"
+    invariantes: [INV-35]
+    teste:
+      - "tests/pipeline/test_trava.py::test_execucao_simultanea"
+      - "tests/pipeline/test_trava.py::test_trava_externa_impede_sem_criar_nada"
+  - id: SPEC-014-AC-4
+    spec: SPEC-014
+    dado: "um arquivo analítico anterior válido"
+    quando: "a execução falha na leitura, no meio da escrita ou na validação"
+    entao: "o código de saída é 4 (inclusive se o sistema recusar a troca por leitor com o arquivo aberto), o arquivo anterior fica byte a byte intacto, nenhum .tmp sobra, a primeira execução com falha não cria arquivo e restos de execução morta são limpos"
+    invariantes: [INV-15]
+    teste:
+      - "tests/pipeline/test_troca_atomica.py::test_falha_mantem_anterior"
+      - "tests/pipeline/test_troca_atomica.py::test_falha_na_primeira_execucao_nao_cria_arquivo"
+      - "tests/pipeline/test_troca_atomica.py::test_restos_de_execucao_morta_sao_limpos"
+      - "tests/pipeline/test_troca_atomica.py::test_troca_recusada_pelo_sistema_mantem_anterior"
+  - id: SPEC-014-AC-5
+    spec: SPEC-014
+    dado: "o mini-ledger da F-PIPE-01 (hoje 2026-02-20), esperados calculados à mão"
+    quando: "o pipeline gera o arquivo"
+    entao: "saldo_diario tem 51, 37 e 32 dias com os saldos por trecho; gasto_mensal, fatura_resumo (190.00 = 100.00 própria + 90.00 terceiros), limite_linha (usado 340.00), cobertura_reserva (atenção, cobertura 2.01), a_receber (só o total 60.00) e execucao batem com a fixture"
+    invariantes: [INV-15, INV-02, INV-06]
+    fixtures: [F-PIPE-01]
+    teste:
+      - "tests/pipeline/test_agregados.py::test_f_pipe_01_valores_da_fixture"
+  - id: SPEC-014-AC-6
+    spec: SPEC-014
+    dado: "dois usuários (F-PIPE-01 e F-PIPE-02)"
+    quando: "o pipeline gera o arquivo e se lê por user_id"
+    entao: "toda linha leva o user_id do dono, as contas de um não aparecem nas linhas do outro, a leitura devolve só o user_id recebido e --usuario restringe o arquivo aos pedidos"
+    invariantes: [INV-13]
+    fixtures: [F-PIPE-01, F-PIPE-02]
+    teste:
+      - "tests/pipeline/test_agregados.py::test_f_pipe_02_isolamento_por_user_id"
+      - "tests/pipeline/test_agregados.py::test_so_os_usuarios_pedidos_entram_no_arquivo"
+  - id: SPEC-014-AC-7
+    spec: SPEC-014
+    dado: "uma execução bem-sucedida e uma que falha com mensagem de erro carregando nome e valor"
+    quando: "se lê o log"
+    entao: "o log tem etapa, run_id, registros e duração, o R4 só como contagem, e nenhum valor, nome, descrição ou user_id; em falha, só a classe do erro e o SQLSTATE, sem a mensagem nem traceback"
+    invariantes: [INV-15]
+    fixtures: [F-PIPE-01]
+    teste:
+      - "tests/pipeline/test_log.py::test_log_sem_dado_financeiro_nem_nome"
+      - "tests/pipeline/test_log.py::test_log_de_falha_nao_repete_a_mensagem_do_erro"
+  - id: SPEC-014-AC-8
+    spec: SPEC-014
+    dado: "o papel abako_pipeline após a migração 0014"
+    quando: "se consultam os privilégios"
+    entao: "nenhuma tabela ou view lhe dá INSERT, UPDATE, DELETE ou TRUNCATE; pessoa.nome segue sem SELECT; o EXECUTE concedido é exatamente o conjunto das 15 leituras INVOKER da 0014 (nenhuma de escrita, alertas, R2, vale ou receita) e o downgrade da 0014 o revoga"
+    invariantes: [INV-15]
+    teste:
+      - "tests/pipeline/test_papel.py::test_papel_sem_escrita_e_execute_minimo"
+      - "tests/db/test_migracao_0014.py::test_downgrade_revoga_e_upgrade_concede"
+  - id: SPEC-014-AC-9
+    spec: SPEC-014
+    dado: "o arquivo analítico gerado"
+    quando: "se lê pelo módulo e pela CLI de leitura"
+    entao: "o arquivo abre read_only (escrita e DDL são recusados), só as seis tabelas de dados são aceitas (nome vindo de lista fixa), o user_id é obrigatório, o arquivo não muda e sem arquivo a CLI falha sem criar nada"
+    invariantes: [INV-13, INV-15]
+    teste:
+      - "tests/pipeline/test_ler.py::test_leitura_somente_leitura"
+      - "tests/pipeline/test_ler.py::test_leitura_sem_arquivo_falha_sem_criar"
+  - id: SPEC-014-AC-10
+    spec: SPEC-014
+    dado: "variáveis de ambiente do pipeline"
+    quando: "a configuração é montada antes de qualquer conexão"
+    entao: "URL fora do guarda (dono do banco, porta 5432, banco errado, host remoto, ausente) é recusada, prd exige ABAKO_CONFIRMA_PRD=sim e usa arquivo próprio, e a pasta do analítico dentro do repositório é recusada (o padrão fica fora dele)"
+    invariantes: [INV-15]
+    teste:
+      - "tests/pipeline/test_config.py::test_alvo_tst_valido_e_pasta_externa"
+      - "tests/pipeline/test_config.py::test_url_fora_do_guarda_e_recusada"
+      - "tests/pipeline/test_config.py::test_prd_exige_confirmacao_humana"
+      - "tests/pipeline/test_config.py::test_pasta_dentro_do_repositorio_e_recusada"
+      - "tests/pipeline/test_config.py::test_pasta_padrao_fica_fora_do_repositorio"
+      - "tests/pipeline/test_config.py::test_url_malformada_vira_config_invalida_sem_vazar_a_url"
+  - id: SPEC-014-AC-11
+    spec: SPEC-014
+    dado: "descrições, nomes de conta, de pessoa e de linha sintéticos com o marcador MARC_ (F-PIPE-01)"
+    quando: "se varre o conteúdo e os bytes do arquivo analítico e o SQL do pipeline"
+    entao: "nenhum marcador aparece em valor algum nem nos bytes do arquivo (a varredura prova antes que os marcadores existem no transacional) e nenhum literal de SQL do pipeline (extracao, executar, esquema) cita descricao, nome ou login nem usa SELECT *"
+    invariantes: [INV-15]
+    fixtures: [F-PIPE-01]
+    teste:
+      - "tests/pipeline/test_fluxo.py::test_sem_nome_nem_descricao_no_arquivo"
+      - "tests/pipeline/test_fluxo.py::test_consultas_do_pipeline_nao_selecionam_texto_livre"
+  - id: SPEC-014-AC-12
+    spec: SPEC-014
+    dado: "uma falha de teste cujo texto, locais ou log contêm uma URL de conexão com senha"
+    quando: "o pytest imprime o relatório (inclusive com --showlocals e --tb=long)"
+    entao: "a senha sai mascarada (://usuario:***@) no texto da falha e nas seções capturadas; a URL do papel também não aparece no repr do Config do pipeline"
+    invariantes: []
+    teste:
+      - "tests/test_mascara_urls.py::test_mascara_so_a_senha"
+      - "tests/test_mascara_urls.py::test_relatorio_de_falha_e_secoes_sao_mascarados"
+      - "tests/test_mascara_urls.py::test_saida_do_pytest_com_locais_nao_vaza_a_senha"

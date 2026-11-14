@@ -21,6 +21,7 @@ VAR_URL_PRD = "ABAKO_DB_MIGRATE_URL_PRD"
 VAR_CONFIRMA_PRD = "ABAKO_CONFIRMA_PRD"
 VAR_URL_APP = "ABAKO_DB_APP_URL"
 VAR_URL_PIPELINE = "ABAKO_DB_PIPELINE_URL"
+VAR_URL_PIPELINE_PRD = "ABAKO_DB_PIPELINE_URL_PRD"
 USUARIO_APP = "abako_app"
 USUARIO_PIPELINE = "abako_pipeline"
 # Banco descartável de teste de restauração (ADR 032/037): nunca tst, nunca prd.
@@ -93,6 +94,14 @@ def verificar_url_papel(url: str, var: str, usuario_esperado: str) -> None:
     """URL de papel de runtime: mesmas regras do tst (host local, 5433, banco tst, sem query)
     e o usuário tem de ser o papel esperado (não o dono nem o admin)."""
     _verificar_url(url, BANCO_TST, var)
+    usuario = urlsplit(url).username
+    if usuario != usuario_esperado:
+        raise AlvoInvalido(f"{var}: usuário {usuario!r} != {usuario_esperado!r}")
+
+
+def verificar_url_papel_prd(url: str, var: str, usuario_esperado: str) -> None:
+    """URL de papel de runtime em `prd` (só após a confirmação humana, ADR 019)."""
+    _verificar_url(url, BANCO_PRD, var)
     usuario = urlsplit(url).username
     if usuario != usuario_esperado:
         raise AlvoInvalido(f"{var}: usuário {usuario!r} != {usuario_esperado!r}")
