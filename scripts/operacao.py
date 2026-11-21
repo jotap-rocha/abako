@@ -382,6 +382,12 @@ class SistemaReal:
             finally:
                 kernel32.CloseHandle(handle)
         try:
+            # Filho nosso que já terminou fica zumbi (o kill 0 ainda acerta): recolhe e dá por morto.
+            if os.waitpid(pid, os.WNOHANG)[0] == pid:
+                return False
+        except ChildProcessError:
+            pass  # não é filho deste processo: vale a consulta abaixo
+        try:
             os.kill(pid, 0)
         except OSError:
             return False

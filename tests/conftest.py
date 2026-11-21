@@ -42,8 +42,11 @@ def mascarar_urls(texto: str) -> str:
 
 
 def mascarar_relatorio(relatorio: pytest.TestReport) -> None:
-    """Troca a senha das URLs de conexão por *** no texto do relatório (falha ou erro)."""
-    if relatorio.passed:
+    """Troca a senha das URLs de conexão por *** no texto do relatório (falha ou erro).
+
+    Skip fica de fora: o `longrepr` dele é uma tupla (arquivo, linha, motivo) que o resumo do
+    pytest exige intacta; transformá-la em texto quebra o `-rs` (visto no CI, Linux)."""
+    if relatorio.passed or relatorio.skipped:
         return
     if relatorio.longrepr is not None:
         relatorio.longrepr = mascarar_urls(str(relatorio.longrepr))

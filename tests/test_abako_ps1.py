@@ -18,6 +18,8 @@ SHELLS = ["powershell", "pwsh"]
 
 
 def _rodar(shell: str, script: str, *args: str) -> subprocess.CompletedProcess[bytes]:
+    if not (RAIZ / ".venv" / "Scripts" / "python.exe").exists():
+        pytest.skip("sem .venv/Scripts/python.exe: o invólucro é só do Windows")
     exe = shutil.which(shell)
     if exe is None:
         pytest.skip(f"{shell} não está instalado neste computador (teste só vale no Windows)")
