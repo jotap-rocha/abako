@@ -64,3 +64,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [053](053-tela-do-vale.md) | Tela do vale, bolso no formulário e R5 nos alertas: convenções do front da task 20 | Aceita | 2026-11-13 |
 | [054](054-pipeline-analitico-duckdb.md) | Pipeline Postgres → DuckDB e analítico: convenções da SPEC-014 | Aceita | 2026-11-13 |
 | [055](055-cadastro-do-cartao.md) | Cadastro do cartão e da linha de crédito: convenções da task 22 (SPEC-012) | Aceita | 2026-11-20 |
+| [056](056-scripts-de-operacao-local.md) | Scripts de operação local: comando `abako` com subcomandos (SPEC-015) | Aceita | 2026-11-20 |

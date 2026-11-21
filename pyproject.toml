@@ -45,6 +45,10 @@ files = [
   "scripts/restaurar.py",
   "scripts/resumo_banco.py",
   "scripts/criar_descartavel.py",
+  "scripts/operacao.py",
+  "scripts/config_local.py",
+  "tests/test_operacao.py",
+  "tests/test_abako_ps1.py",
 ]
 strict = true
 

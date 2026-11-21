@@ -1441,3 +1441,142 @@ criterios:
       - "tests/test_mascara_urls.py::test_mascara_so_a_senha"
       - "tests/test_mascara_urls.py::test_relatorio_de_falha_e_secoes_sao_mascarados"
       - "tests/test_mascara_urls.py::test_saida_do_pytest_com_locais_nao_vaza_a_senha"
+  # ---- SPEC-015: scripts de operação local (ADR 056) ----
+  - id: SPEC-015-AC-1
+    spec: SPEC-015
+    dado: "o repositório com o banco parado e o front sem build ou desatualizado"
+    quando: "se roda `abako subir` (ou `subir --tst`)"
+    entao: "o banco sobe e é esperado saudável, o build é refeito antes da API se estiver desatualizado, a API inicia só em 127.0.0.1 em segundo plano (PID e ambiente guardados fora do repositório), a URL e o ambiente são mostrados (prd em destaque, padrão) e uma porta já ocupada por outro programa é recusada sem tocar em nada"
+    invariantes: []
+    teste:
+      - "tests/test_operacao.py::test_subir_tst_sobe_banco_inicia_api_so_local_e_mostra_ambiente"
+      - "tests/test_operacao.py::test_subir_usa_prd_por_padrao_com_aviso_e_sem_confirmacao_do_prd"
+      - "tests/test_operacao.py::test_subir_refaz_o_build_desatualizado_antes_de_iniciar_a_api"
+      - "tests/test_operacao.py::test_subir_recusa_porta_ocupada_por_outro_programa"
+      - "tests/test_operacao.py::test_subir_com_api_ja_rodando"
+      - "tests/test_operacao.py::test_subir_falha_se_o_banco_nao_fica_saudavel"
+      - "tests/test_operacao.py::test_porta_vem_da_configuracao_do_projeto"
+      - "tests/test_operacao.py::test_porta_do_terminal_sobrescreve_a_da_configuracao"
+      - "tests/test_operacao.py::test_porta_invalida_e_recusada"
+      - "tests/test_operacao.py::test_porta_valida_vazia_e_padrao_e_faixa_aceita"
+      - "tests/test_operacao.py::test_porta_invalida_no_terminal_falha_com_mensagem_clara"
+      - "tests/test_operacao.py::test_porta_invalida_na_configuracao_do_projeto_falha_sem_subir_nada"
+      - "tests/test_operacao.py::test_abrir_recusa_porta_ocupada_por_outro_programa"
+      - "tests/test_operacao.py::test_estado_da_api_em_pasta_com_acento_e_espaco"
+  - id: SPEC-015-AC-2
+    spec: SPEC-015
+    dado: "um frontend/dist e arquivos de frontend/src, package.json e openapi.json com datas controladas"
+    quando: "se verifica se o build está desatualizado"
+    entao: "dist ausente ou qualquer um desses arquivos mais novo que dist/index.html é desatualizado (com o motivo); datas iguais ou mais velhas é em dia"
+    invariantes: []
+    teste:
+      - "tests/test_operacao.py::test_build_em_dia_quando_nada_e_mais_novo_que_o_dist"
+      - "tests/test_operacao.py::test_build_desatualizado_sem_dist"
+      - "tests/test_operacao.py::test_build_desatualizado_quando_arquivo_e_mais_novo"
+  - id: SPEC-015-AC-3
+    spec: SPEC-015
+    dado: "contêiner, API, migrações, backups, front e git em estados conhecidos, e saídas de comandos com URL e senha sintéticas (MARC_SENHA_)"
+    quando: "se roda `abako status`"
+    entao: "mostra contêiner, porta e ambiente da API, versão das migrações do tst (a do prd só com --prd e confirmação), idade do último backup do prd pela data no nome, build e branch com commits atrás, e nenhuma senha, URL com credencial ou mensagem de exceção aparece"
+    invariantes: []
+    teste:
+      - "tests/test_operacao.py::test_status_mostra_tudo_e_nenhum_segredo"
+      - "tests/test_operacao.py::test_status_mostra_build_desatualizado_e_api_parada"
+      - "tests/test_operacao.py::test_status_nao_vaza_a_mensagem_de_excecao"
+      - "tests/test_operacao.py::test_status_prd_exige_confirmacao_e_terminal"
+      - "tests/test_operacao.py::test_idade_do_backup_vem_da_data_no_nome"
+      - "tests/test_operacao.py::test_status_ignora_backup_vazio"
+  - id: SPEC-015-AC-4
+    spec: SPEC-015
+    dado: "um PID guardado, outro processo qualquer vivo e um PID guardado que agora é de outro programa"
+    quando: "se roda `abako parar`"
+    entao: "só o PID guardado é encerrado, depois de conferir que é `python -m backend`; PID de outro programa (linha lida e diferente) é recusado (código 2) sem encerrar nada e o arquivo de PID velho é apagado; se a linha de comando não pôde ser lida, recusa com outra mensagem e MANTÉM o PID; o banco nunca é tocado"
+    invariantes: []
+    teste:
+      - "tests/test_operacao.py::test_parar_encerra_so_o_pid_guardado"
+      - "tests/test_operacao.py::test_parar_recusa_pid_que_nao_e_do_abako"
+      - "tests/test_operacao.py::test_parar_sem_arquivo_ou_com_processo_morto_nao_encerra_nada"
+      - "tests/test_operacao.py::test_parar_sem_conseguir_ler_a_linha_mantem_o_pid"
+      - "tests/test_operacao.py::test_subir_sem_conseguir_ler_a_linha_do_pid_guardado_mantem_o_pid"
+      - "tests/test_operacao.py::test_processo_do_abako_pela_linha_de_comando"
+      - "tests/test_operacao.py::test_sistema_real_inicia_consulta_e_encerra_so_o_proprio_filho"
+  - id: SPEC-015-AC-5
+    spec: SPEC-015
+    dado: "árvore suja, branch fora da main, migração pendente no prd e backup de idades variadas"
+    quando: "se roda `abako atualizar` ou `abako migrar`"
+    entao: "no atualizar, árvore suja ou branch fora da main recusam antes de qualquer fetch ou pull; no migrar a main só é exigida com --alvo prd (no tst só avisa a branch); com backup velho o atualizar recusa dizendo que o código já foi atualizado e que se roda `abako atualizar` de novo; o pull é só --ff-only; com migração pendente lista as revisões, exige backup recente e confirmação digitada e migra para a revisão exata (nunca head às cegas; mais de uma cabeça recusa); depois refaz o build e reinicia a API que estava rodando"
+    invariantes: []
+    teste:
+      - "tests/test_operacao.py::test_atualizar_recusa_arvore_suja"
+      - "tests/test_operacao.py::test_atualizar_recusa_branch_fora_da_main"
+      - "tests/test_operacao.py::test_atualizar_com_migracao_pendente_segue_a_ordem_e_migra_a_revisao_exata"
+      - "tests/test_operacao.py::test_atualizar_reinicia_a_api_que_estava_rodando"
+      - "tests/test_operacao.py::test_pull_so_fast_forward_e_falha_vira_codigo_1"
+      - "tests/test_operacao.py::test_migrar_tst_na_main_usa_a_revisao_exata_sem_confirmacao"
+      - "tests/test_operacao.py::test_migrar_prd_fora_da_main_recusa"
+      - "tests/test_operacao.py::test_migrar_tst_fora_da_main_avisa_a_branch_e_migra"
+      - "tests/test_operacao.py::test_atualizar_com_backup_velho_diz_que_o_codigo_ja_foi_atualizado"
+      - "tests/test_operacao.py::test_migrar_recusa_mais_de_uma_cabeca"
+  - id: SPEC-015-AC-6
+    spec: SPEC-015
+    dado: "operações no prd (backup, migrar, pipeline, atualizar) sem terminal interativo, com confirmação errada, com backup de 7 dias e de mais de 7 dias"
+    quando: "o comando é executado"
+    entao: "sem terminal interativo ou com confirmação diferente da palavra pedida recusa (código 2) sem executar nada; ABAKO_CONFIRMA_PRD só vai ao ambiente do processo filho depois da confirmação (e a herdada do terminal é removida); migrar e atualizar recusam sem backup do prd de até 7 dias (exatamente 7 dias passa, 7 dias e 1 segundo recusa; arquivo de backup de tamanho zero não conta)"
+    invariantes: []
+    teste:
+      - "tests/test_operacao.py::test_operacao_no_prd_sem_terminal_e_recusada_sem_executar_nada"
+      - "tests/test_operacao.py::test_confirmacao_digitada_errada_recusa"
+      - "tests/test_operacao.py::test_confirmacao_do_prd_so_vai_ao_ambiente_do_filho"
+      - "tests/test_operacao.py::test_confirmacao_do_prd_nao_e_herdada_do_terminal"
+      - "tests/test_operacao.py::test_sistema_real_roda_comando_e_remove_a_confirmacao_herdada"
+      - "tests/test_operacao.py::test_backup_de_ate_7_dias_passa_e_de_mais_recusa"
+      - "tests/test_operacao.py::test_sem_backup_do_prd_recusa_e_manda_rodar_o_backup"
+      - "tests/test_operacao.py::test_atualizar_sem_backup_recente_recusa_antes_de_migrar"
+      - "tests/test_operacao.py::test_atualizar_sem_confirmacao_de_migrar_nao_migra"
+      - "tests/test_operacao.py::test_atualizar_sem_confirmacao_inicial_nao_puxa_nada"
+      - "tests/test_operacao.py::test_migrar_prd_exige_backup_e_confirmacao"
+      - "tests/test_operacao.py::test_backup_tst_nao_pede_confirmacao_nem_leva_a_variavel"
+      - "tests/test_operacao.py::test_backup_de_tamanho_zero_nao_conta"
+      - "tests/test_operacao.py::test_migrar_prd_com_backup_velho_nao_fala_em_pull"
+  - id: SPEC-015-AC-7
+    spec: SPEC-015
+    dado: "saídas de processos filhos, logs e exceções com URL de conexão e senha sintéticas (MARC_SENHA_), e o fonte do script"
+    quando: "o script mostra uma saída, um log ou um erro"
+    entao: "nenhuma senha, URL de conexão ou linha que carregue conteúdo de tabela aparece (só a classe da exceção e o SQLSTATE) e o script não lê o arquivo de variáveis nem põe a confirmação do prd no próprio ambiente"
+    invariantes: []
+    teste:
+      - "tests/test_operacao.py::test_saida_segura_remove_url_senha_e_linhas_perigosas"
+      - "tests/test_operacao.py::test_excecao_so_com_classe_e_sqlstate"
+      - "tests/test_operacao.py::test_excecao_inesperada_sai_so_com_a_classe"
+      - "tests/test_operacao.py::test_log_da_api_que_morreu_sai_filtrado"
+      - "tests/test_operacao.py::test_saida_de_falha_do_filho_sai_filtrada"
+      - "tests/test_operacao.py::test_o_script_nao_le_o_arquivo_de_variaveis"
+      - "tests/test_operacao.py::test_o_fonte_nao_traz_senha_nem_url_de_conexao"
+      - "tests/test_operacao.py::test_config_local_devolve_so_conteiner_e_pasta"
+      - "tests/test_operacao.py::test_procurar_executavel_ignora_a_raiz_do_repositorio_e_a_pasta_atual"
+      - "tests/test_operacao.py::test_sistema_real_nao_executa_programa_plantado_no_repositorio"
+  - id: SPEC-015-AC-8
+    spec: SPEC-015
+    dado: "o scripts/abako.ps1 chamado com o caminho do drive em minúsculo, no Windows PowerShell 5.1 e no PowerShell 7"
+    quando: "se roda um subcomando por ele"
+    entao: "a pasta de trabalho do Python tem a letra do drive em maiúsculo, os acentos saem íntegros (UTF-8 com BOM) e o código de saída do Python é repassado"
+    invariantes: []
+    teste:
+      - "tests/test_abako_ps1.py::test_o_ps1_e_utf8_com_bom_para_o_powershell_5"
+      - "tests/test_abako_ps1.py::test_ajuda_roda_e_devolve_zero"
+      - "tests/test_abako_ps1.py::test_passa_o_codigo_de_saida_do_python"
+      - "tests/test_abako_ps1.py::test_normaliza_a_letra_do_drive_para_maiusculo"
+      - "tests/test_abako_ps1.py::test_argumento_com_espaco_e_aspas_simples_chega_inteiro_ao_python"
+      - "tests/test_abako_ps1.py::test_aspas_duplas_chegam_inteiras_no_powershell_7"
+      - "tests/test_operacao.py::test_normalizar_drive_poe_a_letra_em_maiusculo"
+  - id: SPEC-015-AC-9
+    spec: SPEC-015
+    dado: "a documentação de uso em docs/operacao/subir-e-atualizar.md"
+    quando: "se lê o passo a passo"
+    entao: "cobre pré-requisitos, subir, build/dist/PWA/cache (com Service Workers -> Unregister), parar, atualizar, backup, migrar, a regra da confirmação digitada no prd, o limite de 7 dias e a solução de problemas, e o comando ajuda lista todos os subcomandos"
+    invariantes: []
+    teste:
+      - "tests/test_operacao.py::test_documentacao_de_uso_existe_e_explica_os_termos_de_web"
+      - "tests/test_operacao.py::test_ajuda_lista_todos_os_subcomandos"
+      - "tests/test_operacao.py::test_codigos_de_saida_subcomando_invalido_e_alvo_invalido"
+      - "tests/test_operacao.py::test_erros_de_uso_saem_em_portugues_com_codigo_2"
