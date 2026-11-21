@@ -7,10 +7,15 @@ import {
 } from "../api/vigencias";
 import { VigenciaDoCartao } from "./VigenciaDoCartao";
 
-type Props = { cartao: ContaSaida; aoGravar: () => void };
+type Props = {
+  cartao: ContaSaida;
+  aoGravar: () => void;
+  /** Só quando o dia de fechamento é gravado (o vencimento não chama). */
+  aoGravarFechamento?: () => void;
+};
 
 /** Dia de fechamento e dia de vencimento do cartão, cada um com a data desde quando vale. */
-export function ConfigCartao({ cartao, aoGravar }: Props) {
+export function ConfigCartao({ cartao, aoGravar, aoGravarFechamento }: Props) {
   return (
     <>
       <VigenciaDoCartao
@@ -19,7 +24,10 @@ export function ConfigCartao({ cartao, aoGravar }: Props) {
         cartao={cartao}
         listar={listarFechamentos}
         gravar={gravarFechamento}
-        aoGravar={aoGravar}
+        aoGravar={() => {
+          aoGravar();
+          aoGravarFechamento?.();
+        }}
       />
       <VigenciaDoCartao
         titulo="Dia de vencimento"

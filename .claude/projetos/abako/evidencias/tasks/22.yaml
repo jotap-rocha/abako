@@ -1,0 +1,60 @@
+task_id: "22"
+criteria:
+  SPEC-012-AC-25:
+    id: SPEC-012-AC-25
+    command: "npm --prefix frontend test -- src/cartao/NovoCartao.test.tsx -t \"cria_linha_cartao_e_fechamento_na_ordem_certa|nome_repetido_409_e_mensagem_literal_422_aparecem_nos_campos|validacao_local_foca_o_primeiro_campo_com_erro_e_nao_envia|duplo_clique_envia_uma_vez_so\""
+    test_paths:
+      - "frontend/src/cartao/NovoCartao.test.tsx::cria_linha_cartao_e_fechamento_na_ordem_certa"
+      - "frontend/src/cartao/NovoCartao.test.tsx::nome_repetido_409_e_mensagem_literal_422_aparecem_nos_campos"
+      - "frontend/src/cartao/NovoCartao.test.tsx::validacao_local_foca_o_primeiro_campo_com_erro_e_nao_envia"
+      - "frontend/src/cartao/NovoCartao.test.tsx::duplo_clique_envia_uma_vez_so"
+    exit_code: 0
+    log_path: "logs/22/SPEC-012-AC-25.log"
+  SPEC-012-AC-26:
+    id: SPEC-012-AC-26
+    command: "npm --prefix frontend test -- src/cartao/NovoCartao.test.tsx -t \"cria_linha_cartao_e_fechamento_na_ordem_certa|sem_fechamento_nao_chama_o_fechamento_e_avisa|cartao_criado_e_fechamento_falhou_diz_que_falta_o_fechamento_e_leva_ao_config|linha_criada_e_cartao_falhou_a_nova_tentativa_reaproveita_a_linha|cartao_sem_fechamento_tem_aviso_persistente_na_fatura|usar_outra_linha_destrava_o_formulario_depois_de_linha_criada_e_cartao_falho\""
+    test_paths:
+      - "frontend/src/cartao/NovoCartao.test.tsx::cria_linha_cartao_e_fechamento_na_ordem_certa"
+      - "frontend/src/cartao/NovoCartao.test.tsx::sem_fechamento_nao_chama_o_fechamento_e_avisa"
+      - "frontend/src/cartao/NovoCartao.test.tsx::cartao_criado_e_fechamento_falhou_diz_que_falta_o_fechamento_e_leva_ao_config"
+      - "frontend/src/cartao/NovoCartao.test.tsx::linha_criada_e_cartao_falhou_a_nova_tentativa_reaproveita_a_linha"
+      - "frontend/src/cartao/NovoCartao.test.tsx::cartao_sem_fechamento_tem_aviso_persistente_na_fatura"
+      - "frontend/src/cartao/NovoCartao.test.tsx::usar_outra_linha_destrava_o_formulario_depois_de_linha_criada_e_cartao_falho"
+    exit_code: 0
+    log_path: "logs/22/SPEC-012-AC-26.log"
+  SPEC-012-AC-27:
+    id: SPEC-012-AC-27
+    command: "npm --prefix frontend test -- src/cartao/NovoCartao.test.tsx -t \"envia_a_versao_lida_o_limite_como_texto_e_avisa_que_vale_para_tudo|versao_velha_409_mostra_mudou_desde_a_leitura_e_recarrega|nome_repetido_409_aparece_no_campo_e_o_aviso_some_ao_digitar\""
+    test_paths:
+      - "frontend/src/cartao/NovoCartao.test.tsx::envia_a_versao_lida_o_limite_como_texto_e_avisa_que_vale_para_tudo"
+      - "frontend/src/cartao/NovoCartao.test.tsx::versao_velha_409_mostra_mudou_desde_a_leitura_e_recarrega"
+      - "frontend/src/cartao/NovoCartao.test.tsx::nome_repetido_409_aparece_no_campo_e_o_aviso_some_ao_digitar"
+    exit_code: 0
+    log_path: "logs/22/SPEC-012-AC-27.log"
+  SPEC-012-AC-28:
+    id: SPEC-012-AC-28
+    command: "npm --prefix frontend test -- src/cartao/NovoCartao.test.tsx -t \"usa_linha_existente_sem_criar_outra_e_mostra_o_limite_como_veio|linha_existente_vazia_e_erro_ao_carregar_sao_tratados|nao_oferece_trocar_a_linha_nem_excluir|linha_existente_com_lista_vazia_bloqueia_o_envio_sem_campo_fantasma\""
+    test_paths:
+      - "frontend/src/cartao/NovoCartao.test.tsx::usa_linha_existente_sem_criar_outra_e_mostra_o_limite_como_veio"
+      - "frontend/src/cartao/NovoCartao.test.tsx::linha_existente_vazia_e_erro_ao_carregar_sao_tratados"
+      - "frontend/src/cartao/NovoCartao.test.tsx::nao_oferece_trocar_a_linha_nem_excluir"
+      - "frontend/src/cartao/NovoCartao.test.tsx::linha_existente_com_lista_vazia_bloqueia_o_envio_sem_campo_fantasma"
+    exit_code: 0
+    log_path: "logs/22/SPEC-012-AC-28.log"
+  SPEC-012-AC-29:
+    id: SPEC-012-AC-29
+    command: "npm --prefix frontend test -- src/cartao/NovoCartao.test.tsx -t \"usa_linha_existente_sem_criar_outra_e_mostra_o_limite_como_veio|estado_vazio_convida_ao_formulario_e_avisa_da_divida_inicial|formulario_de_conta_continua_sem_o_tipo_cartao|sessao_vencida_ao_criar_volta_ao_login\""
+    test_paths:
+      - "frontend/src/cartao/NovoCartao.test.tsx::usa_linha_existente_sem_criar_outra_e_mostra_o_limite_como_veio"
+      - "frontend/src/cartao/NovoCartao.test.tsx::estado_vazio_convida_ao_formulario_e_avisa_da_divida_inicial"
+      - "frontend/src/cartao/NovoCartao.test.tsx::formulario_de_conta_continua_sem_o_tipo_cartao"
+      - "frontend/src/cartao/NovoCartao.test.tsx::sessao_vencida_ao_criar_volta_ao_login"
+    exit_code: 0
+    log_path: "logs/22/SPEC-012-AC-29.log"
+  SPEC-012-AC-30:
+    id: SPEC-012-AC-30
+    command: ".venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider tests/e2e/test_cartao.py::test_criar_cartao_com_fechamento_lancar_compra_e_ver_na_fatura"
+    test_paths:
+      - "tests/e2e/test_cartao.py::test_criar_cartao_com_fechamento_lancar_compra_e_ver_na_fatura"
+    exit_code: 0
+    log_path: "logs/22/SPEC-012-AC-30.log"

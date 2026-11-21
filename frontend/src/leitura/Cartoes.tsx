@@ -1,8 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { ContaSaida, FaturaSaida, ItemFaturaSaida, LimiteSaida, PessoaSaida } from "../api/gerado";
 import { type Leitura, listarContas, listarPessoas, obterFatura, obterLimite } from "../api/leitura";
 import { ConfigCartao } from "../cartao/ConfigCartao";
+import { EditarLinha } from "../cartao/EditarLinha";
+import { NovoCartao } from "../cartao/NovoCartao";
 import { formatarData, mesAtual } from "../datas";
 import { formatarMoeda } from "../dinheiro";
 import { Cartao, EstadoVazio, Pagina } from "../ui/componentes";
@@ -25,11 +27,21 @@ async function buscarCartoes(): Promise<Leitura<Dados>> {
  * aberta/fechada vêm prontos da API; a tela só escolhe o cartão e o mês e exibe (ADR 015).
  */
 export function Cartoes() {
-  const { estado, recarregar } = useCarga(buscarCartoes);
+  const { estado, recarregar, atualizar } = useCarga(buscarCartoes);
   const [escolhido, setEscolhido] = useState<string | null>(null);
   const [competencia, setCompetencia] = useState(mesAtual);
   // Mudar fechamento/vencimento muda a situação da fatura: busca a fatura de novo.
   const [versaoFatura, setVersaoFatura] = useState(0);
+  // Pedido de foco no bloco de fechamento/vencimento (vindo do aviso "falta o fechamento").
+  const [pedidoDeFoco, setPedidoDeFoco] = useState(0);
+  const [comFechamento, setComFechamento] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (pedidoDeFoco === 0) return;
+    const bloco = document.getElementById("config-cartao");
+    bloco?.focus();
+    bloco?.scrollIntoView?.();
+  }, [pedidoDeFoco]);
 
   return (
     <Pagina
@@ -47,7 +59,7 @@ export function Cartoes() {
             return (
               <EstadoVazio
                 titulo="Nenhum cartão ainda"
-                texto="Cadastre uma conta do tipo dívida em Contas para acompanhar a fatura aqui."
+                texto="Use o formulário Novo cartão, logo abaixo, para cadastrar o primeiro e acompanhar a fatura aqui."
               />
             );
           }
@@ -84,15 +96,43 @@ export function Cartoes() {
                 competencia={competencia}
                 pessoas={pessoas}
               />
-              <ConfigCartao
-                key={cartao.conta_id}
-                cartao={cartao}
-                aoGravar={() => setVersaoFatura((n) => n + 1)}
-              />
+              <div
+                id="config-cartao"
+                tabIndex={-1}
+                role="group"
+                aria-label="Fechamento e vencimento do cartão"
+              >
+                <ConfigCartao
+                  key={cartao.conta_id}
+                  cartao={cartao}
+                  aoGravar={() => setVersaoFatura((n) => n + 1)}
+                  aoGravarFechamento={() => setComFechamento(cartao.conta_id)}
+                />
+              </div>
+              {cartao.linha_credito_id != null && (
+                <EditarLinha
+                  key={cartao.linha_credito_id}
+                  linhaId={cartao.linha_credito_id}
+                  aoSalvar={() => setVersaoFatura((n) => n + 1)}
+                />
+              )}
             </>
           );
         }}
       </Estado>
+      <NovoCartao
+        cartaoComFechamento={comFechamento}
+        aoCriar={(contaId) => {
+          // Mostra o cartão novo (fatura e aviso de fechamento) sem desmontar o formulário.
+          setEscolhido(String(contaId));
+          atualizar();
+        }}
+        aoAbrirConfig={(contaId) => {
+          setEscolhido(String(contaId));
+          setVersaoFatura((n) => n + 1);
+          setPedidoDeFoco((n) => n + 1);
+        }}
+      />
       <Glossario
         termos={[
           "competencia",
@@ -166,7 +206,8 @@ function SituacaoDaFatura({ fatura }: { fatura: FaturaSaida }) {
     return (
       <p className="texto-suave">
         Este cartão ainda não tem dia de fechamento cadastrado, então não dá para saber se a
-        fatura está <Termo id="fatura_aberta_fechada">aberta ou fechada</Termo>.
+        fatura está <Termo id="fatura_aberta_fechada">aberta ou fechada</Termo>.{" "}
+        <strong>Sem fechamento, a compra no crédito será recusada.</strong>
       </p>
     );
   }
