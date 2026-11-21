@@ -12,6 +12,7 @@ React + TypeScript (PWA, cliente gerado do OpenAPI) · FastAPI · PostgreSQL loc
 ## Comandos
 
 - `check` — validação única (lint + tipos + testes + contratos + rastreabilidade): `.venv\Scripts\python.exe -m scripts.check --com-banco` (fechamento de SPEC: `--com-banco --estrito --spec SPEC-NNN`).
+- Operação local: `.\scripts\abako.ps1 <subcomando>` (`ajuda`, `status`, `subir [--tst]`, `parar`, `reiniciar`, `build`, `atualizar`, `backup|migrar|pipeline [--alvo]`, `check`, `abrir`). O padrão de `subir` é o prd; no prd, o que mexe no banco exige confirmação digitada do dono e backup recente (até 7 dias). Guia: `docs/operacao/subir-e-atualizar.md`.
 - Pipeline analítico (manual, recomputo completo): `python -m pipeline [--alvo tst|prd]`; leitura: `python -m pipeline.ler TABELA --usuario N`. `--alvo prd` exige confirmação explícita do dono.
 - Windows: entre no repositório com a letra do drive em maiúsculo (`cd "D:/projetos/abako"`), senão o Vitest falha.
 
