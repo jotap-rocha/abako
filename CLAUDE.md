@@ -3,7 +3,7 @@
 
 # abako
 
-Sistema financeiro pessoal, local-first: saldos por conta, gasto real, situação do orçamento (apertado/folgado), reserva e cartões. Decisões: `docs/adr/` (ADRs 006–054). Glossário: `CONTEXT.md`. PRD e plano: `.claude/projetos/abako/`.
+Sistema financeiro pessoal, local-first: saldos por conta, gasto real, situação do orçamento (apertado/folgado), reserva e cartões. Decisões: `docs/adr/` (ADRs 006–056). Glossário: `CONTEXT.md`. PRD e plano: `.claude/projetos/abako/`.
 
 > Este arquivo é **público** (ADR 022): sem dado pessoal, sem nomes de bancos/produtos reais.
 
@@ -26,7 +26,7 @@ db/          migrações e views/funções SQL
 pipeline/    transacional → analítico (DuckDB)
 tests/       contracts/, backend, db, pipeline, e2e
 fixtures/
-scripts/     check, deploy-local, rastreabilidade
+scripts/     check, rastreabilidade, operação local (abako.ps1, operacao.py), backup/restauração
 ```
 
 Versões exatas: definidas na SPEC-001.
@@ -35,6 +35,7 @@ Versões exatas: definidas na SPEC-001.
 
 - `check` — comando único de validação (ruff + mypy + pytest + contratos + rastreabilidade): `.venv\Scripts\python.exe -m scripts.check`. Todas as etapas rodam e qualquer falha dá exit 1. Testes de banco (marcador `banco`, `tst` real, sem mock) rodam se `127.0.0.1:5433` responder; `--com-banco` exige o banco; `--sem-banco` pula; `--estrito` torna a rastreabilidade estrita. O resumo lista cada etapa (`pytest (banco): PULADO` quando o banco não respondeu) e só imprime `verde` completo se nada foi pulado; com pulo, `verde parcial (banco não rodou)`. **Fechamento de task, CI e DoD usam `--com-banco`; fechamento de SPEC usa `--com-banco --estrito --spec SPEC-NNN`** (o estrito só olha os itens daquela SPEC; quebrados de qualquer SPEC sempre falham). Waiver com `PENDENTE` (maiúsculas) não cobre o item. Revisor só recebe entrega com `check` verde.
 - Rastreabilidade: `python -m scripts.rastreabilidade [--estrito]`. Item sem teste cuja SPEC ainda não foi entregue (`tests/contracts/specs_entregues.yaml`) é **pendente** (aviso); se a SPEC já foi entregue, ou a referência de teste não existe, é **quebrado** (falha). No DoD final, `--estrito` deve retornar vazio. Referência de teste precisa ser `arquivo.py::test_nome` existente e sem skip/xfail. Critério sem teste automático usa `waiver: "humano: <motivo ou link>"` no `criterios.yaml` (sempre listado como `waiver ativo`). SPEC com todas as tasks `done` precisa estar em `specs_entregues.yaml`, senão a rastreabilidade falha (SPEC-001 = tasks 01-04; SPEC-012 = 5 tasks).
+- Operação local (tudo num comando): `.\scripts\abako.ps1 <subcomando>` (invólucro PowerShell que põe o drive em maiúsculo e chama `python -m scripts.operacao`). Subcomandos: `ajuda`, `status [--prd]`, `subir [--tst]` (padrão **prd**, com aviso), `parar`, `reiniciar`, `build`, `atualizar`, `backup|migrar|pipeline [--alvo prd|tst]`, `check`, `abrir`. No prd, backup/migrar/pipeline/atualizar e `status --prd` exigem **confirmação digitada** pelo dono em terminal interativo (`PRD`; `MIGRAR` na migração) e backup de até 7 dias; o agente não consegue usá-los no prd. PID e log da API ficam em `%LOCALAPPDATA%\abako`. Guia: `docs/operacao/subir-e-atualizar.md` (ADR 056).
 - Pipeline analítico (manual, recomputo completo): `.venv\Scripts\python.exe -m pipeline [--alvo tst|prd]`; leitura do arquivo: `python -m pipeline.ler TABELA --usuario N`. Códigos de saída: 0 ok, 2 recusado (configuração/alvo), 3 trava ocupada, 4 falha. `--alvo prd` exige `ABAKO_CONFIRMA_PRD=sim` e `ABAKO_DB_PIPELINE_URL_PRD`. O papel `abako_pipeline` só executa as 15 leituras da migração 0014.
 - Ambiente (Windows): entre no repositório sempre pelo caminho com a **letra do drive em maiúsculo** (`cd "D:/projetos/abako"`); com `d:` minúsculo o Vitest carrega módulos duplicados e falha. Os relatórios do pytest mascaram `://usuario:senha@` (`tests/conftest.py`). Variáveis de ambiente: ver `.env.example` (só nomes, nunca valores).
 
