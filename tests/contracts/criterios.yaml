@@ -550,6 +550,69 @@ criterios:
     entao: "o resultado mostra estorno integral com o limite devolvido de 100,00 e a lista passa a ter a linha do estorno"
     invariantes: [INV-08]
     teste: ["tests/e2e/test_formularios.py::test_estornar_compra"]
+  - id: SPEC-012-AC-25
+    spec: SPEC-012
+    dado: "a tela de Cartões e o formulário Novo cartão (linha nova)"
+    quando: "o usuário informa nome e limite da linha e o nome do cartão"
+    entao: "a linha é criada (limite como texto), o cartão do tipo dívida é criado com linha_credito_id, nesta ordem; nome repetido (409) e a mensagem literal do banco (422) aparecem no campo ou no formulário, sem recalcular nada; validação local foca o primeiro campo com erro"
+    invariantes: [INV-14]
+    teste:
+      - "frontend/src/cartao/NovoCartao.test.tsx::cria_linha_cartao_e_fechamento_na_ordem_certa"
+      - "frontend/src/cartao/NovoCartao.test.tsx::nome_repetido_409_e_mensagem_literal_422_aparecem_nos_campos"
+      - "frontend/src/cartao/NovoCartao.test.tsx::validacao_local_foca_o_primeiro_campo_com_erro_e_nao_envia"
+      - "frontend/src/cartao/NovoCartao.test.tsx::duplo_clique_envia_uma_vez_so"
+  - id: SPEC-012-AC-26
+    spec: SPEC-012
+    dado: "o formulário Novo cartão com o fechamento opcional"
+    quando: "o usuário informa o dia, deixa o 'vale a partir de' no padrão (1º dia do mês atual) ou o omite"
+    entao: "o fechamento é gravado depois do cartão com a data editável; sem fechamento a tela avisa que a compra no crédito será recusada (inclusive na fatura do cartão); se só o fechamento falhar, a tela diz 'cartão criado, falta o fechamento' com acesso ao ConfigCartao; se o cartão falhar depois da linha, a nova tentativa reutiliza a linha"
+    invariantes: []
+    teste:
+      - "frontend/src/cartao/NovoCartao.test.tsx::cria_linha_cartao_e_fechamento_na_ordem_certa"
+      - "frontend/src/cartao/NovoCartao.test.tsx::sem_fechamento_nao_chama_o_fechamento_e_avisa"
+      - "frontend/src/cartao/NovoCartao.test.tsx::cartao_criado_e_fechamento_falhou_diz_que_falta_o_fechamento_e_leva_ao_config"
+      - "frontend/src/cartao/NovoCartao.test.tsx::linha_criada_e_cartao_falhou_a_nova_tentativa_reaproveita_a_linha"
+      - "frontend/src/cartao/NovoCartao.test.tsx::cartao_sem_fechamento_tem_aviso_persistente_na_fatura"
+      - "frontend/src/cartao/NovoCartao.test.tsx::usar_outra_linha_destrava_o_formulario_depois_de_linha_criada_e_cartao_falho"
+  - id: SPEC-012-AC-27
+    spec: SPEC-012
+    dado: "um cartão com linha de crédito"
+    quando: "o usuário edita nome e limite da linha"
+    entao: "a versão lida é enviada e o limite vai como texto; 409 de versão velha mostra 'mudou desde a leitura' e recarrega; a tela informa que o limite novo vale para tudo, inclusive o passado"
+    invariantes: [INV-14, INV-29]
+    teste:
+      - "frontend/src/cartao/NovoCartao.test.tsx::envia_a_versao_lida_o_limite_como_texto_e_avisa_que_vale_para_tudo"
+      - "frontend/src/cartao/NovoCartao.test.tsx::versao_velha_409_mostra_mudou_desde_a_leitura_e_recarrega"
+      - "frontend/src/cartao/NovoCartao.test.tsx::nome_repetido_409_aparece_no_campo_e_o_aviso_some_ao_digitar"
+  - id: SPEC-012-AC-28
+    spec: SPEC-012
+    dado: "uma linha de crédito já existente"
+    quando: "o usuário cria outro cartão escolhendo essa linha"
+    entao: "nenhuma linha nova é criada, o cartão novo é ligado à linha escolhida (limite compartilhado, explicado na tela) e não há como trocar a linha de um cartão existente nem excluir"
+    invariantes: []
+    teste:
+      - "frontend/src/cartao/NovoCartao.test.tsx::usa_linha_existente_sem_criar_outra_e_mostra_o_limite_como_veio"
+      - "frontend/src/cartao/NovoCartao.test.tsx::linha_existente_vazia_e_erro_ao_carregar_sao_tratados"
+      - "frontend/src/cartao/NovoCartao.test.tsx::nao_oferece_trocar_a_linha_nem_excluir"
+      - "frontend/src/cartao/NovoCartao.test.tsx::linha_existente_com_lista_vazia_bloqueia_o_envio_sem_campo_fantasma"
+  - id: SPEC-012-AC-29
+    spec: SPEC-012
+    dado: "respostas incoerentes de propósito e o formulário genérico de Conta"
+    quando: "a tela de Cartões é usada"
+    entao: "o limite é só texto formatado, sem recalcular; o tipo cartão não está no formulário genérico de Conta; estados vazio (com convite ao formulário e aviso de dívida inicial), erro com nova tentativa e sessão vencida são tratados"
+    invariantes: [INV-14]
+    teste:
+      - "frontend/src/cartao/NovoCartao.test.tsx::usa_linha_existente_sem_criar_outra_e_mostra_o_limite_como_veio"
+      - "frontend/src/cartao/NovoCartao.test.tsx::estado_vazio_convida_ao_formulario_e_avisa_da_divida_inicial"
+      - "frontend/src/cartao/NovoCartao.test.tsx::formulario_de_conta_continua_sem_o_tipo_cartao"
+      - "frontend/src/cartao/NovoCartao.test.tsx::sessao_vencida_ao_criar_volta_ao_login"
+  - id: SPEC-012-AC-30
+    spec: SPEC-012
+    dado: "o servidor de verdade no tst e um usuário sem cartão"
+    quando: "no navegador, o usuário cria linha e cartão com fechamento, lança uma compra no crédito de 1 parcela e abre Cartões"
+    entao: "a compra aparece na fatura do cartão com o valor calculado pelo servidor"
+    invariantes: []
+    teste: ["tests/e2e/test_cartao.py::test_criar_cartao_com_fechamento_lancar_compra_e_ver_na_fatura"]
   - id: SPEC-003-AC-1
     spec: SPEC-003
     dado: "uma conta com snapshot e transações vigentes posteriores (F-SALDO-01), versões editadas e excluídas (F-SALDO-02)"

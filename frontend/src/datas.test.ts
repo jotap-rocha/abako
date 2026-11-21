@@ -1,4 +1,4 @@
-import { deslocarMes, formatarData, hojeEmSaoPaulo, mesAtual, nomeDoMes } from "./datas";
+import { deslocarMes, formatarData, hojeEmSaoPaulo, mesAtual, nomeDoMes, primeiroDiaDoMesAtual } from "./datas";
 
 describe("datas", () => {
   it("hoje_e_o_dia_civil_de_sao_paulo", () => {
@@ -22,5 +22,11 @@ describe("datas", () => {
     expect(deslocarMes("2026-03", -13)).toBe("2025-02");
     expect(mesAtual(new Date("2026-12-01T02:00:00Z"))).toBe("2026-11");
     expect(nomeDoMes("2026-11")).toBe("novembro de 2026");
+  });
+
+  it("primeiro_dia_do_mes_atual_usa_o_fuso_de_sao_paulo", () => {
+    // 02:00 UTC de 1/12 ainda é novembro em São Paulo; 04:00 UTC já é dezembro.
+    expect(primeiroDiaDoMesAtual(new Date("2026-12-01T02:00:00Z"))).toBe("2026-11-01");
+    expect(primeiroDiaDoMesAtual(new Date("2026-12-01T04:00:00Z"))).toBe("2026-12-01");
   });
 });

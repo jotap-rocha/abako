@@ -51,3 +51,8 @@ export function nomeDoMes(mes: string): string {
     year: "numeric",
   }).format(new Date(`${mes}-15T12:00:00Z`));
 }
+
+/** O 1º dia do mês de hoje em São Paulo, "AAAA-MM-01". Só preenche um campo de data editável. */
+export function primeiroDiaDoMesAtual(agora: Date = new Date()): string {
+  return `${mesAtual(agora)}-01`;
+}

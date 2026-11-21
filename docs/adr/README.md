@@ -63,3 +63,4 @@ revista não é editada — ganha uma ADR nova que a substitui.
 | [052](052-vale-bolsos-sobra-e-r5.md) | Vale (VR) com bolsos, sobra com decisão e alerta R5: convenções da SPEC-013 | Aceita | 2026-11-13 |
 | [053](053-tela-do-vale.md) | Tela do vale, bolso no formulário e R5 nos alertas: convenções do front da task 20 | Aceita | 2026-11-13 |
 | [054](054-pipeline-analitico-duckdb.md) | Pipeline Postgres → DuckDB e analítico: convenções da SPEC-014 | Aceita | 2026-11-13 |
+| [055](055-cadastro-do-cartao.md) | Cadastro do cartão e da linha de crédito: convenções da task 22 (SPEC-012) | Aceita | 2026-11-20 |
